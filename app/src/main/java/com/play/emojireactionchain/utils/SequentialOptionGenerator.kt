@@ -2,7 +2,7 @@ package com.play.emojireactionchain.utils
 
 import com.play.emojireactionchain.viewModel.EmojiCategory
 import com.play.emojireactionchain.viewModel.GameRule
-import com.play.emojireactionchain.viewModel.GameViewModel.Companion.emojiCategories
+import com.play.emojireactionchain.viewModel.BaseGameViewModel.Companion.emojiCategories
 
 class SequentialOptionGenerator : AnswerOptionGenerator {
     override fun generateOptions(correctAnswerEmoji: String, category: EmojiCategory, rule: GameRule, emojiChain: List<String>): List<String> {

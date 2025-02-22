@@ -26,6 +26,11 @@ class SoundManager(context: Context) {
     fun playIncorrectSound() {
         incorrectSoundPlayer?.start()
     }
+    fun playIncorrectSoundAndHaptic() {
+        playIncorrectSound()
+        Thread.sleep(150)
+        playIncorrectHaptic()
+    }
 
     fun playCorrectHaptic() { // Function for correct answer haptic
         vibrator?.let { vibrator ->
@@ -45,7 +50,7 @@ class SoundManager(context: Context) {
         vibrator?.let { vibrator ->
             if (vibrator.hasVibrator()) { // Check if vibrator is available
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 100, 100, 200), -1)) // Waveform vibration - pause, vibrate, pause, longer vibrate, no repeat (-1)
+                    vibrator.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 80, 80, 80), -1)) // Waveform vibration - pause, vibrate, pause, longer vibrate, no repeat (-1)
                 } else {
                     // Deprecated but necessary for older versions
                     @Suppress("DEPRECATION")

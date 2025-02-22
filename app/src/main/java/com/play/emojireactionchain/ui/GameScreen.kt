@@ -2,10 +2,12 @@ package com.play.emojireactionchain.ui
 
 import androidx.compose.animation.core.* // Import animation related
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.* // Import remember, mutableStateOf, LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,11 +20,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.play.emojireactionchain.model.GameMode
+import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.model.GameState
+import com.play.emojireactionchain.model.LossReason
 import com.play.emojireactionchain.utils.HighScoreManager
 import com.play.emojireactionchain.utils.SoundManager
-import com.play.emojireactionchain.viewModel.GameViewModel
+import com.play.emojireactionchain.viewModel.NormalGameViewModel
 import kotlinx.coroutines.delay
 
 @Composable
@@ -78,223 +84,299 @@ fun TimeBonusAnimation(bonusPoints: Int) {
 }
 
 @Composable
-fun NormalModeScreen() {
+fun GameHeader() {
+    Text(
+        "Emoji Reaction Chain",
+        textAlign = TextAlign.Center,
+        style = MaterialTheme.typography.headlineLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(bottom = 12.dp)
+    )
+}
+
+@Composable
+fun Scoreboard(score: Int, highScore: Int, lives: Int, currentStreakCount: Int) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(horizontalAlignment = Alignment.Start) {
+            Text(
+                "Score: $score",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.secondary,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                "Highest Score: $highScore",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.secondary,
+            )
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            if (currentStreakCount > 0) {
+                Text(
+                    "Streak: $currentStreakCount 🔥",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.Red.copy(alpha = 0.9f)
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row {
+                for (i in 1..lives) {
+                    Text(
+                        text = "❤️",
+                        fontSize = 24.sp,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                for (i in lives + 1..3) {
+                    Text(
+                        text = "🤍",
+                        fontSize = 24.sp,
+                        color = Color.LightGray.copy(alpha = 0.6f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun QuestionProgress(questionNumber: Int, totalQuestions: Int) {
+    Text(
+        "Question: $questionNumber / $totalQuestions",
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+        textAlign = TextAlign.Center,
+        modifier = Modifier.padding(bottom = 24.dp)
+    )
+}
+
+@Composable
+fun EmojiChainDisplay(emojiChain: List<String>) {
+    Row(horizontalArrangement = Arrangement.Center) {
+        emojiChain.forEach { emoji ->
+            Text(
+                text = emoji,
+                fontSize = 40.sp,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ChoiceButtons(
+    choices: List<String>,
+    correctAnswerEmoji: String,
+    isCorrectAnswer: Boolean?,
+    onChoiceSelected: (String) -> Unit
+) {
+    val density = LocalDensity.current
+
+    val buttonStates = remember {
+        mutableStateMapOf<String, ButtonState>().apply {
+            choices.forEach { put(it, ButtonState()) }
+        }
+    }
+
+    // Reset button states when isCorrectAnswer changes (new question)
+    LaunchedEffect(isCorrectAnswer) {
+        if (isCorrectAnswer == null) { // Only reset when transitioning to a new question
+            choices.forEach { choice ->
+                buttonStates[choice] = ButtonState() // Reset to default state
+            }
+        }
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        choices.forEach { choiceEmoji ->
+            val buttonState = buttonStates[choiceEmoji] ?: ButtonState() // SAFE access with default
+
+            val isChosen = buttonState.isChosen
+            val isCorrect = choiceEmoji == correctAnswerEmoji // Correct regardless of whether it's chosen
+            val isIncorrectlyChosen = isCorrectAnswer == false && isChosen // Incorrect AND chosen
+
+
+            val backgroundColor = when {
+                buttonState.animatedColor.value != null -> buttonState.animatedColor.value!!
+                isCorrect && isCorrectAnswer != null -> Color.Green.copy(alpha = 0.7f) // Always green if correct, after answer revealed
+                isIncorrectlyChosen -> Color.Red.copy(alpha = 0.7f) // Red only if incorrectly *chosen*
+                else -> MaterialTheme.colorScheme.primary
+            }
+
+
+            Button(
+                onClick = {
+                    if (isCorrectAnswer == null) {
+                        onChoiceSelected(choiceEmoji)
+                        buttonStates[choiceEmoji] = buttonState.copy(isChosen = true)
+                    }
+                },
+                enabled = isCorrectAnswer == null, // Disable buttons after a choice is made
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = backgroundColor,
+                    disabledContainerColor = backgroundColor // Use the same color when disabled!
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .graphicsLayer {
+                        scaleX = buttonState.scale.value
+                        scaleY = buttonState.scale.value
+                        translationX = buttonState.shakeOffset.value
+                    }
+            ) {
+                Text(text = choiceEmoji, fontSize = 36.sp, style = MaterialTheme.typography.bodyMedium)
+            }
+
+            LaunchedEffect(isCorrectAnswer, isChosen) {
+                if (isChosen && isCorrectAnswer != null) { // Only animate after a choice is made
+                    if (isCorrect) {
+                        buttonStates[choiceEmoji]?.let { currentState ->
+                            buttonStates[choiceEmoji] =
+                                currentState.copy(animatedColor = mutableStateOf(Color.Green.copy(alpha = 0.7f)))
+                            currentState.scale.animateTo(1.2f, tween(100))
+                            currentState.scale.animateTo(1f, tween(150))
+                            buttonStates[choiceEmoji] =
+                                currentState.copy(animatedColor = mutableStateOf(null)) // Reset after animation
+                        }
+                    } else if (isIncorrectlyChosen) { //incorrect and chosen
+                        buttonStates[choiceEmoji]?.let { currentState ->
+                            buttonStates[choiceEmoji] =
+                                currentState.copy(animatedColor = mutableStateOf(Color.Red.copy(alpha = 0.7f)))
+                            density.run {
+                                currentState.shakeOffset.animateTo(
+                                    20.dp.toPx(),
+                                    repeatable(5, tween(50, easing = FastOutLinearInEasing), RepeatMode.Reverse)
+                                )
+                                currentState.shakeOffset.animateTo(0f, tween(100))
+                            }
+                            buttonStates[choiceEmoji] =
+                                currentState.copy(animatedColor = mutableStateOf(null)) // Reset after animation
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+data class ButtonState(
+    val isChosen: Boolean = false,
+    val scale: Animatable<Float, AnimationVector1D> = Animatable(1f),
+    val shakeOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
+    val animatedColor: MutableState<Color?> = mutableStateOf(null)
+)
+
+//Optional GameScreen Layout
+@Composable
+fun GameScreenLayout(content: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceAround
+    ) {
+        content()
+    }
+}
+
+
+// Custom ViewModel Factory
+class NormalGameViewModelFactory(
+    private val soundManager: SoundManager,
+    private val highScoreManager: HighScoreManager
+) : ViewModelProvider.Factory {
+    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(NormalGameViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return NormalGameViewModel(soundManager, highScoreManager) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
+
+@Composable
+fun NormalModeScreen() { // Removed default viewModel parameter
     val context = LocalContext.current
     val soundManager = remember { SoundManager(context) }
-    val highScoreManager = remember { HighScoreManager(context) } // Instantiate HighScoreManager
-    val gameViewModel: GameViewModel = viewModel {
-        GameViewModel(
-            soundManager = soundManager,
-            highScoreManager = highScoreManager
-        ) // Pass HighScoreManager to ViewModel
-    }
-    val gameState by gameViewModel.gameState.collectAsState()
+    val highScoreManager = remember { HighScoreManager(context) }
 
+    // Use the custom factory
+    val viewModel: NormalGameViewModel = viewModel(
+        factory = NormalGameViewModelFactory(soundManager, highScoreManager)
+    )
+
+    val gameState by viewModel.gameState.collectAsState()
 
     var showTimeBonusAnimation by remember { mutableStateOf(false) }
-    var currentBonusPointsForAnimation by remember { mutableStateOf(0) } // To pass bonus points to animation
+    var currentBonusPointsForAnimation by remember { mutableStateOf(0) }
 
     LaunchedEffect(gameState.currentTimeBonus) {
         if (gameState.currentTimeBonus > 0) {
             showTimeBonusAnimation = true
             currentBonusPointsForAnimation = gameState.currentTimeBonus
-        }
-    }
-
-    // LaunchedEffect to reset showTimeBonusAnimation after animation duration
-    LaunchedEffect(showTimeBonusAnimation) {
-        if (showTimeBonusAnimation) {
-            delay(1500) // Duration to show animation (adjust as needed)
-            showTimeBonusAnimation = false // Hide animation after delay
-        }
-    }
-    // Animation States for button feedback
-    val buttonScale = remember { Animatable(1f) } // Scale animation for button pulse/pop
-    val buttonShakeOffset = remember { Animatable(0f) } // Offset animation for button shake
-    val animatedButtonColor =
-        remember { mutableStateOf<Color?>(null) } // Track button color animation
-    val density = LocalDensity.current
-    // LaunchedEffect to trigger animations based on gameState updates
-    LaunchedEffect(gameState.isCorrectAnswer) {
-        gameState.isCorrectAnswer?.let { isCorrect ->
-            if (isCorrect) {
-                animatedButtonColor.value =
-                    Color.Green.copy(alpha = 0.7f) // Set to green for correct
-                buttonScale.animateTo(1.2f, animationSpec = tween(durationMillis = 200)) // Scale up
-                buttonScale.animateTo(
-                    1f,
-                    animationSpec = tween(durationMillis = 150)
-                ) // Scale back down
-                animatedButtonColor.value = null // Reset animated color
-            } else {
-                animatedButtonColor.value = Color.Red.copy(alpha = 0.7f)
-                // CORRECTED LINE: Use LocalDensity.current.run { ... } to provide Density context
-                density.run {
-                    buttonShakeOffset.animateTo(
-                        20.dp.toPx(),
-                        animationSpec = repeatable(
-                            5,
-                            animation = tween(durationMillis = 50, easing = FastOutLinearInEasing),
-                            repeatMode = RepeatMode.Reverse
-                        )
-                    )
-                    buttonShakeOffset.animateTo(
-                        0.dp.toPx(),
-                        animationSpec = tween(durationMillis = 100)
-                    )
-                }
-                animatedButtonColor.value = null
-            }
+            delay(1500)
+            showTimeBonusAnimation = false
         }
     }
 
 
-    Box() {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceAround
-        ) {
-            Text(
-                "Emoji Reaction Chain",
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.headlineLarge, // Use headlineLarge for bigger size
-                color = MaterialTheme.colorScheme.primary, // Use primary color for title
-                modifier = Modifier.padding(bottom = 12.dp) // Slightly more bottom padding
+    Box {
+        GameScreenLayout {
+            GameHeader()
+            Scoreboard(
+                score = gameState.score,
+                highScore = gameState.highScore,
+                lives = gameState.lives,
+                currentStreakCount = gameState.currentStreakCount
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            QuestionProgress(
+                questionNumber = gameState.questionNumber,
+                totalQuestions = gameState.totalQuestions
+            )
+            EmojiChainDisplay(emojiChain = gameState.emojiChain)
 
-            Row( // Row for Score, High Score, and Lives, space between
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween, // Keep SpaceBetween
-            ) {
-                Column(horizontalAlignment = Alignment.Start) { // Column for Score and Lives - Align Start
-                    Text(
-                        "Score: ${gameState.score}",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        // High Score - Keep on the right
-                        "Highest Score: ${gameState.highScore}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                }
-                Column(horizontalAlignment = Alignment.End) { // Align Lives to the right
-                    if (gameState.currentStreakCount > 0) { // Conditionally show Streak Count if it's > 0
-                        Text(
-                            "Streak: ${gameState.currentStreakCount} 🔥", // Added fire emoji for streak
-                            style = MaterialTheme.typography.titleMedium, // Use titleMedium for streak count
-                            color = Color.Red.copy(alpha = 0.9f) // Yellow/gold color for streak
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row { // Row for Lives (Keep Lives on the right side)
-                        for (i in 1..gameState.lives) {
-                            Text(
-                                text = "❤️", // Heart emoji
-                                fontSize = 24.sp, // Heart size
-                                color = MaterialTheme.colorScheme.error // Hearts in error color (red)
-                            )
-                        }
-                        for (i in gameState.lives + 1..3) { // Optional: Grey hearts for lost lives (if starting with 3 lives)
-                            Text(
-                                text = "🤍", // White heart emoji for lost lives (optional)
-                                fontSize = 24.sp,
-                                color = Color.LightGray.copy(alpha = 0.6f) // Greyed out hearts
-                            )
+            ChoiceButtons(
+                choices = gameState.choices,
+                correctAnswerEmoji = gameState.correctAnswerEmoji,
+                isCorrectAnswer = gameState.isCorrectAnswer,
+                onChoiceSelected = { choice -> viewModel.handleChoice(choice) }
+            )
+            when (gameState.gameResult) {
+                GameResult.InProgress -> {
+                    // Show game UI (choices, etc.)
+                    if (gameState.questionNumber == 0) {
+                        StyledActionButton(text = "Start Game") {
+                            viewModel.startGame(GameMode.NORMAL)
                         }
                     }
                 }
-            }
-            Spacer(modifier = Modifier.height(16.dp)) // Increased spacing below score/high score
 
-            // Question Progress Indicator
-            Text(
-                "Question: ${gameState.questionNumber} / ${gameState.totalQuestions}",
-                style = MaterialTheme.typography.titleMedium, // Use titleMedium for question progress
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // Muted color - less prominent
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 24.dp) // Increased bottom padding to separate from emojis
-            )
-            Spacer(modifier = Modifier.height(8.dp)) // Reduced spacer height - already has padding
-
-            // Emoji Chain Display
-            // Emoji Chain Display
-            Row(horizontalArrangement = Arrangement.Center) {
-                gameState.emojiChain.forEach { emoji ->
-                    Text(
-                        text = emoji,
-                        fontSize = 40.sp,
-                        modifier = Modifier.padding(horizontal = 8.dp) // Add horizontal padding between emojis
-                    )
+                GameResult.Won -> {
+                    YouWonDialog(gameState = gameState, onPlayAgain = { viewModel.resetGame() })
                 }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
 
-            // Choice Buttons
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                gameState.choices.forEach { choiceEmoji ->
-                    val isCorrect =
-                        gameState.isCorrectAnswer == true && choiceEmoji == gameState.correctAnswerEmoji
-                    val isIncorrect =
-                        gameState.isCorrectAnswer == false && choiceEmoji == gameState.correctAnswerEmoji
-
-                    Button(
-                        onClick = { gameViewModel.handleChoice(choiceEmoji) },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = animatedButtonColor.value
-                                ?: when { // Use animated color, or default based on correctness
-                                    isCorrect -> Color.Green.copy(alpha = 0.7f) // Still set correct/incorrect colors for default state too (though animation will override briefly)
-                                    isIncorrect -> Color.Red.copy(alpha = 0.7f)
-                                    else -> MaterialTheme.colorScheme.primary
-                                }
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .graphicsLayer { // Apply graphicsLayer for animations
-                                scaleX = buttonScale.value // Apply scale animation
-                                scaleY = buttonScale.value
-                                translationX =
-                                    buttonShakeOffset.value // Apply shake animation (horizontal translation)
-                            }
-                    ) {
-                        Text(
-                            text = choiceEmoji,
-                            fontSize = 36.sp,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-
-            if (gameState.isGameOver) {
-                if (gameState.isCorrectAnswer == true) { // Check if game over is due to winning (all questions completed)
-                    YouWonDialog(
-                        gameState = gameState,
-                        onPlayAgain = { gameViewModel.resetGame() }) // Show YouWonDialog
-                } else { // Game over is due to losing lives
+                is GameResult.Lost -> { // Note the 'is' check for the sealed class
                     YouLostDialog(
                         gameState = gameState,
-                        onPlayAgain = { gameViewModel.resetGame() }) // Show YouLostDialog
-                }
-            } else { // If game is NOT over, show "Start Game" button (or nothing if game in progress)
-                if (gameState.questionNumber == 0) {
-                    StyledActionButton(text = "Start Game") { gameViewModel.startGame() }
+                        onPlayAgain = { viewModel.resetGame(); viewModel.startGame(GameMode.TIMED) },
+                        reason = (gameState.gameResult as GameResult.Lost).reason
+                    )
                 }
             }
         }
         if (showTimeBonusAnimation) {
             TimeBonusAnimation(bonusPoints = currentBonusPointsForAnimation)
         }
+
     }
 }
 
@@ -330,55 +412,48 @@ fun StyledActionButton(text: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun YouWonDialog(gameState: GameState, onPlayAgain: () -> Unit) {
-    androidx.compose.material3.AlertDialog( // Use Material 3 AlertDialog
-        onDismissRequest = { /* Prevent dismiss on outside click if needed */ }, // Or handle dismiss if you want
+fun StyledAlertDialog(
+    title: String,
+    message: @Composable () -> Unit, // Changed to a Composable
+    confirmButtonText: String,
+    onConfirm: () -> Unit,
+    onDismiss: (() -> Unit)? = null // Make onDismiss optional and nullable
+) {
+    AlertDialog(
+        onDismissRequest = { onDismiss?.invoke() }, // Use safe call
         title = {
             Text(
-                "Congratulations!",
-                style = MaterialTheme.typography.headlineSmall
-            ) // Celebratory title
+                title,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.error // Or any color you prefer
+            )
         },
-        text = {
-            Column {
-                Text(
-                    "You completed all questions!",
-                    style = MaterialTheme.typography.bodyLarge
-                ) // Win message
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Final Score: ${gameState.score}", style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    "High Score: ${gameState.highScore}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        },
+        text = message,  // Use the Composable message
         confirmButton = {
-            Button(onClick = onPlayAgain) { // "Play Again" button
-                Text("Play Again", style = MaterialTheme.typography.bodyMedium)
+            Button(onClick = onConfirm) {
+                Text(confirmButtonText, style = MaterialTheme.typography.bodyMedium)
             }
         },
-        dismissButton = null // No dismiss button in this case, force user to choose "Play Again"
+        dismissButton = {
+            if (onDismiss != null) { // Only show dismiss button if onDismiss is provided
+                TextButton(onClick = onDismiss) {
+                    Text("Dismiss", style = MaterialTheme.typography.bodyMedium) // Or your preferred text
+                }
+            }
+        }
     )
 }
 
 @Composable
-fun YouLostDialog(gameState: GameState, onPlayAgain: () -> Unit) {
-    androidx.compose.material3.AlertDialog( // Use Material 3 AlertDialog
-        onDismissRequest = { /* Prevent dismiss on outside click if needed */ }, // Or handle dismiss if needed
-        title = {
-            Text(
-                "Game Over!",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.error
-            ) // Game Over title, error color
-        },
-        text = {
+fun YouWonDialog(gameState: GameState, onPlayAgain: () -> Unit) {
+    StyledAlertDialog(
+        title = "Congratulations!",
+        message = {
             Column {
                 Text(
-                    "You ran out of lives!",
+                    "You completed all questions!",
                     style = MaterialTheme.typography.bodyLarge
-                ) // Losing message
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("Final Score: ${gameState.score}", style = MaterialTheme.typography.bodyMedium)
                 Text(
@@ -387,11 +462,62 @@ fun YouLostDialog(gameState: GameState, onPlayAgain: () -> Unit) {
                 )
             }
         },
-        confirmButton = {
-            Button(onClick = onPlayAgain) { // "Play Again" button
-                Text("Play Again", style = MaterialTheme.typography.bodyMedium)
+        confirmButtonText = "Play Again",
+        onConfirm = onPlayAgain,
+        onDismiss = null // No dismiss button
+    )
+}
+
+@Composable
+fun YouLostDialog(gameState: GameState, onPlayAgain: () -> Unit, reason: LossReason) {
+    val message = when (reason) {
+        LossReason.OutOfLives -> "You ran out of lives!"
+        LossReason.TimeOut -> "Time's Up!"
+    }
+
+    StyledAlertDialog(
+        title = "Game Over!",
+        message = { // Pass a Composable for the message content
+            Column {
+                Text(
+                    message,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Final Score: ${gameState.score}", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    "High Score: ${gameState.highScore}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         },
-        dismissButton = null // No dismiss button
+        confirmButtonText = "Play Again",
+        onConfirm = onPlayAgain,
+        onDismiss = null // No dismiss button
+    )
+}
+
+@Composable
+fun TimeUpDialog(gameState: com.play.emojireactionchain.model.GameState, onPlayAgain: () -> Unit) {
+
+    StyledAlertDialog(
+        title = "Time's Up!",
+        message = { // Pass a Composable for the message content
+            Column {
+                Text(
+                    "Your final score:",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Final Score: ${gameState.score}", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    "High Score: ${gameState.highScore}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        },
+        confirmButtonText = "Play Again",
+        onConfirm = onPlayAgain,
+        onDismiss = null // No dismiss button
     )
 }

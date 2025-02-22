@@ -1,9 +1,9 @@
 package com.play.emojireactionchain.utils
 
 import com.play.emojireactionchain.model.GeneratedChainData
+import com.play.emojireactionchain.viewModel.BaseGameViewModel
 import com.play.emojireactionchain.viewModel.EmojiCategory
 import com.play.emojireactionchain.viewModel.GameRule
-import com.play.emojireactionchain.viewModel.GameViewModel
 
 class OppositeMeaningChainGenerator : EmojiChainGenerator {
     override fun generateChain(category: EmojiCategory, rule: GameRule): GeneratedChainData {
@@ -13,7 +13,7 @@ class OppositeMeaningChainGenerator : EmojiChainGenerator {
         val chainLength = (3..5).random()
         val emojiChain = mutableListOf<String>()
         var lastEmoji: String? = null
-        val oppositeEmojiMap = GameViewModel.oppositeEmojiMap // Access oppositeEmojiMap
+        val oppositeEmojiMap = BaseGameViewModel.oppositeEmojiMap // Access oppositeEmojiMap
 
         repeat(chainLength) {
             val nextEmoji: String

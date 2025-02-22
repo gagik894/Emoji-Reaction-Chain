@@ -2,15 +2,15 @@ package com.play.emojireactionchain.utils
 
 import com.play.emojireactionchain.viewModel.EmojiCategory
 import com.play.emojireactionchain.viewModel.GameRule
-import com.play.emojireactionchain.viewModel.GameViewModel
+import com.play.emojireactionchain.viewModel.BaseGameViewModel
 import com.play.emojireactionchain.model.GeneratedChainData
 
 class SynonymChainGenerator : EmojiChainGenerator {
     override fun generateChain(category: EmojiCategory, rule: GameRule): GeneratedChainData {
         // For Synonym Chain, let's primarily use "Faces" and "Emotions" categories
         val synonymCategories = listOf(
-            GameViewModel.emojiCategories["Faces"],
-            GameViewModel.emojiCategories["Emotions"]
+            BaseGameViewModel.emojiCategories["Faces"],
+            BaseGameViewModel.emojiCategories["Emotions"]
         ).filterNotNull() // Filter out null categories in case they are not found
 
         if (synonymCategories.isEmpty() || synonymCategories.all { it.emojis.isEmpty() }) {
@@ -38,6 +38,6 @@ class SynonymChainGenerator : EmojiChainGenerator {
 
     // Access emojiCategories map (companion object)
     companion object {
-        private val emojiCategories = GameViewModel.emojiCategories
+        private val emojiCategories = BaseGameViewModel.emojiCategories
     }
 }

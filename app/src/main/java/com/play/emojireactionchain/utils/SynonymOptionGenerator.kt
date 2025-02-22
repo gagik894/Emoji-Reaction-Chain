@@ -2,16 +2,15 @@ package com.play.emojireactionchain.utils
 
 import com.play.emojireactionchain.viewModel.EmojiCategory
 import com.play.emojireactionchain.viewModel.GameRule
-import com.play.emojireactionchain.viewModel.GameViewModel
-import com.play.emojireactionchain.utils.SequentialOptionGenerator // Import SequentialOptionGenerator for fallback
+import com.play.emojireactionchain.viewModel.BaseGameViewModel
 
 class SynonymOptionGenerator : AnswerOptionGenerator {
     override fun generateOptions(correctAnswerEmoji: String, category: EmojiCategory, rule: GameRule, emojiChain: List<String>): List<String> {
         val choices = mutableListOf<String>(correctAnswerEmoji)
 
         val synonymCategories = listOf(
-            GameViewModel.emojiCategories["Faces"],
-            GameViewModel.emojiCategories["Emotions"]
+            BaseGameViewModel.emojiCategories["Faces"],
+            BaseGameViewModel.emojiCategories["Emotions"]
         ).filterNotNull()
         val possibleDistractors = mutableListOf<String>()
 
@@ -33,6 +32,6 @@ class SynonymOptionGenerator : AnswerOptionGenerator {
 
     // Access emojiCategories map (companion object)
     companion object {
-        private val emojiCategories = GameViewModel.emojiCategories
+        private val emojiCategories = BaseGameViewModel.emojiCategories
     }
 }

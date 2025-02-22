@@ -2,13 +2,13 @@ package com.play.emojireactionchain.utils
 
 import com.play.emojireactionchain.viewModel.EmojiCategory
 import com.play.emojireactionchain.viewModel.GameRule
-import com.play.emojireactionchain.viewModel.GameViewModel
+import com.play.emojireactionchain.viewModel.BaseGameViewModel
 
 class OppositeMeaningOptionGenerator : AnswerOptionGenerator {
     override fun generateOptions(correctAnswerEmoji: String, category: EmojiCategory, rule: GameRule, emojiChain: List<String>): List<String> {
         val emojisInCategory = category.emojis
         val choices = mutableListOf<String>(correctAnswerEmoji)
-        val emojiCategories = GameViewModel.emojiCategories // Access emojiCategories
+        val emojiCategories = BaseGameViewModel.emojiCategories // Access emojiCategories
 
         val emotionDistractors = if (category.name == "Emotions") {
             emojiCategories["Emotions"]?.emojis?.filterNot { emoji ->

@@ -1,8 +1,8 @@
 package com.play.emojireactionchain.utils
 
+import com.play.emojireactionchain.viewModel.BaseGameViewModel
 import com.play.emojireactionchain.viewModel.EmojiCategory
 import com.play.emojireactionchain.viewModel.GameRule
-import com.play.emojireactionchain.viewModel.GameViewModel
 
 class MixUpOptionGenerator : AnswerOptionGenerator {
     override fun generateOptions(correctAnswerEmoji: String, category: EmojiCategory, rule: GameRule, emojiChain: List<String>): List<String> {
@@ -28,6 +28,6 @@ class MixUpOptionGenerator : AnswerOptionGenerator {
 
     // Access emojiCategories map (companion object)
     companion object {
-        private val emojiCategories = GameViewModel.emojiCategories
+        private val emojiCategories = BaseGameViewModel.emojiCategories
     }
 }
