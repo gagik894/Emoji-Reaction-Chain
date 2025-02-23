@@ -15,7 +15,11 @@ class NormalGameViewModel(
     highScoreManager: HighScoreManager
 ) : BaseGameViewModel(soundManager, highScoreManager) {
 
-    override fun startGame(gameMode: GameMode) {
+    init {
+        loadHighScore(GameMode.NORMAL)
+    }
+
+    override fun startGame() {
         viewModelScope.launch {
             currentGameScore = 0
             currentQuestionCount = 0
@@ -23,7 +27,7 @@ class NormalGameViewModel(
 
             _gameState.value = GameState(
                 score = 0,
-                highScore = highScoreManager.getHighScore(),
+                highScore = highScoreManager.getHighScore(GameMode.NORMAL),
                 totalQuestions = questionCountPerGame,
                 lives = 3,
                 currentTimeBonus = 0,

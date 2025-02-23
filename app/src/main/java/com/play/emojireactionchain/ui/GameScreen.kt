@@ -1,20 +1,24 @@
 package com.play.emojireactionchain.ui
 
-import androidx.compose.animation.core.* // Import animation related
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.* // Import remember, mutableStateOf, LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer // Import graphicsLayer
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -22,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.model.GameState
 import com.play.emojireactionchain.model.LossReason
@@ -84,14 +87,42 @@ fun TimeBonusAnimation(bonusPoints: Int) {
 }
 
 @Composable
-fun GameHeader() {
-    Text(
-        "Emoji Reaction Chain",
-        textAlign = TextAlign.Center,
-        style = MaterialTheme.typography.headlineLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(bottom = 12.dp)
-    )
+fun GameHeader(showBack: Boolean = true, onBack: () -> Unit = {}) { // Add parameters
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 12.dp),
+        verticalAlignment = Alignment.CenterVertically, // Vertically center content
+        horizontalArrangement = if (showBack) Arrangement.SpaceBetween else Arrangement.Center // Conditional arrangement
+    ) {
+        if (showBack) { // Conditionally show the back button
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                modifier = Modifier
+                    .clickable(onClick = onBack) // Make it clickable
+                    .padding(8.dp), // Add some padding
+                tint = MaterialTheme.colorScheme.primary // Use a consistent color
+            )
+        } else {
+            // If no back button, add an empty placeholder to maintain alignment
+            Spacer(modifier = Modifier.width(40.dp)) // Adjust width as needed
+        }
+
+        Text(
+            "Emoji Reaction Chain",
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = if (!showBack) Modifier.fillMaxWidth() else Modifier.weight(1f)
+        )
+
+        // Empty composable on the right when the back button is present, for symmetry.
+        if (showBack) {
+            Spacer(modifier = Modifier.width(40.dp))
+        }
+
+    }
 }
 
 @Composable
@@ -198,7 +229,8 @@ fun ChoiceButtons(
             val buttonState = buttonStates[choiceEmoji] ?: ButtonState() // SAFE access with default
 
             val isChosen = buttonState.isChosen
-            val isCorrect = choiceEmoji == correctAnswerEmoji // Correct regardless of whether it's chosen
+            val isCorrect =
+                choiceEmoji == correctAnswerEmoji // Correct regardless of whether it's chosen
             val isIncorrectlyChosen = isCorrectAnswer == false && isChosen // Incorrect AND chosen
 
 
@@ -230,7 +262,11 @@ fun ChoiceButtons(
                         translationX = buttonState.shakeOffset.value
                     }
             ) {
-                Text(text = choiceEmoji, fontSize = 36.sp, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = choiceEmoji,
+                    fontSize = 36.sp,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
 
             LaunchedEffect(isCorrectAnswer, isChosen) {
@@ -238,7 +274,13 @@ fun ChoiceButtons(
                     if (isCorrect) {
                         buttonStates[choiceEmoji]?.let { currentState ->
                             buttonStates[choiceEmoji] =
-                                currentState.copy(animatedColor = mutableStateOf(Color.Green.copy(alpha = 0.7f)))
+                                currentState.copy(
+                                    animatedColor = mutableStateOf(
+                                        Color.Green.copy(
+                                            alpha = 0.7f
+                                        )
+                                    )
+                                )
                             currentState.scale.animateTo(1.2f, tween(100))
                             currentState.scale.animateTo(1f, tween(150))
                             buttonStates[choiceEmoji] =
@@ -247,11 +289,21 @@ fun ChoiceButtons(
                     } else if (isIncorrectlyChosen) { //incorrect and chosen
                         buttonStates[choiceEmoji]?.let { currentState ->
                             buttonStates[choiceEmoji] =
-                                currentState.copy(animatedColor = mutableStateOf(Color.Red.copy(alpha = 0.7f)))
+                                currentState.copy(
+                                    animatedColor = mutableStateOf(
+                                        Color.Red.copy(
+                                            alpha = 0.7f
+                                        )
+                                    )
+                                )
                             density.run {
                                 currentState.shakeOffset.animateTo(
                                     20.dp.toPx(),
-                                    repeatable(5, tween(50, easing = FastOutLinearInEasing), RepeatMode.Reverse)
+                                    repeatable(
+                                        5,
+                                        tween(50, easing = FastOutLinearInEasing),
+                                        RepeatMode.Reverse
+                                    )
                                 )
                                 currentState.shakeOffset.animateTo(0f, tween(100))
                             }
@@ -304,7 +356,9 @@ class NormalGameViewModelFactory(
 
 
 @Composable
-fun NormalModeScreen() { // Removed default viewModel parameter
+fun NormalModeScreen(
+    onNavigateToStart: () -> Unit
+) { // Removed default viewModel parameter
     val context = LocalContext.current
     val soundManager = remember { SoundManager(context) }
     val highScoreManager = remember { HighScoreManager(context) }
@@ -331,45 +385,51 @@ fun NormalModeScreen() { // Removed default viewModel parameter
 
     Box {
         GameScreenLayout {
-            GameHeader()
-            Scoreboard(
-                score = gameState.score,
-                highScore = gameState.highScore,
-                lives = gameState.lives,
-                currentStreakCount = gameState.currentStreakCount
+            GameHeader(
+                onBack = onNavigateToStart,
             )
-            QuestionProgress(
-                questionNumber = gameState.questionNumber,
-                totalQuestions = gameState.totalQuestions
-            )
-            EmojiChainDisplay(emojiChain = gameState.emojiChain)
+            if (gameState.questionNumber == 0) {
+                PreGameContent(
+                    gameModeName = "Normal Mode",
+                    gameDescription = "Answer questions to increase your score!",
+                    highScore = gameState.highScore,
+                    onStartGame = { viewModel.startGame() }
+                )
+            } else {
+                Scoreboard(
+                    score = gameState.score,
+                    highScore = gameState.highScore,
+                    lives = gameState.lives,
+                    currentStreakCount = gameState.currentStreakCount
+                )
+                QuestionProgress(
+                    questionNumber = gameState.questionNumber,
+                    totalQuestions = gameState.totalQuestions
+                )
+                EmojiChainDisplay(emojiChain = gameState.emojiChain)
 
-            ChoiceButtons(
-                choices = gameState.choices,
-                correctAnswerEmoji = gameState.correctAnswerEmoji,
-                isCorrectAnswer = gameState.isCorrectAnswer,
-                onChoiceSelected = { choice -> viewModel.handleChoice(choice) }
-            )
-            when (gameState.gameResult) {
-                GameResult.InProgress -> {
-                    // Show game UI (choices, etc.)
-                    if (gameState.questionNumber == 0) {
-                        StyledActionButton(text = "Start Game") {
-                            viewModel.startGame(GameMode.NORMAL)
-                        }
+                ChoiceButtons(
+                    choices = gameState.choices,
+                    correctAnswerEmoji = gameState.correctAnswerEmoji,
+                    isCorrectAnswer = gameState.isCorrectAnswer,
+                    onChoiceSelected = { choice -> viewModel.handleChoice(choice) }
+                )
+                when (gameState.gameResult) {
+                    GameResult.InProgress -> {
+
                     }
-                }
 
-                GameResult.Won -> {
-                    YouWonDialog(gameState = gameState, onPlayAgain = { viewModel.resetGame() })
-                }
+                    GameResult.Won -> {
+                        YouWonDialog(gameState = gameState, onPlayAgain = { viewModel.startGame() })
+                    }
 
-                is GameResult.Lost -> { // Note the 'is' check for the sealed class
-                    YouLostDialog(
-                        gameState = gameState,
-                        onPlayAgain = { viewModel.resetGame(); viewModel.startGame(GameMode.TIMED) },
-                        reason = (gameState.gameResult as GameResult.Lost).reason
-                    )
+                    is GameResult.Lost -> { // Note the 'is' check for the sealed class
+                        YouLostDialog(
+                            gameState = gameState,
+                            onPlayAgain = { viewModel.startGame() },
+                            reason = (gameState.gameResult as GameResult.Lost).reason
+                        )
+                    }
                 }
             }
         }
@@ -437,7 +497,10 @@ fun StyledAlertDialog(
         dismissButton = {
             if (onDismiss != null) { // Only show dismiss button if onDismiss is provided
                 TextButton(onClick = onDismiss) {
-                    Text("Dismiss", style = MaterialTheme.typography.bodyMedium) // Or your preferred text
+                    Text(
+                        "Dismiss",
+                        style = MaterialTheme.typography.bodyMedium
+                    ) // Or your preferred text
                 }
             }
         }
@@ -498,7 +561,7 @@ fun YouLostDialog(gameState: GameState, onPlayAgain: () -> Unit, reason: LossRea
 }
 
 @Composable
-fun TimeUpDialog(gameState: com.play.emojireactionchain.model.GameState, onPlayAgain: () -> Unit) {
+fun TimeUpDialog(gameState: GameState, onPlayAgain: () -> Unit) {
 
     StyledAlertDialog(
         title = "Time's Up!",

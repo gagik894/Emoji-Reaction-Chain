@@ -27,7 +27,11 @@ class TimedGameViewModel(
     val remainingGameTimeFlow = _remainingGameTimeFlow.asStateFlow()
     override val questionCountPerGame = Int.MAX_VALUE // Effectively infinite.
 
-    override fun startGame(gameMode: GameMode) {
+    init {
+        loadHighScore(GameMode.TIMED)
+    }
+
+    override fun startGame() {
         viewModelScope.launch {
             currentGameScore = 0
             currentQuestionCount = 0
@@ -37,13 +41,13 @@ class TimedGameViewModel(
 
             _gameState.value = GameState(
                 score = 0,
-                highScore = highScoreManager.getHighScore(),
+                highScore = highScoreManager.getHighScore(GameMode.TIMED),
                 totalQuestions = questionCountPerGame, // Still use this for consistency
                 lives = 1, // Keep lives=1, even though it's not directly used
                 currentTimeBonus = 0,
                 currentStreakBonus = 0,
                 currentStreakCount = 0,
-                gameMode = gameMode,
+                gameMode = GameMode.TIMED,
                 gameResult = GameResult.InProgress
             )
             nextQuestion()

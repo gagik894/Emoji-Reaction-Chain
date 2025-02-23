@@ -1,5 +1,5 @@
 package com.play.emojireactionchain.model
 
 enum class GameMode {
-    NORMAL, TIMED, DECODING, BLITZ
+    NORMAL, TIMED, SURVIVAL, BLITZ
 }

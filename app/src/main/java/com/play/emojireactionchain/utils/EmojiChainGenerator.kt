@@ -5,5 +5,5 @@ import com.play.emojireactionchain.viewModel.EmojiCategory
 import com.play.emojireactionchain.viewModel.GameRule
 
 interface EmojiChainGenerator {
-    fun generateChain(category: EmojiCategory, rule: GameRule): GeneratedChainData
+    fun generateChain(category: EmojiCategory, rule: GameRule, level: Int = 1): GeneratedChainData
 }

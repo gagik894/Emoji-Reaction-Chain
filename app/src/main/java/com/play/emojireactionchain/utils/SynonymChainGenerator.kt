@@ -6,15 +6,15 @@ import com.play.emojireactionchain.viewModel.BaseGameViewModel
 import com.play.emojireactionchain.model.GeneratedChainData
 
 class SynonymChainGenerator : EmojiChainGenerator {
-    override fun generateChain(category: EmojiCategory, rule: GameRule): GeneratedChainData {
+    override fun generateChain(category: EmojiCategory, rule: GameRule, level:Int): GeneratedChainData {
         // For Synonym Chain, let's primarily use "Faces" and "Emotions" categories
-        val synonymCategories = listOf(
+        val synonymCategories = listOfNotNull(
             BaseGameViewModel.emojiCategories["Faces"],
             BaseGameViewModel.emojiCategories["Emotions"]
-        ).filterNotNull() // Filter out null categories in case they are not found
+        )
 
         if (synonymCategories.isEmpty() || synonymCategories.all { it.emojis.isEmpty() }) {
-            return SequentialChainGenerator().generateChain(category, rule) // Fallback if no suitable synonym categories or empty
+            return SequentialChainGenerator().generateChain(category, rule, level) // Fallback
         }
 
         // Select emojis from the synonym categories
@@ -25,19 +25,19 @@ class SynonymChainGenerator : EmojiChainGenerator {
         val distinctSynonymEmojis = selectedEmojis.distinct()
 
         if (distinctSynonymEmojis.size < 2) {
-            return SequentialChainGenerator().generateChain(category, rule) // Fallback if not enough unique synonym emojis
+            return SequentialChainGenerator().generateChain(category, rule, level) // Fallback
         }
-
-        val chainLength = (2..3).random() // Keep chain length similar to others
+        // Adjust chain length based on level
+        val chainLength = when(level){
+            1 -> 2
+            2-> 3
+            3 -> 4
+            else -> (3..4).random()
+        }
         val emojiChain = distinctSynonymEmojis.shuffled().take(chainLength)
-        val correctAnswerEmoji = emojiChain.firstOrNull() ?: "" // Correct answer can be the first in the chain for simplicity
-        val choices = SynonymOptionGenerator().generateOptions(correctAnswerEmoji, category, rule, emojiChain) // Use SynonymOptionGenerator
+        val correctAnswerEmoji = emojiChain.firstOrNull() ?: "" // Correct answer: first emoji
+        val choices = SynonymOptionGenerator().generateOptions(correctAnswerEmoji, category, rule, emojiChain)
 
         return GeneratedChainData(emojiChain.toList(), choices, correctAnswerEmoji)
-    }
-
-    // Access emojiCategories map (companion object)
-    companion object {
-        private val emojiCategories = BaseGameViewModel.emojiCategories
     }
 }

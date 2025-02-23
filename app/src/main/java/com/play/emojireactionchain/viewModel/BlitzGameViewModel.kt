@@ -3,6 +3,7 @@ package com.play.emojireactionchain.viewModel
 import androidx.lifecycle.viewModelScope
 import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.model.GameResult
+import com.play.emojireactionchain.model.GameState
 import com.play.emojireactionchain.model.LossReason
 import com.play.emojireactionchain.utils.HighScoreManager
 import com.play.emojireactionchain.utils.SoundManager
@@ -19,8 +20,23 @@ class BlitzGameViewModel(
     private var timerJob: Job = Job() // Single, persistent Job, initialized immediately
     override val questionCountPerGame: Int = Int.MAX_VALUE
 
-    override fun startGame(gameMode: GameMode) {
+    init {
+        loadHighScore(GameMode.BLITZ)
+    }
+
+    override fun startGame() {
         viewModelScope.launch {
+            currentGameScore = 0
+            currentQuestionCount = 0
+            _gameState.value = GameState(
+                score = 0,
+                highScore = highScoreManager.getHighScore(GameMode.BLITZ),
+                totalQuestions = questionCountPerGame,
+                lives = 3,
+                currentTimeBonus = 0,
+                currentStreakBonus = 0,
+                currentStreakCount = 0
+            )
             nextQuestion()
         }
     }
@@ -93,7 +109,7 @@ class BlitzGameViewModel(
         handleIncorrectChoice(false) // Non-timeout incorrect choice
     }
 
-    private suspend fun handleIncorrectChoice(isTimeout: Boolean) {
+    private fun handleIncorrectChoice(isTimeout: Boolean) {
         timerJob.cancel()  // Use simple cancel
         currentStreak = 0
 

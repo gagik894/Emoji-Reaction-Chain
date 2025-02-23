@@ -16,7 +16,6 @@ import com.play.emojireactionchain.utils.SequentialOptionGenerator
 import com.play.emojireactionchain.utils.SoundManager
 import com.play.emojireactionchain.utils.SynonymChainGenerator
 import com.play.emojireactionchain.utils.SynonymOptionGenerator
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -70,7 +69,7 @@ abstract class BaseGameViewModel(
         GameRule("Category Mix-Up"),
         GameRule("Synonym Chain")
     )
-    private val rules: List<GameRule> = _rules // Protected, accessible to subclasses
+    protected val rules: List<GameRule> = _rules // Protected, accessible to subclasses
     protected open val questionCountPerGame = 10 // Allow overriding
 
     // --- Strategy Objects (Now protected) ---
@@ -102,7 +101,6 @@ abstract class BaseGameViewModel(
 
     // --- Initialization ---
     init {
-        loadHighScore()
     }
 
     override fun onCleared() {
@@ -110,35 +108,35 @@ abstract class BaseGameViewModel(
         soundManager.release()
     }
 
-    private fun loadHighScore() {
-        val highScore = highScoreManager.getHighScore()
-        _gameState.value = _gameState.value.copy(highScore = highScore)
+    protected fun loadHighScore(gameMode: GameMode) { // Add gameMode parameter
+        val highScore = highScoreManager.getHighScore(gameMode)
+        _gameState.value = _gameState.value.copy(highScore = highScore, gameMode = gameMode) // Also, set gameMode
     }
 
 
     // --- Abstract Methods (To be implemented by subclasses) ---
-    abstract fun startGame(gameMode: GameMode)
+    abstract fun startGame()
     protected abstract fun nextQuestion()
 
     // --- Common Methods ---
-    protected fun selectRuleAndCategory(): RuleCategory { // Now returns the top-level RuleCategory
+    protected open fun selectRuleAndCategory(): RuleCategory { //add open
         val category = emojiCategories.values.random()
         val rule = rules.random()
         return RuleCategory(rule, category)
     }
 
 
-    protected fun generateEmojiChain(category: EmojiCategory, rule: GameRule): GeneratedChainData {
+    protected open fun generateEmojiChain(category: EmojiCategory, rule: GameRule, level: Int = 1): GeneratedChainData { //add level and open
         if (category.emojis.isEmpty()) {
             return GeneratedChainData(emptyList(), emptyList(), "")
         }
 
         return when (rule.name) {
-            "Sequential in Category" -> sequentialChainGenerator.generateChain(category, rule)
-            "Category Mix-Up" -> mixUpChainGenerator.generateChain(category, rule)
-            "Opposite Meaning" -> oppositeMeaningChainGenerator.generateChain(category, rule)
-            "Synonym Chain" -> synonymChainGenerator.generateChain(category, rule)
-            else -> sequentialChainGenerator.generateChain(category, rule) // Default
+            "Sequential in Category" -> sequentialChainGenerator.generateChain(category, rule, level) //pass level
+            "Category Mix-Up" -> mixUpChainGenerator.generateChain(category, rule, level) //pass level
+            "Opposite Meaning" -> oppositeMeaningChainGenerator.generateChain(category, rule, level) //pass level
+            "Synonym Chain" -> synonymChainGenerator.generateChain(category, rule, level) //pass level
+            else -> sequentialChainGenerator.generateChain(category, rule, level) // Default //pass level
         }
     }
 
@@ -151,8 +149,6 @@ abstract class BaseGameViewModel(
             else -> sequentialOptionGenerator.generateOptions(correctAnswerEmoji, category, rule, emojiChain)
         }
     }
-
-
 
     // --- Handle Choice (Common logic, but calls mode-specific handling) ---
     fun handleChoice(chosenEmoji: String) {
@@ -172,13 +168,11 @@ abstract class BaseGameViewModel(
 
     // --- End Game (Common logic) ---
     protected fun endGame(result: GameResult) {
-        _gameState.value = _gameState.value.copy(gameResult = result)
         val finalScore = currentGameScore
-        highScoreManager.updateHighScoreIfNewRecord(finalScore)
-        val updatedHighScore = highScoreManager.getHighScore()
+        highScoreManager.updateHighScoreIfNewRecord(finalScore, _gameState.value.gameMode)
+        val updatedHighScore = highScoreManager.getHighScore(_gameState.value.gameMode)
         _gameState.value = _gameState.value.copy(gameResult = result, score = finalScore, highScore = updatedHighScore) //keep this
     }
-
 
     // --- Reset Game (Common logic) ---
     open fun resetGame() {
@@ -187,8 +181,6 @@ abstract class BaseGameViewModel(
         currentStreak = 0
 
         viewModelScope.launch {
-            // NO timerJob manipulation needed here!
-
             _gameState.value = _gameState.value.copy(
                 isCorrectAnswer = null,
                 score = 0,
@@ -196,14 +188,14 @@ abstract class BaseGameViewModel(
                 emojiChain = emptyList(),
                 choices = emptyList(),
                 correctAnswerEmoji = "",
-                lives = 1, //reset to one for timed mode and keep 3 for normal mode
+                lives = 3, //reset to one for timed mode and keep 3 for normal mode
                 currentTimeBonus = 0,
                 currentStreakBonus = 0,
                 currentStreakCount = 0,
                 gameResult = GameResult.InProgress // Reset to InProgress
             )
-            // Don't call startGame here - let the UI trigger the specific mode start.
         }
     }
+//    protected abstract fun generateQuestionData(): Triple<List<String>, String, List<String>>
 
 }

@@ -2,31 +2,31 @@ package com.play.emojireactionchain.utils // Or your preferred package name
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.play.emojireactionchain.model.GameMode
 
 class HighScoreManager(context: Context) {
 
     private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("EmojiReactionChain_HighScores", Context.MODE_PRIVATE) // Unique SharedPreferences file
+        context.getSharedPreferences("high_scores", Context.MODE_PRIVATE)
 
-    private val highScoreKey = "high_score" // Key to store high score
-
-    fun getHighScore(): Int {
-        return sharedPreferences.getInt(highScoreKey, 0) // Default to 0 if no high score saved
+    fun getHighScore(gameMode: GameMode): Int {
+        // Use the GameMode enum value as part of the key
+        return sharedPreferences.getInt(getHighScoreKey(gameMode), 0)
     }
 
-    fun saveHighScore(newHighScore: Int) {
-        val editor = sharedPreferences.edit()
-        editor.putInt(highScoreKey, newHighScore)
-        editor.apply() // Use apply() for background saving
-    }
-
-    fun isNewHighScore(currentScore: Int): Boolean {
-        return currentScore > getHighScore()
-    }
-
-    fun updateHighScoreIfNewRecord(currentScore: Int) {
-        if (isNewHighScore(currentScore)) {
-            saveHighScore(currentScore)
+    fun updateHighScoreIfNewRecord(newScore: Int, gameMode: GameMode) {
+        val currentHighScore = getHighScore(gameMode)
+        if (newScore > currentHighScore) {
+            sharedPreferences.edit().putInt(getHighScoreKey(gameMode), newScore).apply()
         }
+    }
+
+    // Helper function to create a unique key for each GameMode
+    private fun getHighScoreKey(gameMode: GameMode): String {
+        return "high_score_${gameMode.name}" // e.g., "high_score_NORMAL", "high_score_TIMED"
+    }
+    //for testing only
+    fun clearAllHighScores() {
+        sharedPreferences.edit().clear().apply()
     }
 }

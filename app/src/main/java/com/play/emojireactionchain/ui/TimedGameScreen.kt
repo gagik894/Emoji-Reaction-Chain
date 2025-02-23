@@ -1,5 +1,6 @@
 package com.play.emojireactionchain.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -21,7 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.utils.HighScoreManager
 import com.play.emojireactionchain.utils.SoundManager
@@ -41,8 +41,12 @@ class TimedGameViewModelFactory(
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+
+@SuppressLint("DefaultLocale")
 @Composable
-fun TimedModeScreen() {
+fun TimedModeScreen(
+    onNavigateToStart: () -> Unit
+) {
     val context = LocalContext.current
     val soundManager = remember { SoundManager(context) }
     val highScoreManager = remember { HighScoreManager(context) }
@@ -70,62 +74,69 @@ fun TimedModeScreen() {
 
     Box {
         GameScreenLayout {
-            GameHeader()
-            Scoreboard(
-                score = gameState.score,
-                highScore = gameState.highScore,
-                lives = gameState.lives, // Even though it's always 1, good for consistency
-                currentStreakCount = gameState.currentStreakCount
+            GameHeader(
+                onBack = onNavigateToStart,
             )
-            Row( // Put QuestionProgress and Timer in a Row
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically // Vertically center
-            ) {
-                //removed question progress
+            if (gameState.questionNumber == 0) {
+                PreGameContent(
+                    gameModeName = "Timed Mode",
+                    gameDescription = "Answer as many questions as you can before time runs out! Correct answers add time.",
+                    highScore = gameState.highScore,
+                    onStartGame = { viewModel.startGame() }
+                )
+            } else {
+                Scoreboard(
+                    score = gameState.score,
+                    highScore = gameState.highScore,
+                    lives = gameState.lives, // Even though it's always 1, good for consistency
+                    currentStreakCount = gameState.currentStreakCount
+                )
+                Row( // Put QuestionProgress and Timer in a Row
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically // Vertically center
+                ) {
+                    //removed question progress
 
-                Text( // Display the timer
-                    text = String.format("%.1f", remainingTime/1000.0),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = if (remainingTime < 5000) Color.Red else MaterialTheme.colorScheme.onSurface, //red last 5 seconds
-                    modifier = Modifier.padding(end = 10.dp)
+                    Text( // Display the timer
+                        text = String.format("%.1f", remainingTime / 1000.0),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = if (remainingTime < 5000) Color.Red else MaterialTheme.colorScheme.onSurface, //red last 5 seconds
+                        modifier = Modifier.padding(end = 10.dp)
+                    )
+
+                }
+
+                EmojiChainDisplay(emojiChain = gameState.emojiChain)
+
+                ChoiceButtons(
+                    choices = gameState.choices,
+                    correctAnswerEmoji = gameState.correctAnswerEmoji,
+                    isCorrectAnswer = gameState.isCorrectAnswer,
+                    onChoiceSelected = { choice -> viewModel.handleChoice(choice) }
                 )
 
-            }
+                when (gameState.gameResult) {
+                    GameResult.InProgress -> {
 
-            EmojiChainDisplay(emojiChain = gameState.emojiChain)
-
-            ChoiceButtons(
-                choices = gameState.choices,
-                correctAnswerEmoji = gameState.correctAnswerEmoji,
-                isCorrectAnswer = gameState.isCorrectAnswer,
-                onChoiceSelected = { choice -> viewModel.handleChoice(choice) }
-            )
-
-            when (gameState.gameResult) {
-                GameResult.InProgress -> {
-                    if (gameState.questionNumber == 0) {
-                        StyledActionButton(text = "Start Game") {
-                            viewModel.startGame(GameMode.TIMED)
-                        }
                     }
-                }
-                GameResult.Won -> { // This won't happen in the current Timed mode design
-                    YouWonDialog(gameState = gameState, onPlayAgain = { viewModel.resetGame() })
-                }
-                is GameResult.Lost -> {
-                    // Use a TimeUpDialog instead of YouLostDialog
-                    TimeUpDialog(
-                        gameState = gameState, // Pass the gameState for score display
-                        onPlayAgain = {
-                            viewModel.resetGame()
-                            viewModel.startGame(GameMode.TIMED)
-                        }
-                    )
+
+                    GameResult.Won -> { // This won't happen in the current Timed mode design
+                        YouWonDialog(gameState = gameState, onPlayAgain = { viewModel.startGame() })
+                    }
+
+                    is GameResult.Lost -> {
+                        // Use a TimeUpDialog instead of YouLostDialog
+                        TimeUpDialog(
+                            gameState = gameState, // Pass the gameState for score display
+                            onPlayAgain = {
+                                viewModel.startGame()
+                            }
+                        )
+                    }
                 }
             }
         }
-
         if (showTimeBonusAnimation) {
             TimeBonusAnimation(bonusPoints = currentBonusPointsForAnimation)
         }

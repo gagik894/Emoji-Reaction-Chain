@@ -1,46 +1,94 @@
 package com.play.emojireactionchain.ui
 
-import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.play.emojireactionchain.model.GameMode
-import com.play.emojireactionchain.ui.theme.EmojiGameTheme
 
-@SuppressLint("UnrememberedMutableState")
+
+object Routes {
+    const val TUTORIAL = "tutorial"
+    const val START = "start"
+    const val NORMAL_MODE = "normal"
+    const val TIMED_MODE = "timed"
+    const val SURVIVAL_MODE = "survival"
+    const val BLITZ_MODE = "blitz"
+}
+
 @Composable
 fun EmojiGameApp() {
-    var isShowingTutorial by remember { mutableStateOf(true) }
-    var selectedGameMode by remember { mutableStateOf<GameMode?>(null) } // Allow nullable GameMode
+    val navController = rememberNavController()
+    val context = LocalContext.current
+    // Use rememberSaveable to survive process death, with a custom Saver
+    var showTutorial by rememberSaveable { mutableStateOf(isFirstLaunch(context)) }  // Check first launch
 
-    EmojiGameTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            if (isShowingTutorial) {
-                TutorialScreen(onTutorialFinished = {
-                    isShowingTutorial = false
-                })
-            } else if (selectedGameMode == null) { // Show mode selection if no mode is chosen
-                ModeSelectionScreen(onModeSelected = { gameMode ->
-                    selectedGameMode = gameMode
-                })
-            } else {
-                when (selectedGameMode) {
-                    GameMode.NORMAL -> NormalModeScreen()
-                    GameMode.TIMED -> TimedModeScreen()
-                    GameMode.DECODING -> NormalModeScreen()
-                    GameMode.BLITZ -> BlitzModeScreen()
-                    null -> TODO()
+    NavHost(
+        navController = navController,
+        startDestination = if (showTutorial) Routes.TUTORIAL else Routes.START
+    ) {
+        composable(Routes.TUTORIAL) {
+            TutorialScreen(
+                onTutorialFinished = {
+                    showTutorial = false
+                    markFirstLaunchComplete(context) // Mark tutorial as shown
+                    navController.navigate(Routes.START) {
+                        popUpTo(Routes.TUTORIAL) { inclusive = true }
+                    }
                 }
+            )
+        }
+        composable(Routes.START) {
+            ModeSelectionScreen { mode ->
+                val route = when (mode) {
+                    GameMode.NORMAL -> Routes.NORMAL_MODE
+                    GameMode.TIMED -> Routes.TIMED_MODE
+                    GameMode.SURVIVAL -> Routes.SURVIVAL_MODE
+                    GameMode.BLITZ -> Routes.BLITZ_MODE
+                }
+                navController.navigate(route)
             }
         }
+        composable(Routes.NORMAL_MODE) {
+            NormalModeScreen(onNavigateToStart = {
+                navController.popBackStack(Routes.START, inclusive = false)
+            })
+        }
+        composable(Routes.TIMED_MODE) {
+            TimedModeScreen(onNavigateToStart = {
+                navController.popBackStack(Routes.START, inclusive = false)
+            })
+        }
+        composable(Routes.SURVIVAL_MODE) {
+            SurvivalModeScreen(onNavigateToStart = {
+                navController.popBackStack(Routes.START, inclusive = false)
+            })
+        }
+        composable(Routes.BLITZ_MODE) {
+            BlitzModeScreen(onNavigateToStart = {
+                navController.popBackStack(Routes.START, inclusive = false)
+
+            })
+        }
     }
+}
+
+// Helper functions to manage first launch state
+private const val PREFS_NAME = "app_prefs"
+private const val KEY_FIRST_LAUNCH = "first_launch"
+
+fun isFirstLaunch(context: Context): Boolean {
+    val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    return prefs.getBoolean(KEY_FIRST_LAUNCH, true) // Default to true (first launch)
+}
+
+fun markFirstLaunchComplete(context: Context) {
+    val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    prefs.edit().putBoolean(KEY_FIRST_LAUNCH, false).apply()
 }
