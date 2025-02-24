@@ -1,43 +1,46 @@
 package com.play.emojireactionchain.utils
 
-import com.play.emojireactionchain.viewModel.EmojiCategory
-import com.play.emojireactionchain.viewModel.GameRule
-import com.play.emojireactionchain.viewModel.BaseGameViewModel
 import com.play.emojireactionchain.model.GeneratedChainData
+import com.play.emojireactionchain.viewModel.BaseGameViewModel
 
 class SynonymChainGenerator : EmojiChainGenerator {
-    override fun generateChain(category: EmojiCategory, rule: GameRule, level:Int): GeneratedChainData {
-        // For Synonym Chain, let's primarily use "Faces" and "Emotions" categories
-        val synonymCategories = listOfNotNull(
-            BaseGameViewModel.emojiCategories["Faces"],
-            BaseGameViewModel.emojiCategories["Emotions"]
-        )
 
-        if (synonymCategories.isEmpty() || synonymCategories.all { it.emojis.isEmpty() }) {
-            return SequentialChainGenerator().generateChain(category, rule, level) // Fallback
+    override fun generateChain(availableEmojis: List<String>, level: Int): GeneratedChainData {
+        val synonymPairs = BaseGameViewModel.synonymPairs
+
+        // Find valid synonym *groups* within the available emojis
+        val validGroups =
+            synonymPairs.map { group -> group.filter { availableEmojis.contains(it) } }
+                .filter { it.size >= 2 } // Ensure at least 2 synonyms in the group
+
+        if (validGroups.isEmpty()) {
+            return GeneratedChainData(emptyList(), emptyList(), "")
         }
 
-        // Select emojis from the synonym categories
-        val selectedEmojis = mutableListOf<String>()
-        for (synonymCategory in synonymCategories) {
-            selectedEmojis.addAll(synonymCategory.emojis)
-        }
-        val distinctSynonymEmojis = selectedEmojis.distinct()
-
-        if (distinctSynonymEmojis.size < 2) {
-            return SequentialChainGenerator().generateChain(category, rule, level) // Fallback
-        }
-        // Adjust chain length based on level
-        val chainLength = when(level){
+        val chainLength = when (level) {
             1 -> 2
-            2-> 3
+            2 -> 3
             3 -> 4
             else -> (3..4).random()
         }
-        val emojiChain = distinctSynonymEmojis.shuffled().take(chainLength)
-        val correctAnswerEmoji = emojiChain.firstOrNull() ?: "" // Correct answer: first emoji
-        val choices = SynonymOptionGenerator().generateOptions(correctAnswerEmoji, category, rule, emojiChain)
 
-        return GeneratedChainData(emojiChain.toList(), choices, correctAnswerEmoji)
+        val emojiChain = mutableListOf<String>()
+        // Instead of taking random pairs, we'll select ONE group and build the chain from it.
+        val chosenGroup = validGroups.random()
+        val shuffledGroup = chosenGroup.shuffled() // Shuffle the selected group
+
+        for (i in 0 until chainLength) {
+            emojiChain.add(shuffledGroup[i % shuffledGroup.size]) // Use modulo to wrap around
+        }
+        //The correct answer will be another emoji of that group which is not in chain.
+        val correctAnswerEmoji =
+            chosenGroup.filterNot { emojiChain.contains(it) }.randomOrNull() ?: ""
+
+        val choices = mutableListOf<String>()
+        if (correctAnswerEmoji.isNotBlank()) {
+            choices.add(correctAnswerEmoji)
+        }
+
+        return GeneratedChainData(emojiChain, choices, correctAnswerEmoji)
     }
 }

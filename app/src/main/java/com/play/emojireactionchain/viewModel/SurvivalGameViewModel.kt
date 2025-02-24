@@ -6,6 +6,7 @@ import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.model.GameState
 import com.play.emojireactionchain.model.LossReason
 import com.play.emojireactionchain.utils.HighScoreManager
+import com.play.emojireactionchain.utils.QuestionGenerator
 import com.play.emojireactionchain.utils.SoundManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -16,11 +17,10 @@ class SurvivalGameViewModel(
 ) : BaseGameViewModel(soundManager, highScoreManager) {
 
     override val questionCountPerGame = Int.MAX_VALUE // Infinite questions
-    var questionLevel: Int = 1  // Make questionLevel mutable
-    private var lives: Int = 3 // Add lives
+    private var lives: Int = 3 // Private, internal state
 
     init {
-        loadHighScore(GameMode.SURVIVAL)
+        loadHighScore(GameMode.SURVIVAL) // Load correct high score
     }
 
     override fun startGame() {
@@ -28,65 +28,84 @@ class SurvivalGameViewModel(
             currentGameScore = 0
             currentQuestionCount = 0
             currentStreak = 0
-            questionLevel = 1
             lives = 3 // Reset lives
+            loadHighScore(GameMode.SURVIVAL)
 
             _gameState.value = GameState(
                 score = 0,
-                highScore = highScoreManager.getHighScore(GameMode.SURVIVAL),
+                highScore = highScoreManager.getHighScore(GameMode.SURVIVAL), // Use getHighScore
                 totalQuestions = questionCountPerGame,
                 lives = lives, // Use the lives variable
                 currentTimeBonus = 0,
                 currentStreakBonus = 0,
                 currentStreakCount = 0,
-                gameMode = GameMode.SURVIVAL,
+                gameMode = GameMode.SURVIVAL, // Set the GameMode, use enum.
                 gameResult = GameResult.InProgress
             )
             nextQuestion()
         }
     }
-
-    override fun nextQuestion() {
-        viewModelScope.launch {
-            currentQuestionCount++
-
-            // Increase difficulty based on score (example)
-            questionLevel = when {
-                currentGameScore > 500 -> 4
-                currentGameScore > 250 -> 3
-                currentGameScore > 100 -> 2
-                else -> 1
+    // --- Difficulty-Based Rule Selection ---
+    override fun selectRuleAndCategory(level: Int): RuleCategory {
+        val availableEmojis = emojiCategories.values.flatMap { it.emojis }.distinct()
+        // 1. Filter Rules Based on Applicability:
+        val applicableRules = rules.filter { rule ->
+            when (rule.name) {
+                "Sequential in Category", "Category Mix-Up" -> true // Always applicable
+                "Opposite Meaning" -> availableEmojis.any {
+                    oppositeEmojiMap.containsKey(it) || oppositeEmojiMap.containsValue(it)
+                }
+                "Synonym Chain" -> synonymPairs.any { pair ->
+                    pair.any { availableEmojis.contains(it) }
+                }
+                else -> false // Unknown rule (shouldn't happen)
             }
+        }
+        // 2. Select a Rule Based on Level (from the applicable rules):
+        val rule = when (level) {
+            1 -> applicableRules.firstOrNull { it.name == "Sequential in Category" } ?: applicableRules.random() // Prioritize Sequential
+            2 -> applicableRules.filterNot { it.name == "Opposite Meaning" }.randomOrNull() ?: applicableRules.random() // Exclude Opposite
+            3 -> applicableRules.filterNot { it.name == "Opposite Meaning" }.randomOrNull() ?: applicableRules.random() // Exclude Opposite
+            else -> applicableRules.randomOrNull() ?: rules.random() // All applicable rules, fallback to any rule
+        }
 
-            val (emojis, correctAnswer, choices) = generateQuestionData()  // Use generateQuestionData
 
-            questionStartTime = System.currentTimeMillis()
+        // 3. Select a Category Based on the Chosen Rule:
+        val category = when (rule.name) {
+            "Sequential in Category", "Category Mix-Up" -> emojiCategories.values.random()
+            "Opposite Meaning" -> emojiCategories["Emotions"]!! // Force Emotions
+            "Synonym Chain" -> {
+                val validCategories = listOfNotNull(
+                    emojiCategories["Faces"],
+                    emojiCategories["Emotions"]
+                ).filter { it.emojis.any { emoji -> availableEmojis.contains(emoji) } } // Only categories with available emojis
+                validCategories.randomOrNull() ?: emojiCategories.values.random() // Fallback
+            }
+            else -> emojiCategories.values.random() // Default case
+        }
 
-            _gameState.value = _gameState.value.copy(
-                emojiChain = emojis, // Use values from generateQuestionData
-                choices = choices.shuffled(), // Shuffle choices here
-                correctAnswerEmoji = correctAnswer, // Use values from generateQuestionData
-                isCorrectAnswer = null,
-                questionNumber = currentQuestionCount,
-                rule = null, // Or set a relevant rule if you want to display it
-                gameResult = GameResult.InProgress,
-                lives = lives
-            )
+        return RuleCategory(rule, category)
+    }
+    override fun generateQuestionData(level: Int): Triple<List<String>, String, List<String>> {
+        val ruleCategory = selectRuleAndCategory(level)
+        val category = ruleCategory.category
+        val rule = ruleCategory.rule
+        val availableEmojis = category.emojis // Use category emojis!
+
+        val questionGenerator: QuestionGenerator = getQuestionGenerator(rule.name)
+        return questionGenerator.generateQuestion(availableEmojis, level)
+    }
+
+    // Implement the mode-specific part (no timer to start)
+    override fun handleNextQuestionModeSpecific() {
+        if (lives <= 0) {
+            endGame(GameResult.Lost(LossReason.OutOfLives))
         }
     }
-
-    private fun generateQuestionData(): Triple<List<String>, String, List<String>> {
-        val ruleCategory = selectRuleAndCategory()
-        val generatedChainData = generateEmojiChain(ruleCategory.category, ruleCategory.rule, questionLevel)
-        val options = generateAnswerOptions(generatedChainData.correctAnswerEmoji,ruleCategory.category, ruleCategory.rule, generatedChainData.emojiChain)
-
-        return Triple(generatedChainData.emojiChain, generatedChainData.correctAnswerEmoji, options)
-    }
-
     override suspend fun handleCorrectChoice() {
 
-        val answerTimeMillis = System.currentTimeMillis() - questionStartTime
-        val timeBonus = 0 // No time bonus in this version
+        System.currentTimeMillis() - questionStartTime
+        val timeBonus = 0 // No time bonus
         currentGameScore += timeBonus
 
         currentStreak++
@@ -95,7 +114,8 @@ class SurvivalGameViewModel(
             streakBonus = streakBonusPoints * currentStreak
             currentGameScore += streakBonus
         }
-        currentGameScore++
+        currentGameScore++ // Increment score for correct answer
+
 
         _gameState.value = _gameState.value.copy(
             score = currentGameScore,
@@ -115,6 +135,7 @@ class SurvivalGameViewModel(
     override suspend fun handleIncorrectChoice() {
         currentStreak = 0
         lives-- // Decrease lives
+        soundManager.playIncorrectSoundAndHaptic()
 
         if (lives <= 0) {
             endGame(GameResult.Lost(LossReason.OutOfLives))
@@ -127,11 +148,10 @@ class SurvivalGameViewModel(
                 lives = lives, // Update lives in GameState
                 gameResult = GameResult.InProgress // Stay in progress
             )
-            soundManager.playIncorrectSound()
-            soundManager.playIncorrectHaptic()
             delay(500)
             nextQuestion()
 
         }
     }
+
 }

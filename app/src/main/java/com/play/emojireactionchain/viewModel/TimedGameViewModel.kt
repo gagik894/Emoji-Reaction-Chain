@@ -3,79 +3,66 @@ package com.play.emojireactionchain.viewModel
 import androidx.lifecycle.viewModelScope
 import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.model.GameResult
-import com.play.emojireactionchain.model.LossReason
 import com.play.emojireactionchain.model.GameState
+import com.play.emojireactionchain.model.LossReason
 import com.play.emojireactionchain.utils.HighScoreManager
+import com.play.emojireactionchain.utils.QuestionGenerator
 import com.play.emojireactionchain.utils.SoundManager
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class TimedGameViewModel(
     soundManager: SoundManager,
     highScoreManager: HighScoreManager
 ) : BaseGameViewModel(soundManager, highScoreManager) {
 
-    private val totalGameTimeSeconds: Int = 10 // Total game time
-    private val timeBonusPerCorrectAnswer: Int = 2 // Seconds added for correct answer
+    private val totalGameTimeSeconds: Int = 60
+    private val timeBonusPerCorrectAnswer: Int = 2
     private var timerJob: Job = Job()
-    //var remainingGameTime: Long = 0 // Store remaining time in milliseconds -- OLD
-    private val _remainingGameTimeFlow = MutableStateFlow(0L) //in miliseconds
+    private val _remainingGameTimeFlow = MutableStateFlow(0L)
     val remainingGameTimeFlow = _remainingGameTimeFlow.asStateFlow()
-    override val questionCountPerGame = Int.MAX_VALUE // Effectively infinite.
+    override val questionCountPerGame = Int.MAX_VALUE
 
     init {
-        loadHighScore(GameMode.TIMED)
+        loadHighScore(GameMode.TIMED) // Load at init
     }
 
-    override fun startGame() {
+    override fun startGame() { // Remove gameMode parameter
         viewModelScope.launch {
             currentGameScore = 0
             currentQuestionCount = 0
             currentStreak = 0
-            //remainingGameTime = totalGameTimeSeconds * 1000L // Initialize game time -- OLD
             _remainingGameTimeFlow.value = totalGameTimeSeconds * 1000L
+            // No need to call loadHighScore here
 
             _gameState.value = GameState(
                 score = 0,
-                highScore = highScoreManager.getHighScore(GameMode.TIMED),
-                totalQuestions = questionCountPerGame, // Still use this for consistency
-                lives = 1, // Keep lives=1, even though it's not directly used
+                totalQuestions = questionCountPerGame,
+                lives = 3, // Infinite lives
                 currentTimeBonus = 0,
                 currentStreakBonus = 0,
                 currentStreakCount = 0,
-                gameMode = GameMode.TIMED,
+                gameMode = GameMode.TIMED, // Set directly
                 gameResult = GameResult.InProgress
             )
             nextQuestion()
-            startTotalGameTimer() // Start the overall game timer
+            startTotalGameTimer()
         }
     }
+    // In NormalGameViewModel, TimedGameViewModel, and BlitzGameViewModel:
+    override fun generateQuestionData(level: Int): Triple<List<String>, String, List<String>> {
+        val ruleCategory = selectRuleAndCategory(level)
+        val category = ruleCategory.category
+        val rule = ruleCategory.rule
+        val availableEmojis = category.emojis
 
-    override fun nextQuestion() {
-        viewModelScope.launch {
-            currentQuestionCount++
-            val ruleCategory = selectRuleAndCategory()
-            val generatedChainData = generateEmojiChain(ruleCategory.category, ruleCategory.rule)
-
-            questionStartTime = System.currentTimeMillis() // Still track question start time
-
-            _gameState.value = _gameState.value.copy(
-                emojiChain = generatedChainData.emojiChain,
-                choices = generatedChainData.choices,
-                correctAnswerEmoji = generatedChainData.correctAnswerEmoji,
-                isCorrectAnswer = null,
-                questionNumber = currentQuestionCount,
-                rule = ruleCategory.rule.name,
-                gameResult = GameResult.InProgress
-            )
-        }
+        val questionGenerator: QuestionGenerator = getQuestionGenerator(rule.name)
+        return questionGenerator.generateQuestion(availableEmojis, level)
     }
-
-
     private fun startTotalGameTimer() {
         timerJob.cancel() // Ensure any previous timer is cancelled
         timerJob = viewModelScope.launch {
@@ -87,8 +74,13 @@ class TimedGameViewModel(
         }
     }
 
-
+    // Implement the mode-specific part (starting the timer)
+    override fun handleNextQuestionModeSpecific() {
+        //startTotalGameTimer() // Start timer in Timed mode //REMOVED
+        //No check here it is infinite
+    }
     override suspend fun handleCorrectChoice() {
+
         currentStreak++
         var streakBonus = 0
         if (currentStreak >= streakBonusThreshold) {
@@ -102,6 +94,7 @@ class TimedGameViewModel(
         _gameState.value = _gameState.value.copy(
             score = currentGameScore,
             isCorrectAnswer = true,
+            currentTimeBonus = timeBonusPerCorrectAnswer,
             currentStreakBonus = streakBonus,
             currentStreakCount = currentStreak,
             gameResult = GameResult.InProgress

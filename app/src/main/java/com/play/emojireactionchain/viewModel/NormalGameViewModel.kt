@@ -3,9 +3,9 @@ package com.play.emojireactionchain.viewModel
 import androidx.lifecycle.viewModelScope
 import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.model.GameResult
-import com.play.emojireactionchain.model.GameState
 import com.play.emojireactionchain.model.LossReason
 import com.play.emojireactionchain.utils.HighScoreManager
+import com.play.emojireactionchain.utils.QuestionGenerator
 import com.play.emojireactionchain.utils.SoundManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -16,7 +16,7 @@ class NormalGameViewModel(
 ) : BaseGameViewModel(soundManager, highScoreManager) {
 
     init {
-        loadHighScore(GameMode.NORMAL)
+        loadHighScore(GameMode.NORMAL) // Load at init
     }
 
     override fun startGame() {
@@ -24,45 +24,33 @@ class NormalGameViewModel(
             currentGameScore = 0
             currentQuestionCount = 0
             currentStreak = 0
-
-            _gameState.value = GameState(
-                score = 0,
-                highScore = highScoreManager.getHighScore(GameMode.NORMAL),
-                totalQuestions = questionCountPerGame,
+            // No need to call loadHighScore here, it's done in init
+            _gameState.value = _gameState.value.copy(
+                totalQuestions = questionCountPerGame, // Use base class property
                 lives = 3,
                 currentTimeBonus = 0,
                 currentStreakBonus = 0,
-                currentStreakCount = 0
+                currentStreakCount = 0,
+                gameMode = GameMode.NORMAL // Set GameMode directly
             )
             nextQuestion()
         }
     }
+    // In NormalGameViewModel, TimedGameViewModel, and BlitzGameViewModel:
+    override fun generateQuestionData(level: Int): Triple<List<String>, String, List<String>> {
+        val ruleCategory = selectRuleAndCategory(level)
+        val category = ruleCategory.category
+        val rule = ruleCategory.rule
+        val availableEmojis = category.emojis
 
-    override fun nextQuestion() {
-        viewModelScope.launch {
-            if (currentQuestionCount < questionCountPerGame) {
-                currentQuestionCount++
-                val ruleCategory = selectRuleAndCategory()
-                val generatedChainData = generateEmojiChain(ruleCategory.category, ruleCategory.rule)
-
-                questionStartTime = System.currentTimeMillis()
-
-                _gameState.value = _gameState.value.copy(
-                    emojiChain = generatedChainData.emojiChain,
-                    choices = generatedChainData.choices,
-                    correctAnswerEmoji = generatedChainData.correctAnswerEmoji,
-                    isCorrectAnswer = null,
-                    questionNumber = currentQuestionCount,
-                    rule = ruleCategory.rule.name
-                )
-            } else {
-                endGame(GameResult.Won)
-                println("Game Won! - All questions completed")
-            }
+        val questionGenerator: QuestionGenerator = getQuestionGenerator(rule.name)
+        return questionGenerator.generateQuestion(availableEmojis, level)
+    }
+    override fun handleNextQuestionModeSpecific() {
+        if (currentQuestionCount >= questionCountPerGame) {
+            endGame(GameResult.Won)
         }
     }
-
-
     override suspend fun handleCorrectChoice() {
         val answerTimeMillis = System.currentTimeMillis() - questionStartTime
         val answerTimeSeconds = answerTimeMillis / 1000.0
@@ -107,7 +95,9 @@ class NormalGameViewModel(
                 currentStreakBonus = 0,
                 currentStreakCount = currentStreak
             )
-            soundManager.playIncorrectSoundAndHaptic()
+            soundManager.playIncorrectSound()
+            delay(150)
+            soundManager.playIncorrectHaptic()
             delay(1000)
             nextQuestion()
             println("Incorrect! Lives Remaining: ${currentLives - 1}, Streak Reset!") // Print streak reset info
@@ -116,7 +106,8 @@ class NormalGameViewModel(
                 isCorrectAnswer = false,
                 lives = 0,
             )
-            soundManager.playIncorrectSoundAndHaptic()
+            soundManager.playIncorrectSound()
+            soundManager.playIncorrectHaptic()
             delay(500)
             endGame(GameResult.Lost(LossReason.OutOfLives))
             println("Game Over! Final Score: $currentGameScore, Streak Reset!") // Print streak reset info at game over

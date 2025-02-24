@@ -21,7 +21,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
@@ -104,29 +106,25 @@ fun GameHeader(showBack: Boolean = true, onBack: () -> Unit = {}) { // Add param
                     .padding(8.dp), // Add some padding
                 tint = MaterialTheme.colorScheme.primary // Use a consistent color
             )
-        } else {
-            // If no back button, add an empty placeholder to maintain alignment
-            Spacer(modifier = Modifier.width(40.dp)) // Adjust width as needed
         }
-
         Text(
             "Emoji Reaction Chain",
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.primary,
-            modifier = if (!showBack) Modifier.fillMaxWidth() else Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
 
         // Empty composable on the right when the back button is present, for symmetry.
         if (showBack) {
-            Spacer(modifier = Modifier.width(40.dp))
+            Spacer(modifier = Modifier.width(20.dp))
         }
 
     }
 }
 
 @Composable
-fun Scoreboard(score: Int, highScore: Int, lives: Int, currentStreakCount: Int) {
+fun Scoreboard(score: Int, highScore: Int, lives: Int?, currentStreakCount: Int) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -153,22 +151,25 @@ fun Scoreboard(score: Int, highScore: Int, lives: Int, currentStreakCount: Int) 
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Row {
-                for (i in 1..lives) {
-                    Text(
-                        text = "❤️",
-                        fontSize = 24.sp,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-                for (i in lives + 1..3) {
-                    Text(
-                        text = "🤍",
-                        fontSize = 24.sp,
-                        color = Color.LightGray.copy(alpha = 0.6f)
-                    )
+            lives?.let {
+                Row {
+                    for (i in 1..it) {
+                        Text(
+                            text = "❤️",
+                            fontSize = 24.sp,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    for (i in it + 1..3) {
+                        Text(
+                            text = "🤍",
+                            fontSize = 24.sp,
+                            color = Color.LightGray.copy(alpha = 0.6f)
+                        )
+                    }
                 }
             }
+
         }
     }
 }
@@ -186,14 +187,31 @@ fun QuestionProgress(questionNumber: Int, totalQuestions: Int) {
 
 @Composable
 fun EmojiChainDisplay(emojiChain: List<String>) {
-    Row(horizontalArrangement = Arrangement.Center) {
-        emojiChain.forEach { emoji ->
-            Text(
-                text = emoji,
-                fontSize = 40.sp,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
-        }
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { // Use BoxWithConstraints
+        this.maxWidth
+        var fontSize = 40.sp
+        var readyToDraw by remember { mutableStateOf(false) }
+
+        // Use onTextLayout to adjust font size *before* drawing
+        val textStyle = remember { mutableStateOf(TextStyle(fontSize = fontSize)) }
+
+        Text(
+            text = emojiChain.joinToString(" "), // Join to a single string
+            fontSize = fontSize,
+            modifier = Modifier.padding(horizontal = 8.dp),
+            style = textStyle.value,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            overflow = TextOverflow.Ellipsis, // Required for onTextLayout
+            onTextLayout = { textLayoutResult ->
+                if (textLayoutResult.didOverflowWidth) {
+                    fontSize *= 0.9f // Reduce font size by 10%
+                    textStyle.value = textStyle.value.copy(fontSize = fontSize)
+                } else {
+                    readyToDraw = true
+                }
+            }
+        )
     }
 }
 

@@ -89,7 +89,7 @@ fun SurvivalModeScreen(onNavigateToStart: () -> Unit = {}) { // Added default va
 
                 // Display the Level
                 Text(
-                    text = "Level: ${viewModel.questionLevel}",
+                    text = "Level: ${viewModel.level}",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(bottom = 16.dp)

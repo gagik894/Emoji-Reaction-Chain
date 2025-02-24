@@ -2,15 +2,16 @@ package com.play.emojireactionchain.utils
 
 import com.play.emojireactionchain.model.GeneratedChainData
 import com.play.emojireactionchain.viewModel.BaseGameViewModel
-import com.play.emojireactionchain.viewModel.EmojiCategory
-import com.play.emojireactionchain.viewModel.GameRule
 
 class OppositeMeaningChainGenerator : EmojiChainGenerator {
-    override fun generateChain(category: EmojiCategory, rule: GameRule, level: Int): GeneratedChainData {
-        if (category.name != "Emotions") return SequentialChainGenerator().generateChain(category, rule, level) // Fallback
+    override fun generateChain(availableEmojis: List<String>, level: Int): GeneratedChainData {
+        val oppositeEmojiMap = BaseGameViewModel.oppositeEmojiMap
+        // Use only emojis that *have* opposites
+        val validEmojis = availableEmojis.filter { oppositeEmojiMap.containsKey(it) || oppositeEmojiMap.containsValue(it) }
 
-        val emojisInCategory = category.emojis
-        // Adjust chain length based on level
+        if (validEmojis.size < 2) {
+            return  GeneratedChainData(emptyList(), emptyList(), "") // Return empty data
+        }
         val chainLength = when (level) {
             1 -> 2
             2 -> 3
@@ -18,25 +19,29 @@ class OppositeMeaningChainGenerator : EmojiChainGenerator {
             else -> (4..5).random()  // Longer chains for higher levels
         }
 
+
         val emojiChain = mutableListOf<String>()
         var lastEmoji: String? = null
-        val oppositeEmojiMap = BaseGameViewModel.oppositeEmojiMap
 
         repeat(chainLength) {
             val nextEmoji: String
             if (lastEmoji == null) {
-                nextEmoji = emojisInCategory.random()
-            } else {
-                // Get the opposite, or if no opposite, a random emoji from the category.
-                nextEmoji = oppositeEmojiMap[lastEmoji] ?: emojisInCategory.random()
+                nextEmoji = validEmojis.random()
+            }
+            else {
+                // Get the opposite. If there's no opposite for the *last* emoji,
+                // this logic will now pick a *new* valid emoji that has an opposite.
+                nextEmoji = oppositeEmojiMap[lastEmoji] ?: validEmojis.random()
             }
             emojiChain.add(nextEmoji)
             lastEmoji = nextEmoji
         }
 
-        // The correct answer is the opposite of the *last* emoji in the chain.
-        val correctAnswerEmoji = oppositeEmojiMap[lastEmoji] ?: emojisInCategory.random()
-        val choices = OppositeMeaningOptionGenerator().generateOptions(correctAnswerEmoji, category, rule, emojiChain)
-        return GeneratedChainData(emojiChain.toList(), choices, correctAnswerEmoji)
+        val correctAnswerEmoji = oppositeEmojiMap[lastEmoji] ?: "" // Get opposite
+        val choices = mutableListOf<String>()
+        if(correctAnswerEmoji.isNotBlank()){
+            choices.add(correctAnswerEmoji)
+        }
+        return GeneratedChainData(emojiChain, choices, correctAnswerEmoji)
     }
 }

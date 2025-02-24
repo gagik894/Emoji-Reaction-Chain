@@ -88,7 +88,7 @@ fun TimedModeScreen(
                 Scoreboard(
                     score = gameState.score,
                     highScore = gameState.highScore,
-                    lives = gameState.lives, // Even though it's always 1, good for consistency
+                    lives = null,
                     currentStreakCount = gameState.currentStreakCount
                 )
                 Row( // Put QuestionProgress and Timer in a Row

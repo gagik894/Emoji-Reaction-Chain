@@ -5,17 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.model.GameState
-import com.play.emojireactionchain.model.GeneratedChainData
+import com.play.emojireactionchain.model.LossReason
 import com.play.emojireactionchain.utils.HighScoreManager
-import com.play.emojireactionchain.utils.MixUpChainGenerator
-import com.play.emojireactionchain.utils.MixUpOptionGenerator
-import com.play.emojireactionchain.utils.OppositeMeaningChainGenerator
-import com.play.emojireactionchain.utils.OppositeMeaningOptionGenerator
-import com.play.emojireactionchain.utils.SequentialChainGenerator
-import com.play.emojireactionchain.utils.SequentialOptionGenerator
+import com.play.emojireactionchain.utils.MixUpQuestionGenerator
+import com.play.emojireactionchain.utils.OppositeQuestionGenerator
+import com.play.emojireactionchain.utils.QuestionGenerator
+import com.play.emojireactionchain.utils.SequentialQuestionGenerator
 import com.play.emojireactionchain.utils.SoundManager
-import com.play.emojireactionchain.utils.SynonymChainGenerator
-import com.play.emojireactionchain.utils.SynonymOptionGenerator
+import com.play.emojireactionchain.utils.SynonymQuestionGenerator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,56 +29,58 @@ data class GameRule(
 )
 
 abstract class BaseGameViewModel(
-    protected val soundManager: SoundManager,  // Changed to protected
-    protected val highScoreManager: HighScoreManager // Changed to protected
+    protected val soundManager: SoundManager,
+    protected val highScoreManager: HighScoreManager
 ) : ViewModel() {
 
     // --- Companion Object (Static Data) ---
     companion object {
         val emojiCategories: Map<String, EmojiCategory> = listOf(
-            EmojiCategory("Fruits", listOf("🍎", "🍌", "🍇", "🍓", "🍉", "🥝")),
-            EmojiCategory("Animals", listOf("🐶", "🐱", "🐻", "🐼", "🐸", "🐒")),
-            EmojiCategory("Faces", listOf("😀", "😊", "😂", "😎", "😍", "🤯")),
-            EmojiCategory("Emotions", listOf("😀", "😢", "😊", "😠", "😂", "😥")),
-            EmojiCategory("Vehicles", listOf("🚗", "🚕", "🚌", "🚑", "🚓", "🚒")),
-            EmojiCategory("Clothing", listOf("👕", "👚", "👗", "👖", "👔", "🧣")),
-            EmojiCategory("Sports", listOf("⚽️", "🏀", "🏈", "⚾️", "🎾", "🏐")),
-            EmojiCategory("Food (Beyond Fruits)", listOf("🍰", "🎂", "🥨", "🥪", "🌮", "🍜")),
-            EmojiCategory("Drinks", listOf("☕", "🍵", "🍶", "🍺", "🍷", "🍹")),
-            EmojiCategory("Travel/Places", listOf("⛰️", "🏖️", "🏕️", "🗽", "🗼", "🕌")),
-            EmojiCategory("Time/Date/Weather", listOf("⏰", "🗓️", "☀️", "🌧️", "❄️", "🌈")),
-            EmojiCategory("Household Objects", listOf("🛋️", "🛏️", "🚪", "🪑", "💡", "🧸")),
-            EmojiCategory("Technology", listOf("📱", "💻", "⌨️", "🖱️", "🎧", "📺")),
-            EmojiCategory("Tools/Instruments", listOf("🔨", "🔧", "🧰", "🧪", "🔬", "🔭")),
-            EmojiCategory("Music", listOf("🎵", "🎶", "🎤", "🎧", "🎼", "🎹")),
-            EmojiCategory("Office/School Supplies", listOf("📚", "📓", "📐", "📏", "🖇️", "✏️"))
+            EmojiCategory("Fruits", listOf("🍎", "🍌", "🍇", "🍓", "🍉", "🥝", "🍍", "🥭", "🍑", "🍒", "🍈", "🥥")),
+            EmojiCategory("Animals", listOf("🐶", "🐱", "🐻", "🐼", "🐸", "🐒", "🦁", "🐯", "🦊", "🦝", "🐷", "🐮")),
+            EmojiCategory("Faces", listOf("😀", "😊", "😂", "😎", "😍", "🤯", "🤨", "🤔", "🤩", "🥳", "😳", "🥺")),
+            EmojiCategory("Emotions", listOf("😀", "😢", "😊", "😠", "😂", "😥", "😨", "😰", "😱", "🥵", "🥶", "😳")),
+            EmojiCategory("Vehicles", listOf("🚗", "🚕", "🚌", "🚑", "🚓", "🚒", "✈️", "🚀", "🚢", "⛵️", "🚁", "🚲")),
+            EmojiCategory("Clothing", listOf("👕", "👚", "👗", "👖", "👔", "🧣", "🧤", "🧦", "🧢", "👒", "🎩", "👟")),
+            EmojiCategory("Sports", listOf("⚽️", "🏀", "🏈", "⚾️", "🎾", "🏐", "🏓", "🏸", "🏒", "🥍", "🏏", "⛳️")),
+            EmojiCategory("Food (Beyond Fruits)", listOf("🍰", "🎂", "🥨", "🥪", "🌮", "🍜", "🍕", "🍔", "🍟", "🍦", "🍩", "🍪")),
+            EmojiCategory("Drinks", listOf("☕", "🍵", "🍶", "🍺", "🍷", "🍹", "🥛", "🧃", "🥤", "🧉", "🧊", "🫗")), // Added more
+            EmojiCategory("Travel/Places", listOf("⛰️", "🏖️", "🏕️", "🗽", "🗼", "🕌", "⛩️", "🏞️", "🏟️", "🏛️", "🏘️", "🏙️")), // Added more
+            EmojiCategory("Time/Date/Weather", listOf("⏰", "🗓️", "☀️", "🌧️", "❄️", "🌈", "🌪️", "⚡️", "☔️", "🌬️", "📅", "⏱️")),
+            EmojiCategory("Household Objects", listOf("🛋️", "🛏️", "🚪", "🪑", "💡", "🧸", "🪞", "🧽", "🪣", "🔑", "🖼️", "🚽")), // Added more
+            EmojiCategory("Technology", listOf("📱", "💻", "⌨️", "🖱️", "🎧", "📺", "⌚️", "📷", "📹", "🕹️", "💾", "💽")),
+            EmojiCategory("Tools/Instruments", listOf("🔨", "🔧", "🧰", "🧪", "🔬", "🔭", "🪛", "🪚", "🪓", "🪤", "🧲", "🔦")), // Added more
+            EmojiCategory("Music", listOf("🎵", "🎶", "🎤", "🎧", "🎼", "🎹", "🎸", "🎻", "🎺", "🥁", "🎷", "📻")),
+            EmojiCategory("Office/School Supplies", listOf("📚", "📓", "📐", "📏", "🖇️", "✏️", "📝", "📁", "📂", "📅", "📊", "📈"))
         ).associateBy { it.name }
 
         val oppositeEmojiMap = mapOf(
-            "😀" to "😢", "😢" to "😀", "😊" to "😠", "😠" to "😊", "😂" to "😥", "😥" to "😂"
+            "😀" to "😢", "😢" to "😀", "😊" to "😠", "😠" to "😊", "😂" to "😥", "😥" to "😂",
+            "☀️" to "🌧️", "🌧️" to "☀️", "🔥" to "🧊", "🧊" to "🔥", "⬆️" to "⬇️", "⬇️" to "⬆️",
+            "❤️" to "💔", "💔" to "❤️", "✅" to "❌", "❌" to "✅"
+        )
+
+        val synonymPairs = listOf(
+            listOf("😀", "😊", "😄", "😁", "😆", "😅"), // Happy faces
+            listOf("😢", "😥", "😓", "😔", "😟", "🙁"), // Sad faces
+            listOf("😠", "😡", "😤", "🤬"),       // Angry faces
+            listOf("😨", "😱", "😰"),          // Scared faces
+            listOf("😴", "😪", "💤"),       // Sleepy emojis
+            listOf("🚗", "🚕", "🚙", "🚓"),    // Cars
+            listOf("🏠", "🏡", "🏘️", "🏢"),   // Buildings
+            listOf("☀️", "🌤️", "⛅️", "🔆"), // Sunny weather
+            listOf("🌧️", "☔️", "⛈️"),       // Rainy weather
         )
     }
-
-    // --- Game Rules and Constants ---
     private val _rules = listOf(
         GameRule("Sequential in Category"),
-        GameRule("Opposite Meaning"),
         GameRule("Category Mix-Up"),
+        GameRule("Opposite Meaning"),
         GameRule("Synonym Chain")
     )
+
     protected val rules: List<GameRule> = _rules // Protected, accessible to subclasses
     protected open val questionCountPerGame = 10 // Allow overriding
-
-    // --- Strategy Objects (Now protected) ---
-    protected val sequentialChainGenerator = SequentialChainGenerator()
-    protected val sequentialOptionGenerator = SequentialOptionGenerator()
-    protected val mixUpChainGenerator = MixUpChainGenerator()
-    protected val mixUpOptionGenerator = MixUpOptionGenerator()
-    protected val oppositeMeaningChainGenerator = OppositeMeaningChainGenerator()
-    protected val oppositeMeaningOptionGenerator = OppositeMeaningOptionGenerator()
-    protected val synonymChainGenerator = SynonymChainGenerator()
-    protected val synonymOptionGenerator = SynonymOptionGenerator()
-
 
     // --- Game State (Now protected) ---
     protected val _gameState = MutableStateFlow(GameState())
@@ -91,7 +90,7 @@ abstract class BaseGameViewModel(
     protected var currentGameScore = 0
 
     var questionStartTime: Long = 0
-    protected open val maxTimePerQuestionSeconds: Int = 10  // Allow overriding
+    open val maxTimePerQuestionSeconds: Int = 10  // Allow overriding
     protected val pointsPerSecondBonus: Int = 5
 
     protected var currentStreak: Int = 0
@@ -116,55 +115,75 @@ abstract class BaseGameViewModel(
 
     // --- Abstract Methods (To be implemented by subclasses) ---
     abstract fun startGame()
-    protected abstract fun nextQuestion()
+    protected open fun nextQuestion() { // Make it open for potential overrides, but provide a default implementation
+
+        viewModelScope.launch {
+            currentQuestionCount++
+
+            // --- Leveling Logic ---
+            println(level)
+            var attempts = 0 // prevent infinit loop
+            var questionData: Triple<List<String>, String, List<String>>? = null
+            while (questionData == null && attempts < 10){
+                attempts++
+                val (emojis, correctAnswer, choices) = generateQuestionData(level)
+                if(correctAnswer.isNotBlank() && choices.isNotEmpty() && choices.contains(correctAnswer)){
+                    questionData = Triple(emojis, correctAnswer, choices)
+                }
+            }
+
+            questionStartTime = System.currentTimeMillis()
+
+            if(questionData != null){
+                _gameState.value = _gameState.value.copy(
+                    emojiChain = questionData.first,
+                    choices = questionData.third.shuffled(), // Shuffle choices here!
+                    correctAnswerEmoji = questionData.second,
+                    isCorrectAnswer = null,
+                    questionNumber = currentQuestionCount,
+                    rule = null, // Common behavior: don't display rule
+                    gameResult = GameResult.InProgress,
+                    lives = _gameState.value.lives //keep current value
+                )
+            } else {
+                // Handle the case where no valid question could be generated
+                // This is VERY important to prevent crashes/infinite loops
+                endGame(GameResult.Lost(LossReason.OutOfLives)) // Or some other appropriate action
+            }
+            handleNextQuestionModeSpecific()
+        }
+    }
+
+    // NEW: Abstract function for mode-specific logic within nextQuestion
+    protected abstract fun handleNextQuestionModeSpecific()
 
     // --- Common Methods ---
-    protected open fun selectRuleAndCategory(): RuleCategory { //add open
-        val category = emojiCategories.values.random()
-        val rule = rules.random()
-        return RuleCategory(rule, category)
-    }
-
-
-    protected open fun generateEmojiChain(category: EmojiCategory, rule: GameRule, level: Int = 1): GeneratedChainData { //add level and open
-        if (category.emojis.isEmpty()) {
-            return GeneratedChainData(emptyList(), emptyList(), "")
+    protected open fun selectRuleAndCategory(level: Int): RuleCategory {
+        // Level-based rule selection (more sophisticated)
+        val availableRules = when {
+            level <= 3 -> listOf("Sequential in Category", "Category Mix-Up") // Easier rules
+            level <= 6 -> listOf("Sequential in Category", "Category Mix-Up", "Opposite Meaning")
+            else -> rules.map { it.name } // All rules available at higher levels
         }
 
-        return when (rule.name) {
-            "Sequential in Category" -> sequentialChainGenerator.generateChain(category, rule, level) //pass level
-            "Category Mix-Up" -> mixUpChainGenerator.generateChain(category, rule, level) //pass level
-            "Opposite Meaning" -> oppositeMeaningChainGenerator.generateChain(category, rule, level) //pass level
-            "Synonym Chain" -> synonymChainGenerator.generateChain(category, rule, level) //pass level
-            else -> sequentialChainGenerator.generateChain(category, rule, level) // Default //pass level
+        val ruleName = availableRules.random()
+
+        // Level-based category selection (optional, but recommended)
+        val availableCategories = when {
+            level <= 2 -> listOf("Fruits", "Animals", "Faces", "Emotions") // Basic categories
+            level <= 5 -> emojiCategories.keys.toList()  // All categories
+            else -> emojiCategories.keys.toList() // All categories
         }
+        val categoryName = availableCategories.random()
+        val category = emojiCategories[categoryName] ?: emojiCategories.values.random() // Fallback
+
+        return RuleCategory(GameRule(ruleName), category) // Return a RuleCategory object
     }
 
-    protected fun generateAnswerOptions(correctAnswerEmoji: String, category: EmojiCategory, rule: GameRule, emojiChain: List<String>): List<String> {
-        return when (rule.name) {
-            "Sequential in Category" -> sequentialOptionGenerator.generateOptions(correctAnswerEmoji, category, rule, emojiChain)
-            "Category Mix-Up" -> mixUpOptionGenerator.generateOptions(correctAnswerEmoji, category, rule, emojiChain)
-            "Opposite Meaning" -> oppositeMeaningOptionGenerator.generateOptions(correctAnswerEmoji, category, rule, emojiChain)
-            "Synonym Chain" -> synonymOptionGenerator.generateOptions(correctAnswerEmoji, category, rule, emojiChain)
-            else -> sequentialOptionGenerator.generateOptions(correctAnswerEmoji, category, rule, emojiChain)
-        }
-    }
-
-    // --- Handle Choice (Common logic, but calls mode-specific handling) ---
-    fun handleChoice(chosenEmoji: String) {
-        viewModelScope.launch {
-            if (chosenEmoji == _gameState.value.correctAnswerEmoji) {
-                handleCorrectChoice()
-            } else {
-                handleIncorrectChoice()
-            }
-        }
-    }
 
     // --- Abstract Choice Handling (Implemented by subclasses) ---
     protected abstract suspend fun handleCorrectChoice()
     protected abstract suspend fun handleIncorrectChoice()
-
 
     // --- End Game (Common logic) ---
     protected fun endGame(result: GameResult) {
@@ -196,6 +215,31 @@ abstract class BaseGameViewModel(
             )
         }
     }
-//    protected abstract fun generateQuestionData(): Triple<List<String>, String, List<String>>
 
+    protected abstract fun generateQuestionData(level: Int): Triple<List<String>, String, List<String>>
+
+    // --- Handle Choice (Common logic, but calls mode-specific handling) ---
+    fun handleChoice(chosenEmoji: String) {
+        viewModelScope.launch {
+            if (chosenEmoji == _gameState.value.correctAnswerEmoji) {
+                handleCorrectChoice()
+            } else {
+                handleIncorrectChoice()
+            }
+        }
+    }
+
+    protected open fun getQuestionGenerator(ruleName: String): QuestionGenerator {
+        return when (ruleName) {
+            "Sequential in Category" -> SequentialQuestionGenerator()
+            "Category Mix-Up" -> MixUpQuestionGenerator()
+            "Opposite Meaning" -> OppositeQuestionGenerator()
+            "Synonym Chain" -> SynonymQuestionGenerator()
+            else -> SequentialQuestionGenerator() // Default
+        }
+    }
+
+    // --- Level Calculation (New) ---
+     val level: Int
+        get() = (currentQuestionCount / 5) + 1  // Increase level every 5 questions
 }
