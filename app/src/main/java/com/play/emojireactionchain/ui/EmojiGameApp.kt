@@ -30,12 +30,14 @@ object AdManager {
     private var shouldShowAdOnHomeReturn = false
 
     fun incrementGamePlayCount(): Int {
+        println("increment Game play count: $gamePlayCount")
         gamePlayCount++
         return gamePlayCount
     }
 
     fun shouldShowAd(): Boolean {
-        return gamePlayCount % 2 == 0 && gamePlayCount > 0
+        println("ShouldShowAd Game play count: $gamePlayCount")
+        return gamePlayCount % 3 == 0 && gamePlayCount > 0
     }
 
     fun markAdShownOnHomeReturn() {
@@ -63,7 +65,7 @@ fun EmojiGameApp() {
     var showTutorial by rememberSaveable { mutableStateOf(isFirstLaunch(context)) }  // Check first launch
 
     val activity = context as? Activity
-    val interstitialAdState = rememberInterstitialAd("ca-app-pub-3940256099942544/1033173712")
+    val interstitialAdState = rememberInterstitialAd("ca-app-pub-2523891738770793/6480157179")
 
     NavHost(
         navController = navController,

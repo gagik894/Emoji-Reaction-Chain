@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -120,7 +121,7 @@ fun TimeBonusAnimation(bonusPoints: Int) {
 @Composable
 fun GameHeader(showBack: Boolean = true, onBack: () -> Unit = {}) { // Add parameters
     Column {
-        BannerAd(adUnitId = "ca-app-pub-3940256099942544/9214589741")
+        BannerAd(adUnitId = "ca-app-pub-2523891738770793/9481725035")
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -615,37 +616,93 @@ fun YouLostDialog(
                 // Show ad button if available
                 if (onWatchAd != null) {
                     Spacer(modifier = Modifier.height(16.dp))
+
+                    // Enhanced ad button with animation and better visual appeal
+                    val buttonScale = remember { Animatable(1f) }
+
+                    LaunchedEffect(Unit) {
+                        // Subtle pulsing animation to draw attention
+                        buttonScale.animateTo(
+                            1.05f,
+                            animationSpec = repeatable(
+                                iterations = RepeatMode.Reverse.ordinal,
+                                animation = tween(800, easing = FastOutLinearInEasing)
+                            )
+                        )
+                    }
+
                     OutlinedButton(
                         enabled = !isLoading,
                         onClick = onWatchAd,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .graphicsLayer {
+                                if (!isLoading && !adWatched) {
+                                    scaleX = buttonScale.value
+                                    scaleY = buttonScale.value
+                                }
+                            },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = if (adWatched)
+                                MaterialTheme.colorScheme.primaryContainer
+                            else
+                                MaterialTheme.colorScheme.surface,
+                            contentColor = if (adWatched)
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            else
+                                MaterialTheme.colorScheme.primary
+                        ),
+                        border = if (!adWatched && !isLoading)
+                            ButtonDefaults.outlinedButtonBorder
+                        else
+                            null
                     ) {
-                        when {
-                            isLoading -> {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Loading Ad...")
-                            }
-
-                            adWatched -> {
-                                Text(
-                                    "Continue Game",
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = MaterialTheme.colorScheme.primary
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            when {
+                                isLoading -> {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        strokeWidth = 2.dp
                                     )
-                                )
-                            }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Loading Ad...")
+                                }
 
-                            else -> {
-                                Text(
-                                    "Watch Ad to Continue Game",
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = MaterialTheme.colorScheme.primary
+                                adWatched -> {
+                                    Icon(
+                                        imageVector = Icons.Filled.PlayArrow,
+                                        contentDescription = "Continue",
+                                        modifier = Modifier.size(24.dp)
                                     )
-                                )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        "Continue Game",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                                        )
+                                    )
+                                }
+
+                                else -> {
+                                    Icon(
+                                        painter = androidx.compose.ui.res.painterResource(
+                                            id = android.R.drawable.ic_media_play
+                                        ),
+                                        contentDescription = "Watch Ad",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        "Watch Ad to Continue",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
@@ -661,7 +718,6 @@ fun YouLostDialog(
     )
 }
 
-
 @Composable
 fun GameResultHandler(
     gameState: GameState,
@@ -671,26 +727,40 @@ fun GameResultHandler(
 ) {
     val context = LocalContext.current
     val activity = context as? Activity ?: return
-    val rewardedAdState = rememberRewardedAd("ca-app-pub-3940256099942544/5224354917")
-    val interstitialAdState = rememberInterstitialAd("ca-app-pub-3940256099942544/1033173712")
+    val rewardedAdState = rememberRewardedAd("ca-app-pub-2523891738770793/5350908330")
+    val interstitialAdState = rememberInterstitialAd("ca-app-pub-2523891738770793/2652053805")
     var isLoading by remember { mutableStateOf(false) }
 
     // Track ad states
     var adWatched by remember { mutableStateOf(false) }
     var previousGameResult by remember { mutableStateOf<GameResult?>(null) }
-    var interstitialShown by remember { mutableStateOf(false) }
+
+    // Function to show interstitial ad and then perform an action
+    val showInterstitialAndThen: (action: () -> Unit) -> Unit = { action ->
+        if (AdManager.shouldShowAd()) {
+            showInterstitialAd(
+                interstitialAd = interstitialAdState.interstitialAd,
+                activity = activity,
+                onAdClosed = {
+                    interstitialAdState.loadAd()
+                    action()
+                }
+            )
+        } else {
+            action()
+        }
+    }
 
     // Reset adWatched when game result changes
     LaunchedEffect(gameState.gameResult) {
         if (gameState.gameResult != previousGameResult) {
             adWatched = false
             previousGameResult = gameState.gameResult
-
+            println("Game result changed to ${gameState.gameResult} ${AdManager.shouldShowAd()}")
             // Check if we should show an interstitial ad (game completion)
             if ((gameState.gameResult is GameResult.Won || gameState.gameResult is GameResult.Lost)
-                && AdManager.shouldShowAd() && !interstitialShown
+                && AdManager.shouldShowAd()
             ) {
-                interstitialShown = true
                 showInterstitialAd(
                     interstitialAd = interstitialAdState.interstitialAd,
                     activity = activity,
@@ -716,7 +786,9 @@ fun GameResultHandler(
 
             YouWonDialog(
                 gameState = gameState,
-                onPlayAgain = { onStartGame() },
+                onPlayAgain = {
+                    showInterstitialAndThen { onStartGame() }
+                },
                 onBack = {
                     AdManager.markShowAdOnHomeReturn()
                     onBack()
@@ -733,7 +805,9 @@ fun GameResultHandler(
             YouLostDialog(
                 reason = result.reason,
                 gameState = gameState,
-                onPlayAgain = { onStartGame() },
+                onPlayAgain = {
+                    showInterstitialAndThen { onStartGame() }
+                },
                 onBack = {
                     AdManager.markShowAdOnHomeReturn()
                     onBack()
@@ -742,9 +816,16 @@ fun GameResultHandler(
         }
 
         is GameResult.AdContinueOffered -> {
+            // Track completed game for ad logic
+            LaunchedEffect(Unit) {
+                AdManager.incrementGamePlayCount()
+            }
+
             YouLostDialog(
                 gameState = gameState,
-                onPlayAgain = { onStartGame() },
+                onPlayAgain = {
+                    showInterstitialAndThen { onStartGame() }
+                },
                 reason = (result.underlyingResult as GameResult.Lost).reason,
                 onWatchAd = {
                     if (adWatched) {
