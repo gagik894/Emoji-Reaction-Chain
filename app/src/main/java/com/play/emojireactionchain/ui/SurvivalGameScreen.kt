@@ -20,7 +20,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.utils.HighScoreManager
 import com.play.emojireactionchain.utils.SoundManager
 import com.play.emojireactionchain.viewModel.SurvivalGameViewModel
@@ -104,21 +103,14 @@ fun SurvivalModeScreen(onNavigateToStart: () -> Unit = {}) { // Added default va
                     onChoiceSelected = { choice -> viewModel.handleChoice(choice) }
                 )
 
-                when (gameState.gameResult) {
-                    GameResult.InProgress -> {
-                        // No start button here anymore
-                    }
-                    GameResult.Won -> {
-                        YouWonDialog(gameState = gameState, onPlayAgain = { viewModel.startGame(); /* No navigation here*/ })
-                    }
-                    is GameResult.Lost -> {
-                        YouLostDialog( // Use the generic GameOverDialog
-                            reason = (gameState.gameResult as GameResult.Lost).reason,
-                            gameState = gameState,
-                            onPlayAgain = { viewModel.startGame() } // No navigation here
-                        )
-                    }
-                }
+                GameResultHandler(
+                    gameState = gameState,
+                    onStartGame = { viewModel.startGame() },
+                    onHandleAdReward = {
+                        viewModel.handleAdReward()
+                    },
+                    onBack = onNavigateToStart
+                )
             }
         }
 

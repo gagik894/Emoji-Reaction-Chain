@@ -147,4 +147,18 @@ class TimedGameViewModel(
             // Don't call startGame here - let the UI trigger the specific mode start.
         }
     }
+    override fun handleAdReward() {
+        // Reset timer to half of total time
+        _remainingGameTimeFlow.value = (totalGameTimeSeconds / 2) * 1000L
+
+        _gameState.value = _gameState.value.copy(
+            lives = 1,
+            gameResult = GameResult.InProgress
+        )
+
+        // Restart the timer
+        startTotalGameTimer()
+
+        nextQuestion()
+    }
 }

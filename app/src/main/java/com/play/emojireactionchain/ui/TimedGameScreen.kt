@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -22,7 +23,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.utils.HighScoreManager
 import com.play.emojireactionchain.utils.SoundManager
 import com.play.emojireactionchain.viewModel.TimedGameViewModel
@@ -61,7 +61,7 @@ fun TimedModeScreen(
 
     // --- Time Bonus Animation ---
     var showTimeBonusAnimation by remember { mutableStateOf(false) }
-    var currentBonusPointsForAnimation by remember { mutableStateOf(0) }
+    var currentBonusPointsForAnimation by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(gameState.currentTimeBonus) {
         if (gameState.currentTimeBonus > 0) {
@@ -116,25 +116,14 @@ fun TimedModeScreen(
                     onChoiceSelected = { choice -> viewModel.handleChoice(choice) }
                 )
 
-                when (gameState.gameResult) {
-                    GameResult.InProgress -> {
-
-                    }
-
-                    GameResult.Won -> { // This won't happen in the current Timed mode design
-                        YouWonDialog(gameState = gameState, onPlayAgain = { viewModel.startGame() })
-                    }
-
-                    is GameResult.Lost -> {
-                        // Use a TimeUpDialog instead of YouLostDialog
-                        TimeUpDialog(
-                            gameState = gameState, // Pass the gameState for score display
-                            onPlayAgain = {
-                                viewModel.startGame()
-                            }
-                        )
-                    }
-                }
+                GameResultHandler(
+                    gameState = gameState,
+                    onStartGame = { viewModel.startGame() },
+                    onHandleAdReward = {
+                        viewModel.handleAdReward()
+                    },
+                    onBack = onNavigateToStart
+                )
             }
         }
         if (showTimeBonusAnimation) {

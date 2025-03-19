@@ -1,5 +1,6 @@
 package com.play.emojireactionchain.viewModel
 
+import android.os.CountDownTimer
 import androidx.lifecycle.viewModelScope
 import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.model.GameResult
@@ -20,6 +21,8 @@ class BlitzGameViewModel(
     private var timerJob: Job = Job()
     override val questionCountPerGame: Int = Int.MAX_VALUE
     val maxLives: Int = 3
+    private var countDownTimer: CountDownTimer? = null
+
     init {
         loadHighScore(GameMode.BLITZ) // Load at init
     }
@@ -57,13 +60,21 @@ class BlitzGameViewModel(
 
 
     private fun startTimer() {
-        timerJob.cancel()
-        timerJob = viewModelScope.launch {
-            delay(maxTimePerQuestionSeconds * 1000L)
-            if (_gameState.value.gameResult == GameResult.InProgress) {
-                handleIncorrectChoice(true)
+        countDownTimer?.cancel()
+
+        countDownTimer = object : CountDownTimer(maxTimePerQuestionSeconds * 1000L, 100) {
+            override fun onTick(millisUntilFinished: Long) {
+                // Optional: Update a time state value if needed for UI
             }
-        }
+
+            override fun onFinish() {
+                if (_gameState.value.gameResult == GameResult.InProgress) {
+                    viewModelScope.launch {
+                        handleIncorrectChoice(true)
+                    }
+                }
+            }
+        }.start()
     }
 
     override fun handleNextQuestionModeSpecific() {
@@ -75,7 +86,9 @@ class BlitzGameViewModel(
         timerJob.cancel() // Use simple cancel, no join needed
 
         val answerTimeMillis = System.currentTimeMillis() - questionStartTime
-        val timeBonus = ((maxTimePerQuestionSeconds - answerTimeMillis / 1000.0) * pointsPerSecondBonus).toInt().coerceAtLeast(0)
+        val timeBonus =
+            ((maxTimePerQuestionSeconds - answerTimeMillis / 1000.0) * pointsPerSecondBonus).toInt()
+                .coerceAtLeast(0)
         currentGameScore += timeBonus
 
         currentStreak++
@@ -104,12 +117,15 @@ class BlitzGameViewModel(
         handleIncorrectChoice(false) // Non-timeout incorrect choice
     }
 
-    private suspend fun handleIncorrectChoice(isTimeout: Boolean) {
+    suspend fun handleIncorrectChoice(isTimeout: Boolean) {
         soundManager.playIncorrectSoundAndHaptic()
-
-        timerJob.cancel()  // Use simple cancel
+        timerJob.cancel()
         currentStreak = 0
-        if(_gameState.value.lives > 1) {
+
+        println(_gameState.value.lives > 1)
+        // Just remove one life regardless of whether it's timeout or wrong answer
+        if (_gameState.value.lives > 1) {
+            println("Next question")
             _gameState.value = _gameState.value.copy(
                 isCorrectAnswer = false,
                 lives = _gameState.value.lives - 1,
@@ -118,9 +134,27 @@ class BlitzGameViewModel(
                 currentStreakCount = currentStreak
             )
             delay(150)
-            nextQuestion()
+            println("Next question")
+            nextQuestion() // This will start a new timer through handleNextQuestionModeSpecific()
         } else {
-            endGame(GameResult.Lost(LossReason.OutOfLives))
+            // If this was the last life, end the game
+            val lossReason = if (isTimeout) LossReason.TimeOut else LossReason.OutOfLives
+            endGame(GameResult.Lost(lossReason))
         }
+    }
+
+    override fun handleAdReward() {
+        _gameState.value = _gameState.value.copy(
+            lives = maxLives,
+            gameResult = GameResult.InProgress
+        )
+        timerJob.cancel()
+        nextQuestion()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        countDownTimer?.cancel()
+        countDownTimer = null
     }
 }

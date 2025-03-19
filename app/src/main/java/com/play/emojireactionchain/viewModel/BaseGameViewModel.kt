@@ -80,7 +80,7 @@ abstract class BaseGameViewModel(
     )
 
     protected val rules: List<GameRule> = _rules // Protected, accessible to subclasses
-    protected open val questionCountPerGame = 10 // Allow overriding
+    protected open val questionCountPerGame = 30 // Allow overriding
 
     // --- Game State (Now protected) ---
     protected val _gameState = MutableStateFlow(GameState())
@@ -119,7 +119,7 @@ abstract class BaseGameViewModel(
 
         viewModelScope.launch {
             currentQuestionCount++
-
+            println(currentQuestionCount)
             // --- Leveling Logic ---
             println(level)
             var attempts = 0 // prevent infinit loop
@@ -186,11 +186,24 @@ abstract class BaseGameViewModel(
     protected abstract suspend fun handleIncorrectChoice()
 
     // --- End Game (Common logic) ---
-    protected fun endGame(result: GameResult) {
+    protected fun endGame(result: GameResult, offerContinue: Boolean = true) {
         val finalScore = currentGameScore
         highScoreManager.updateHighScoreIfNewRecord(finalScore, _gameState.value.gameMode)
         val updatedHighScore = highScoreManager.getHighScore(_gameState.value.gameMode)
-        _gameState.value = _gameState.value.copy(gameResult = result, score = finalScore, highScore = updatedHighScore) //keep this
+
+        if (result is GameResult.Lost && offerContinue) {
+            _gameState.value = _gameState.value.copy(
+                score = finalScore,
+                highScore = updatedHighScore,
+                gameResult = GameResult.AdContinueOffered(result)
+            )
+        } else {
+            _gameState.value = _gameState.value.copy(
+                gameResult = result,
+                score = finalScore,
+                highScore = updatedHighScore
+            )
+        }
     }
 
     // --- Reset Game (Common logic) ---
@@ -238,6 +251,8 @@ abstract class BaseGameViewModel(
             else -> SequentialQuestionGenerator() // Default
         }
     }
+
+    abstract fun handleAdReward()
 
     // --- Level Calculation (New) ---
      val level: Int

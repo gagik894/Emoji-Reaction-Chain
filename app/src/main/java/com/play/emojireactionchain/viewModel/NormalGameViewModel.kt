@@ -36,7 +36,7 @@ class NormalGameViewModel(
             nextQuestion()
         }
     }
-    // In NormalGameViewModel, TimedGameViewModel, and BlitzGameViewModel:
+
     override fun generateQuestionData(level: Int): Triple<List<String>, String, List<String>> {
         val ruleCategory = selectRuleAndCategory(level)
         val category = ruleCategory.category
@@ -47,7 +47,7 @@ class NormalGameViewModel(
         return questionGenerator.generateQuestion(availableEmojis, level)
     }
     override fun handleNextQuestionModeSpecific() {
-        if (currentQuestionCount >= questionCountPerGame) {
+        if (currentQuestionCount > questionCountPerGame) {
             endGame(GameResult.Won)
         }
     }
@@ -112,5 +112,12 @@ class NormalGameViewModel(
             endGame(GameResult.Lost(LossReason.OutOfLives))
             println("Game Over! Final Score: $currentGameScore, Streak Reset!") // Print streak reset info at game over
         }
+    }
+    override fun handleAdReward() {
+        _gameState.value = _gameState.value.copy(
+            lives = 3,
+            gameResult = GameResult.InProgress
+        )
+        nextQuestion()
     }
 }

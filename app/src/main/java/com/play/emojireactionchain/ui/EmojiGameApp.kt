@@ -1,12 +1,15 @@
 package com.play.emojireactionchain.ui
 
+import android.app.Activity
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.edit
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -22,12 +25,45 @@ object Routes {
     const val BLITZ_MODE = "blitz"
 }
 
+object AdManager {
+    private var gamePlayCount = 0
+    private var shouldShowAdOnHomeReturn = false
+
+    fun incrementGamePlayCount(): Int {
+        gamePlayCount++
+        return gamePlayCount
+    }
+
+    fun shouldShowAd(): Boolean {
+        return gamePlayCount % 2 == 0 && gamePlayCount > 0
+    }
+
+    fun markAdShownOnHomeReturn() {
+        shouldShowAdOnHomeReturn = false
+    }
+
+    fun markShowAdOnHomeReturn() {
+        shouldShowAdOnHomeReturn = true
+    }
+
+    fun shouldShowAdOnHomeReturn(): Boolean {
+        return shouldShowAdOnHomeReturn
+    }
+
+    fun resetGamePlayCount() {
+        gamePlayCount = 0
+    }
+}
+
 @Composable
 fun EmojiGameApp() {
     val navController = rememberNavController()
     val context = LocalContext.current
-    // Use rememberSaveable to survive process death, with a custom Saver
+
     var showTutorial by rememberSaveable { mutableStateOf(isFirstLaunch(context)) }  // Check first launch
+
+    val activity = context as? Activity
+    val interstitialAdState = rememberInterstitialAd("ca-app-pub-3940256099942544/1033173712")
 
     NavHost(
         navController = navController,
@@ -45,6 +81,20 @@ fun EmojiGameApp() {
             )
         }
         composable(Routes.START) {
+            // Check if we should show an ad on returning to home
+            LaunchedEffect(true) {
+                if (AdManager.shouldShowAdOnHomeReturn() && activity != null) {
+                    showInterstitialAd(
+                        interstitialAd = interstitialAdState.interstitialAd,
+                        activity = activity,
+                        onAdClosed = {
+                            interstitialAdState.loadAd()
+                            AdManager.markAdShownOnHomeReturn()
+                        }
+                    )
+                }
+            }
+
             ModeSelectionScreen { mode ->
                 val route = when (mode) {
                     GameMode.NORMAL -> Routes.NORMAL_MODE
@@ -90,5 +140,5 @@ fun isFirstLaunch(context: Context): Boolean {
 
 fun markFirstLaunchComplete(context: Context) {
     val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    prefs.edit().putBoolean(KEY_FIRST_LAUNCH, false).apply()
+    prefs.edit() { putBoolean(KEY_FIRST_LAUNCH, false) }
 }

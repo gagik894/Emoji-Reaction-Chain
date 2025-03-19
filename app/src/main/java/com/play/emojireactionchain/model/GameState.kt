@@ -1,9 +1,10 @@
 package com.play.emojireactionchain.model
 
 sealed class GameResult {
-    object InProgress : GameResult() // Game is still running
-    object Won : GameResult()       // Player won (all questions correct)
-    data class Lost(val reason: LossReason) : GameResult() // Player lost (details why)
+    object InProgress : GameResult()
+    object Won : GameResult()
+    data class Lost(val reason: LossReason) : GameResult()
+    data class AdContinueOffered(val underlyingResult: GameResult) : GameResult() // New state
 }
 
 enum class LossReason {

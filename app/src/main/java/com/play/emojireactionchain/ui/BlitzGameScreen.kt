@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -62,7 +64,7 @@ fun BlitzModeScreen(
 
     // --- Time Bonus Animation ---
     var showTimeBonusAnimation by remember { mutableStateOf(false) }
-    var currentBonusPointsForAnimation by remember { mutableStateOf(0) }
+    var currentBonusPointsForAnimation by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(gameState.currentTimeBonus) {
         if (gameState.currentTimeBonus > 0) {
@@ -77,16 +79,15 @@ fun BlitzModeScreen(
     // --- Timer Logic ---
     val coroutineScope = rememberCoroutineScope() // Get a scope tied to the Composable
     var timerJob by remember { mutableStateOf<Job?>(null) } // Keep track of the timer job
-    var remainingTime by remember { mutableStateOf(viewModel.maxTimePerQuestionSeconds.toDouble()) } // Start with full time
-
+    var remainingTime by remember { mutableDoubleStateOf(viewModel.maxTimePerQuestionSeconds.toDouble()) } // Start with full time
 
     LaunchedEffect(gameState.questionNumber, gameState.gameResult) {
+        println("questionNumber: ${gameState.questionNumber}, gameResult: ${gameState.gameResult}")
         if (gameState.questionNumber > 0 && gameState.gameResult == GameResult.InProgress) {
-            timerJob?.cancel() // Cancel any existing timer
+            timerJob?.cancel()
+            remainingTime = viewModel.maxTimePerQuestionSeconds.toDouble()
 
-            remainingTime = viewModel.maxTimePerQuestionSeconds.toDouble() // Reset to full time
-
-            timerJob = coroutineScope.launch { // Launch a *new* coroutine in the Composable's scope
+            timerJob = coroutineScope.launch {
                 val startTime = System.currentTimeMillis()
                 while (remainingTime > 0) {
                     val elapsed = System.currentTimeMillis() - startTime
@@ -94,8 +95,9 @@ fun BlitzModeScreen(
                         ((viewModel.maxTimePerQuestionSeconds * 1000L - elapsed) / 1000.0).coerceAtLeast(
                             0.0
                         )
-                    delay(25) // Update every 25ms
+                    delay(25)
                 }
+                // Removed the call to any timeout handler here.
             }
         } else {
             timerJob?.cancel()
@@ -145,25 +147,14 @@ fun BlitzModeScreen(
                     onChoiceSelected = { choice -> viewModel.handleChoice(choice) }
                 )
 
-                when (gameState.gameResult) {
-                    GameResult.InProgress -> {
-
-                    }
-
-                    GameResult.Won -> {
-                        YouWonDialog(gameState = gameState, onPlayAgain = { viewModel.startGame() })
-                    }
-
-                    is GameResult.Lost -> {
-                        YouLostDialog(
-                            reason = (gameState.gameResult as GameResult.Lost).reason,
-                            gameState = gameState,
-                            onPlayAgain = {
-                                viewModel.startGame()
-                            }
-                        )
-                    }
-                }
+                GameResultHandler(
+                    gameState = gameState,
+                    onStartGame = { viewModel.startGame() },
+                    onHandleAdReward = {
+                        viewModel.handleAdReward()
+                    },
+                    onBack = onNavigateToStart
+                )
             }
         }
 

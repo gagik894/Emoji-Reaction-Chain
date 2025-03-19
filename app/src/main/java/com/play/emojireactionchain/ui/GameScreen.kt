@@ -1,20 +1,49 @@
 package com.play.emojireactionchain.ui
 
-import androidx.compose.animation.core.*
+import android.app.Activity
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.repeatable
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -90,36 +119,38 @@ fun TimeBonusAnimation(bonusPoints: Int) {
 
 @Composable
 fun GameHeader(showBack: Boolean = true, onBack: () -> Unit = {}) { // Add parameters
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically, // Vertically center content
-        horizontalArrangement = if (showBack) Arrangement.SpaceBetween else Arrangement.Center // Conditional arrangement
-    ) {
-        if (showBack) { // Conditionally show the back button
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                modifier = Modifier
-                    .clickable(onClick = onBack) // Make it clickable
-                    .padding(8.dp), // Add some padding
-                tint = MaterialTheme.colorScheme.primary // Use a consistent color
+    Column {
+        BannerAd(adUnitId = "ca-app-pub-3940256099942544/9214589741")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically, // Vertically center content
+            horizontalArrangement = if (showBack) Arrangement.SpaceBetween else Arrangement.Center // Conditional arrangement
+        ) {
+            if (showBack) { // Conditionally show the back button
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    modifier = Modifier
+                        .clickable(onClick = onBack) // Make it clickable
+                        .padding(8.dp), // Add some padding
+                    tint = MaterialTheme.colorScheme.primary // Use a consistent color
+                )
+            }
+            Text(
+                "Emoji Reaction Chain",
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f),
             )
-        }
-        Text(
-            "Emoji Reaction Chain",
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.weight(1f),
-        )
 
-        // Empty composable on the right when the back button is present, for symmetry.
-        if (showBack) {
-            Spacer(modifier = Modifier.width(20.dp))
+            // Empty composable on the right when the back button is present, for symmetry.
+            if (showBack) {
+                Spacer(modifier = Modifier.width(20.dp))
+            }
         }
-
     }
 }
 
@@ -187,7 +218,10 @@ fun QuestionProgress(questionNumber: Int, totalQuestions: Int) {
 
 @Composable
 fun EmojiChainDisplay(emojiChain: List<String>) {
-    BoxWithConstraints(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { // Use BoxWithConstraints
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) { // Use BoxWithConstraints
         this.maxWidth
         var fontSize = 40.sp
         var readyToDraw by remember { mutableStateOf(false) }
@@ -349,7 +383,7 @@ fun GameScreenLayout(content: @Composable () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 24.dp),
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceAround
     ) {
@@ -400,7 +434,6 @@ fun NormalModeScreen(
         }
     }
 
-
     Box {
         GameScreenLayout {
             GameHeader(
@@ -432,23 +465,14 @@ fun NormalModeScreen(
                     isCorrectAnswer = gameState.isCorrectAnswer,
                     onChoiceSelected = { choice -> viewModel.handleChoice(choice) }
                 )
-                when (gameState.gameResult) {
-                    GameResult.InProgress -> {
-
-                    }
-
-                    GameResult.Won -> {
-                        YouWonDialog(gameState = gameState, onPlayAgain = { viewModel.startGame() })
-                    }
-
-                    is GameResult.Lost -> { // Note the 'is' check for the sealed class
-                        YouLostDialog(
-                            gameState = gameState,
-                            onPlayAgain = { viewModel.startGame() },
-                            reason = (gameState.gameResult as GameResult.Lost).reason
-                        )
-                    }
-                }
+                GameResultHandler(
+                    gameState = gameState,
+                    onStartGame = { viewModel.startGame() },
+                    onHandleAdReward = {
+                        viewModel.handleAdReward()
+                    },
+                    onBack = onNavigateToStart
+                )
             }
         }
         if (showTimeBonusAnimation) {
@@ -492,33 +516,34 @@ fun StyledActionButton(text: String, onClick: () -> Unit) {
 @Composable
 fun StyledAlertDialog(
     title: String,
-    message: @Composable () -> Unit, // Changed to a Composable
+    message: @Composable () -> Unit,
     confirmButtonText: String,
     onConfirm: () -> Unit,
-    onDismiss: (() -> Unit)? = null // Make onDismiss optional and nullable
+    onDismiss: (() -> Unit)? = null,
+    isError: Boolean = true // New parameter with default to preserve existing behavior
 ) {
     AlertDialog(
-        onDismissRequest = { onDismiss?.invoke() }, // Use safe call
+        onDismissRequest = { onDismiss?.invoke() },
         title = {
             Text(
                 title,
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.error // Or any color you prefer
+                color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
             )
         },
-        text = message,  // Use the Composable message
+        text = message,
         confirmButton = {
             Button(onClick = onConfirm) {
                 Text(confirmButtonText, style = MaterialTheme.typography.bodyMedium)
             }
         },
         dismissButton = {
-            if (onDismiss != null) { // Only show dismiss button if onDismiss is provided
+            if (onDismiss != null) {
                 TextButton(onClick = onDismiss) {
                     Text(
-                        "Dismiss",
+                        "Go Back",
                         style = MaterialTheme.typography.bodyMedium
-                    ) // Or your preferred text
+                    )
                 }
             }
         }
@@ -526,7 +551,13 @@ fun StyledAlertDialog(
 }
 
 @Composable
-fun YouWonDialog(gameState: GameState, onPlayAgain: () -> Unit) {
+fun YouWonDialog(
+    gameState: GameState,
+    onPlayAgain: () -> Unit,
+    onBack: () -> Unit = {}
+) {
+    var showDialog by remember { mutableStateOf(true) }
+    if (!showDialog) return
     StyledAlertDialog(
         title = "Congratulations!",
         message = {
@@ -545,60 +576,203 @@ fun YouWonDialog(gameState: GameState, onPlayAgain: () -> Unit) {
         },
         confirmButtonText = "Play Again",
         onConfirm = onPlayAgain,
-        onDismiss = null // No dismiss button
+        onDismiss = {
+            showDialog = false
+            onBack()
+        },
+        isError = false
     )
 }
 
 @Composable
-fun YouLostDialog(gameState: GameState, onPlayAgain: () -> Unit, reason: LossReason) {
+fun YouLostDialog(
+    gameState: GameState,
+    onPlayAgain: () -> Unit,
+    reason: LossReason,
+    onWatchAd: (() -> Unit)? = null,
+    isLoading: Boolean = false,
+    adWatched: Boolean = false,
+    onBack: () -> Unit = {}
+) {
     val message = when (reason) {
         LossReason.OutOfLives -> "You ran out of lives!"
         LossReason.TimeOut -> "Time's Up!"
     }
-
+    var showDialog by remember { mutableStateOf(true) }
+    if (!showDialog) return
     StyledAlertDialog(
         title = "Game Over!",
-        message = { // Pass a Composable for the message content
+        message = {
             Column {
-                Text(
-                    message,
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Text(message, style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("Final Score: ${gameState.score}", style = MaterialTheme.typography.bodyMedium)
                 Text(
                     "High Score: ${gameState.highScore}",
                     style = MaterialTheme.typography.bodyMedium
                 )
+
+                // Show ad button if available
+                if (onWatchAd != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedButton(
+                        enabled = !isLoading,
+                        onClick = onWatchAd,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        when {
+                            isLoading -> {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Loading Ad...")
+                            }
+
+                            adWatched -> {
+                                Text(
+                                    "Continue Game",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                )
+                            }
+
+                            else -> {
+                                Text(
+                                    "Watch Ad to Continue Game",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
             }
         },
         confirmButtonText = "Play Again",
         onConfirm = onPlayAgain,
-        onDismiss = null // No dismiss button
+        onDismiss = {
+            showDialog = false
+            onBack()
+        }
     )
 }
 
-@Composable
-fun TimeUpDialog(gameState: GameState, onPlayAgain: () -> Unit) {
 
-    StyledAlertDialog(
-        title = "Time's Up!",
-        message = { // Pass a Composable for the message content
-            Column {
-                Text(
-                    "Your final score:",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Final Score: ${gameState.score}", style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    "High Score: ${gameState.highScore}",
-                    style = MaterialTheme.typography.bodyMedium
+@Composable
+fun GameResultHandler(
+    gameState: GameState,
+    onStartGame: () -> Unit,
+    onHandleAdReward: () -> Unit,
+    onBack: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    val activity = context as? Activity ?: return
+    val rewardedAdState = rememberRewardedAd("ca-app-pub-3940256099942544/5224354917")
+    val interstitialAdState = rememberInterstitialAd("ca-app-pub-3940256099942544/1033173712")
+    var isLoading by remember { mutableStateOf(false) }
+
+    // Track ad states
+    var adWatched by remember { mutableStateOf(false) }
+    var previousGameResult by remember { mutableStateOf<GameResult?>(null) }
+    var interstitialShown by remember { mutableStateOf(false) }
+
+    // Reset adWatched when game result changes
+    LaunchedEffect(gameState.gameResult) {
+        if (gameState.gameResult != previousGameResult) {
+            adWatched = false
+            previousGameResult = gameState.gameResult
+
+            // Check if we should show an interstitial ad (game completion)
+            if ((gameState.gameResult is GameResult.Won || gameState.gameResult is GameResult.Lost)
+                && AdManager.shouldShowAd() && !interstitialShown
+            ) {
+                interstitialShown = true
+                showInterstitialAd(
+                    interstitialAd = interstitialAdState.interstitialAd,
+                    activity = activity,
+                    onAdClosed = {
+                        interstitialAdState.loadAd() // Reload for next time
+                    }
                 )
             }
-        },
-        confirmButtonText = "Play Again",
-        onConfirm = onPlayAgain,
-        onDismiss = null // No dismiss button
-    )
+        }
+    }
+
+    // Rest of your GameResultHandler implementation...
+    when (val result = gameState.gameResult) {
+        GameResult.InProgress -> {
+            // No dialog when game is in progress
+        }
+
+        GameResult.Won -> {
+            // Track completed game for ad logic
+            LaunchedEffect(Unit) {
+                AdManager.incrementGamePlayCount()
+            }
+
+            YouWonDialog(
+                gameState = gameState,
+                onPlayAgain = { onStartGame() },
+                onBack = {
+                    AdManager.markShowAdOnHomeReturn()
+                    onBack()
+                }
+            )
+        }
+
+        is GameResult.Lost -> {
+            // Track completed game for ad logic
+            LaunchedEffect(Unit) {
+                AdManager.incrementGamePlayCount()
+            }
+
+            YouLostDialog(
+                reason = result.reason,
+                gameState = gameState,
+                onPlayAgain = { onStartGame() },
+                onBack = {
+                    AdManager.markShowAdOnHomeReturn()
+                    onBack()
+                },
+            )
+        }
+
+        is GameResult.AdContinueOffered -> {
+            YouLostDialog(
+                gameState = gameState,
+                onPlayAgain = { onStartGame() },
+                reason = (result.underlyingResult as GameResult.Lost).reason,
+                onWatchAd = {
+                    if (adWatched) {
+                        // If ad was already watched, directly call the callback
+                        onHandleAdReward()
+                    } else {
+                        isLoading = true
+                        showRewardedAd(
+                            rewardedAd = rewardedAdState.rewardedAd,
+                            activity = activity,
+                            onUserEarnedReward = {
+                                adWatched = true
+                                isLoading = false
+                            },
+                            onAdClosed = {
+                                isLoading = false
+                                rewardedAdState.loadAd() // Reload for next time
+                            }
+                        )
+                    }
+                },
+                isLoading = isLoading,
+                adWatched = adWatched,
+                onBack = {
+                    AdManager.markShowAdOnHomeReturn()
+                    onBack()
+                },
+            )
+        }
+    }
 }

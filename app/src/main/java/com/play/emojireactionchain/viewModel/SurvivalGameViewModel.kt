@@ -153,5 +153,12 @@ class SurvivalGameViewModel(
 
         }
     }
-
+    override fun handleAdReward() {
+        _gameState.value = _gameState.value.copy(
+            lives = 3,
+            gameResult = GameResult.InProgress,
+            isCorrectAnswer = true
+        )
+        nextQuestion()
+    }
 }
