@@ -33,6 +33,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -381,14 +382,19 @@ data class ButtonState(
 //Optional GameScreen Layout
 @Composable
 fun GameScreenLayout(content: @Composable () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceAround
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
     ) {
-        content()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceAround
+        ) {
+            content()
+        }
     }
 }
 
@@ -519,31 +525,31 @@ fun StyledAlertDialog(
     title: String,
     message: @Composable () -> Unit,
     confirmButtonText: String,
+    dismissButtonText: String = "Cancel",
     onConfirm: () -> Unit,
     onDismiss: (() -> Unit)? = null,
-    isError: Boolean = true // New parameter with default to preserve existing behavior
+    isError: Boolean = true
 ) {
     AlertDialog(
         onDismissRequest = { onDismiss?.invoke() },
         title = {
             Text(
                 title,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleLarge,
                 color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
             )
         },
         text = message,
         confirmButton = {
             Button(onClick = onConfirm) {
-                Text(confirmButtonText, style = MaterialTheme.typography.bodyMedium)
+                Text(confirmButtonText)
             }
         },
         dismissButton = {
             if (onDismiss != null) {
                 TextButton(onClick = onDismiss) {
                     Text(
-                        "Go Back",
-                        style = MaterialTheme.typography.bodyMedium
+                        dismissButtonText,
                     )
                 }
             }

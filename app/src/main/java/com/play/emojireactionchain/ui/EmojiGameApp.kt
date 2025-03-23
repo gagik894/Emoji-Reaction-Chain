@@ -2,12 +2,16 @@ package com.play.emojireactionchain.ui
 
 import android.app.Activity
 import android.content.Context
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 import androidx.navigation.compose.NavHost
@@ -67,66 +71,69 @@ fun EmojiGameApp() {
     val activity = context as? Activity
     val interstitialAdState = rememberInterstitialAd("ca-app-pub-2523891738770793/6480157179")
 
-    NavHost(
-        navController = navController,
-        startDestination = if (showTutorial) Routes.TUTORIAL else Routes.START
-    ) {
-        composable(Routes.TUTORIAL) {
-            TutorialScreen(
-                onTutorialFinished = {
-                    showTutorial = false
-                    markFirstLaunchComplete(context) // Mark tutorial as shown
-                    navController.navigate(Routes.START) {
-                        popUpTo(Routes.TUTORIAL) { inclusive = true }
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = if (showTutorial) Routes.TUTORIAL else Routes.START,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(Routes.TUTORIAL) {
+                TutorialScreen(
+                    onTutorialFinished = {
+                        showTutorial = false
+                        markFirstLaunchComplete(context) // Mark tutorial as shown
+                        navController.navigate(Routes.START) {
+                            popUpTo(Routes.TUTORIAL) { inclusive = true }
+                        }
+                    }
+                )
+            }
+            composable(Routes.START) {
+                // Check if we should show an ad on returning to home
+                LaunchedEffect(true) {
+                    if (AdManager.shouldShowAdOnHomeReturn() && activity != null) {
+                        showInterstitialAd(
+                            interstitialAd = interstitialAdState.interstitialAd,
+                            activity = activity,
+                            onAdClosed = {
+                                interstitialAdState.loadAd()
+                                AdManager.markAdShownOnHomeReturn()
+                            }
+                        )
                     }
                 }
-            )
-        }
-        composable(Routes.START) {
-            // Check if we should show an ad on returning to home
-            LaunchedEffect(true) {
-                if (AdManager.shouldShowAdOnHomeReturn() && activity != null) {
-                    showInterstitialAd(
-                        interstitialAd = interstitialAdState.interstitialAd,
-                        activity = activity,
-                        onAdClosed = {
-                            interstitialAdState.loadAd()
-                            AdManager.markAdShownOnHomeReturn()
-                        }
-                    )
+
+                ModeSelectionScreen { mode ->
+                    val route = when (mode) {
+                        GameMode.NORMAL -> Routes.NORMAL_MODE
+                        GameMode.TIMED -> Routes.TIMED_MODE
+                        GameMode.SURVIVAL -> Routes.SURVIVAL_MODE
+                        GameMode.BLITZ -> Routes.BLITZ_MODE
+                    }
+                    navController.navigate(route)
                 }
             }
-
-            ModeSelectionScreen { mode ->
-                val route = when (mode) {
-                    GameMode.NORMAL -> Routes.NORMAL_MODE
-                    GameMode.TIMED -> Routes.TIMED_MODE
-                    GameMode.SURVIVAL -> Routes.SURVIVAL_MODE
-                    GameMode.BLITZ -> Routes.BLITZ_MODE
-                }
-                navController.navigate(route)
+            composable(Routes.NORMAL_MODE) {
+                NormalModeScreen(onNavigateToStart = {
+                    navController.popBackStack(Routes.START, inclusive = false)
+                })
             }
-        }
-        composable(Routes.NORMAL_MODE) {
-            NormalModeScreen(onNavigateToStart = {
-                navController.popBackStack(Routes.START, inclusive = false)
-            })
-        }
-        composable(Routes.TIMED_MODE) {
-            TimedModeScreen(onNavigateToStart = {
-                navController.popBackStack(Routes.START, inclusive = false)
-            })
-        }
-        composable(Routes.SURVIVAL_MODE) {
-            SurvivalModeScreen(onNavigateToStart = {
-                navController.popBackStack(Routes.START, inclusive = false)
-            })
-        }
-        composable(Routes.BLITZ_MODE) {
-            BlitzModeScreen(onNavigateToStart = {
-                navController.popBackStack(Routes.START, inclusive = false)
+            composable(Routes.TIMED_MODE) {
+                TimedModeScreen(onNavigateToStart = {
+                    navController.popBackStack(Routes.START, inclusive = false)
+                })
+            }
+            composable(Routes.SURVIVAL_MODE) {
+                SurvivalModeScreen(onNavigateToStart = {
+                    navController.popBackStack(Routes.START, inclusive = false)
+                })
+            }
+            composable(Routes.BLITZ_MODE) {
+                BlitzModeScreen(onNavigateToStart = {
+                    navController.popBackStack(Routes.START, inclusive = false)
 
-            })
+                })
+            }
         }
     }
 }

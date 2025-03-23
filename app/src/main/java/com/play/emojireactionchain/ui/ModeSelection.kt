@@ -3,7 +3,6 @@ package com.play.emojireactionchain.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -26,6 +25,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.play.emojireactionchain.model.GameMode
 
 @Composable
@@ -37,12 +37,20 @@ fun ModeSelectionScreen(onModeSelected: (GameMode) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Choose a Game Mode",
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .padding(bottom = 32.dp)
-                .fillMaxWidth()
+            text = "Emoji Reaction Chain",
+            fontSize = 32.sp,
+            lineHeight = 40.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 32.dp),
+            textAlign = TextAlign.Center
+        )
+
+        Text(
+            text = "Select Game Mode",
+            fontSize = 24.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 24.dp)
         )
 
         LazyVerticalGrid(
@@ -87,6 +95,7 @@ fun ModeSelectionScreen(onModeSelected: (GameMode) -> Unit) {
     }
 }
 
+
 @Composable
 fun GameModeCard(
     icon: ImageVector,
@@ -95,7 +104,7 @@ fun GameModeCard(
     iconTint: Color,
     onModeSelected: () -> Unit
 ) {
-    Card (
+    Card(
         onClick = onModeSelected,
         modifier = Modifier.size(150.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = cardColor)
@@ -118,7 +127,9 @@ fun GameModeCard(
             Text(
                 modeName,
                 style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                color = Color.Black
             )
         }
     }
