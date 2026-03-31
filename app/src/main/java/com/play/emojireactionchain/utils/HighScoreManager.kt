@@ -3,6 +3,7 @@ package com.play.emojireactionchain.utils // Or your preferred package name
 import android.content.Context
 import android.content.SharedPreferences
 import com.play.emojireactionchain.model.GameMode
+import androidx.core.content.edit
 
 class HighScoreManager(context: Context) {
 
@@ -14,10 +15,14 @@ class HighScoreManager(context: Context) {
         return sharedPreferences.getInt(getHighScoreKey(gameMode), 0)
     }
 
+    fun getAllHighScores(): Map<GameMode, Int> {
+        return GameMode.entries.associateWith { mode -> getHighScore(mode) }
+    }
+
     fun updateHighScoreIfNewRecord(newScore: Int, gameMode: GameMode) {
         val currentHighScore = getHighScore(gameMode)
         if (newScore > currentHighScore) {
-            sharedPreferences.edit().putInt(getHighScoreKey(gameMode), newScore).apply()
+            sharedPreferences.edit { putInt(getHighScoreKey(gameMode), newScore) }
         }
     }
 
@@ -27,6 +32,6 @@ class HighScoreManager(context: Context) {
     }
     //for testing only
     fun clearAllHighScores() {
-        sharedPreferences.edit().clear().apply()
+        sharedPreferences.edit { clear() }
     }
 }

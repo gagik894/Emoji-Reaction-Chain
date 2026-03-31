@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -55,6 +56,12 @@ fun BlitzModeScreen(
     val context = LocalContext.current
     val soundManager = remember { SoundManager(context) }
     val highScoreManager = remember { HighScoreManager(context) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            soundManager.release()
+        }
+    }
 
     val viewModel: BlitzGameViewModel = viewModel(
         key = "BlitzGameViewModel",

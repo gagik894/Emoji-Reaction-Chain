@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,6 +46,12 @@ fun SurvivalModeScreen(onNavigateToStart: () -> Unit = {}) { // Added default va
     val soundManager = remember { SoundManager(context) }
     val highScoreManager = remember { HighScoreManager(context) }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            soundManager.release()
+        }
+    }
+
     val viewModel: SurvivalGameViewModel = viewModel(
         key = "SurvivalGameViewModel",
         factory = SurvivalGameViewModelFactory(soundManager, highScoreManager)
@@ -52,7 +60,7 @@ fun SurvivalModeScreen(onNavigateToStart: () -> Unit = {}) { // Added default va
 
     // --- Time Bonus Animation ---
     var showTimeBonusAnimation by remember { mutableStateOf(false) }
-    var currentBonusPointsForAnimation by remember { mutableStateOf(0) }
+    var currentBonusPointsForAnimation by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(gameState.currentTimeBonus) {
         if (gameState.currentTimeBonus > 0) {

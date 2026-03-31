@@ -8,7 +8,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -18,6 +20,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.play.emojireactionchain.model.GameMode
+import com.play.emojireactionchain.utils.DailyStreakManager
+import com.play.emojireactionchain.utils.HighScoreManager
 
 
 object Routes {
@@ -65,8 +69,12 @@ object AdManager {
 fun EmojiGameApp() {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val highScoreManager = remember(context) { HighScoreManager(context) }
+    val dailyStreakManager = remember(context) { DailyStreakManager(context) }
 
-    var showTutorial by rememberSaveable { mutableStateOf(isFirstLaunch(context)) }  // Check first launch
+    var showTutorial by rememberSaveable { mutableStateOf(isFirstLaunch(context)) }
+    var dailyStreak by rememberSaveable { mutableIntStateOf(1) }
+    var modeHighScores by remember { mutableStateOf(emptyMap<GameMode, Int>()) }
 
     val activity = context as? Activity
     val interstitialAdState = rememberInterstitialAd("ca-app-pub-2523891738770793/6480157179")
@@ -81,7 +89,7 @@ fun EmojiGameApp() {
                 TutorialScreen(
                     onTutorialFinished = {
                         showTutorial = false
-                        markFirstLaunchComplete(context) // Mark tutorial as shown
+                        markFirstLaunchComplete(context)
                         navController.navigate(Routes.START) {
                             popUpTo(Routes.TUTORIAL) { inclusive = true }
                         }
@@ -89,8 +97,10 @@ fun EmojiGameApp() {
                 )
             }
             composable(Routes.START) {
-                // Check if we should show an ad on returning to home
-                LaunchedEffect(true) {
+                LaunchedEffect(Unit) {
+                    dailyStreak = dailyStreakManager.updateAndGetCurrentStreak()
+                    modeHighScores = highScoreManager.getAllHighScores()
+
                     if (AdManager.shouldShowAdOnHomeReturn() && activity != null) {
                         showInterstitialAd(
                             interstitialAd = interstitialAdState.interstitialAd,
@@ -103,15 +113,19 @@ fun EmojiGameApp() {
                     }
                 }
 
-                ModeSelectionScreen { mode ->
-                    val route = when (mode) {
-                        GameMode.NORMAL -> Routes.NORMAL_MODE
-                        GameMode.TIMED -> Routes.TIMED_MODE
-                        GameMode.SURVIVAL -> Routes.SURVIVAL_MODE
-                        GameMode.BLITZ -> Routes.BLITZ_MODE
+                ModeSelectionScreen(
+                    dailyStreak = dailyStreak,
+                    bestScores = modeHighScores,
+                    onModeSelected = { mode ->
+                        val route = when (mode) {
+                            GameMode.NORMAL -> Routes.NORMAL_MODE
+                            GameMode.TIMED -> Routes.TIMED_MODE
+                            GameMode.SURVIVAL -> Routes.SURVIVAL_MODE
+                            GameMode.BLITZ -> Routes.BLITZ_MODE
+                        }
+                        navController.navigate(route)
                     }
-                    navController.navigate(route)
-                }
+                )
             }
             composable(Routes.NORMAL_MODE) {
                 NormalModeScreen(onNavigateToStart = {

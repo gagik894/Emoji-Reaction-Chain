@@ -1,3 +1,36 @@
 <resources>
     <string name="app_name">Emoji Reaction Chain</string>
+
+    <string name="home_title">Emoji Reaction Chain</string>
+    <string name="home_subtitle">Pick your challenge</string>
+    <string name="daily_streak_label">Daily streak</string>
+    <string name="daily_streak_value">%1$d days</string>
+    <string name="best_scores_label">Best scores</string>
+    <string name="best_score_item">%1$s %2$d</string>
+
+    <string name="mode_normal_name">Normal Mode</string>
+    <string name="mode_normal_subtitle">Balanced challenge, no timer pressure</string>
+    <string name="mode_timed_name">Timed Mode</string>
+    <string name="mode_timed_subtitle">Race the clock and chain fast</string>
+    <string name="mode_survival_name">Survival Mode</string>
+    <string name="mode_survival_subtitle">One mistake hurts, stay sharp</string>
+    <string name="mode_blitz_name">Blitz Mode</string>
+    <string name="mode_blitz_subtitle">High-speed rounds for top scores</string>
+
+    <string name="mode_short_normal">Normal</string>
+    <string name="mode_short_timed">Timed</string>
+    <string name="mode_short_survival">Survival</string>
+    <string name="mode_short_blitz">Blitz</string>
+
+    <string name="tutorial_title">Quick Start</string>
+    <string name="tutorial_step_1_title">Spot the chain rule</string>
+    <string name="tutorial_step_1_body">Find what connects the emojis, then pick the best next emoji.</string>
+    <string name="tutorial_step_2_title">Answer quickly</string>
+    <string name="tutorial_step_2_body">Faster answers help in timed modes and can build streak momentum.</string>
+    <string name="tutorial_step_3_title">Choose your mode</string>
+    <string name="tutorial_step_3_body">Start with Normal, then try Timed, Survival, and Blitz for higher highscores.</string>
+    <string name="tutorial_action_next">Next</string>
+    <string name="tutorial_action_back">Back</string>
+    <string name="tutorial_action_skip">Skip</string>
+    <string name="tutorial_action_start">Start Playing</string>
 </resources>

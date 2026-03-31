@@ -102,11 +102,6 @@ abstract class BaseGameViewModel(
     init {
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        soundManager.release()
-    }
-
     protected fun loadHighScore(gameMode: GameMode) { // Add gameMode parameter
         val highScore = highScoreManager.getHighScore(gameMode)
         _gameState.value = _gameState.value.copy(highScore = highScore, gameMode = gameMode) // Also, set gameMode
