@@ -1,322 +1,408 @@
 package com.play.emojireactionchain.ui
 
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.play.emojireactionchain.R
 import com.play.emojireactionchain.model.GameMode
-import com.play.emojireactionchain.ui.theme.PastelBlue
-import com.play.emojireactionchain.ui.theme.PastelGreen
-import com.play.emojireactionchain.ui.theme.PastelPink
-import com.play.emojireactionchain.ui.theme.PastelYellow
-import com.play.emojireactionchain.ui.theme.PrimarySoft
-import com.play.emojireactionchain.ui.theme.SecondarySoft
-import com.play.emojireactionchain.ui.theme.SurfaceWhite
-import com.play.emojireactionchain.ui.theme.TertiarySoft
-import com.play.emojireactionchain.ui.theme.TextMain
+import com.play.emojireactionchain.ui.theme.*
 
 private data class GameModeItem(
     val mode: GameMode,
     val nameRes: Int,
     val subtitleRes: Int,
     val icon: ImageVector,
-    val cardColor: Color,
-    val accentColor: Color
+    val colors: List<Color>,
+    val emoji: String
 )
 
 private val gameModes = listOf(
-    GameModeItem(GameMode.NORMAL, R.string.mode_normal_name, R.string.mode_normal_subtitle, Icons.Filled.PlayArrow, PastelGreen, Color(0xFF43A047)),
-    GameModeItem(GameMode.TIMED, R.string.mode_timed_name, R.string.mode_timed_subtitle, Icons.Filled.Timer, PastelBlue, Color(0xFF1E88E5)),
-    GameModeItem(GameMode.SURVIVAL, R.string.mode_survival_name, R.string.mode_survival_subtitle, Icons.Filled.Shield, PastelYellow, Color(0xFFFBC02D)),
-    GameModeItem(GameMode.BLITZ, R.string.mode_blitz_name, R.string.mode_blitz_subtitle, Icons.Filled.Bolt, PastelPink, SecondarySoft)
+    GameModeItem(
+        GameMode.NORMAL, R.string.mode_normal_name, R.string.mode_normal_subtitle,
+        Icons.Filled.PlayArrow, listOf(Color(0xFF43A047), Color(0xFF2E7D32)), "🟢"
+    ),
+    GameModeItem(
+        GameMode.TIMED, R.string.mode_timed_name, R.string.mode_timed_subtitle,
+        Icons.Filled.Timer, listOf(Color(0xFF1E88E5), Color(0xFF1565C0)), "⏳"
+    ),
+    GameModeItem(
+        GameMode.SURVIVAL, R.string.mode_survival_name, R.string.mode_survival_subtitle,
+        Icons.Filled.Shield, listOf(Color(0xFFFBC02D), Color(0xFFF57F17)), "🛡️"
+    ),
+    GameModeItem(
+        GameMode.BLITZ, R.string.mode_blitz_name, R.string.mode_blitz_subtitle,
+        Icons.Filled.Bolt, listOf(Color(0xFFD81B60), Color(0xFFAD1457)), "⚡"
+    )
 )
 
+/**
+ * Screen for selecting different game modes.
+ */
 @Composable
 fun ModeSelectionScreen(
     dailyStreak: Int,
     bestScores: Map<GameMode, Int>,
     onModeSelected: (GameMode) -> Unit
 ) {
-    var showHeader by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { showHeader = true }
+    val isPreview = LocalInspectionMode.current
+    var visible by remember { mutableStateOf(isPreview) }
+    LaunchedEffect(Unit) { if (!isPreview) visible = true }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
-                    )
-                )
-            )
-    ) {
+    val isDark = isSystemInDarkTheme()
+
+    GameBackground {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-            AnimatedVisibility(visible = showHeader) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = stringResource(R.string.home_title),
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 36.sp,
-                            lineHeight = 42.sp
-                        ),
-                        color = PrimarySoft,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = stringResource(R.string.home_subtitle),
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.Medium,
-                            letterSpacing = 0.5.sp
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
-            }
+            HeaderSection(visible, isDark, dailyStreak)
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            HomeStatsRowWithStyle(
-                dailyStreak = dailyStreak,
-                bestScores = bestScores
-            )
+            SectionTitleSection(visible, isDark)
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                horizontalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                items(gameModes) { item ->
-                    GameModeCardStyled(
-                        icon = item.icon,
-                        modeName = stringResource(item.nameRes),
-                        modeSubtitle = stringResource(item.subtitleRes),
-                        cardColor = item.cardColor,
-                        accentColor = item.accentColor,
-                        onModeSelected = { onModeSelected(item.mode) }
-                    )
-                }
-            }
+            GameModesGrid(isPreview, bestScores, onModeSelected)
         }
     }
 }
 
 @Composable
-private fun HomeStatsRowWithStyle(
-    dailyStreak: Int,
-    bestScores: Map<GameMode, Int>,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Card(
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(8.dp, RoundedCornerShape(24.dp))
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(20.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(TertiarySoft.copy(alpha = 0.2f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("🔥", fontSize = 28.sp)
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        text = stringResource(R.string.daily_streak_label),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = stringResource(R.string.daily_streak_value, dailyStreak),
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        color = TextMain
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = stringResource(R.string.best_scores_label),
-            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
-        )
-
-        val modeOrder = listOf(GameMode.NORMAL, GameMode.TIMED, GameMode.SURVIVAL, GameMode.BLITZ)
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            items(modeOrder) { mode ->
-                val shortLabel = stringResource(shortModeLabelRes(mode))
-                val score = bestScores[mode] ?: 0
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    border = null,
-                    modifier = Modifier.shadow(2.dp, RoundedCornerShape(16.dp))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .background(getModeAccent(mode), CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "$shortLabel: $score",
-                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                            color = TextMain
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun GameModeCardStyled(
-    icon: ImageVector,
-    modeName: String,
-    modeSubtitle: String,
-    cardColor: Color,
-    accentColor: Color,
-    onModeSelected: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .height(180.dp)
-            .fillMaxWidth()
-            .clickable { onModeSelected() }
-            .shadow(4.dp, RoundedCornerShape(32.dp)),
-        shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(containerColor = cardColor)
+private fun HeaderSection(visible: Boolean, isDark: Boolean, dailyStreak: Int) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(tween(800)) + slideInVertically(initialOffsetY = { -40 })
     ) {
-        Column(
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = "EMOJI CHAIN",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        brush = Brush.horizontalGradient(listOf(PrimarySoft, SecondarySoft)),
+                        letterSpacing = 1.sp
+                    )
+                )
+                Text(
+                    text = "MASTER THE LINK",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = if (isDark) Color.White.copy(alpha = 0.5f) else TextSecondary,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    )
+                )
+            }
+
+            StreakBadge(dailyStreak)
+        }
+    }
+}
+
+@Composable
+private fun SectionTitleSection(visible: Boolean, isDark: Boolean) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(tween(600, 200))
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "READY TO PLAY?",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (isDark) Color.White else PrimarySoft
+                )
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Box(
+                modifier = Modifier
+                    .height(2.dp)
+                    .weight(1f)
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                (if (isDark) Color.White else PrimarySoft).copy(alpha = if (isDark) 0.35f else 0.6f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+            )
+        }
+    }
+}
+
+@Composable
+private fun GameModesGrid(
+    isPreview: Boolean,
+    bestScores: Map<GameMode, Int>,
+    onModeSelected: (GameMode) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = Modifier
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        contentPadding = PaddingValues(bottom = 40.dp)
+    ) {
+        itemsIndexed(gameModes) { index, item ->
+            var itemVisible by remember { mutableStateOf(isPreview) }
+            LaunchedEffect(Unit) {
+                if (!isPreview) {
+                    kotlinx.coroutines.delay(150L + index * 80L)
+                    itemVisible = true
+                }
+            }
+            AnimatedVisibility(
+                visible = itemVisible,
+                enter = fadeIn(tween(500)) + scaleIn(
+                    initialScale = 0.8f,
+                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+                )
+            ) {
+                GameHeroCard(
+                    item = item,
+                    highScore = bestScores[item.mode] ?: 0,
+                    onClick = { onModeSelected(item.mode) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StreakBadge(streak: Int) {
+    val infiniteTransition = rememberInfiniteTransition(label = "streak_animation")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "streak_scale"
+    )
+
+    Surface(
+        modifier = Modifier
+            .scale(scale)
+            .shadow(16.dp, RoundedCornerShape(24.dp), ambientColor = WarningOrange),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(2.dp, Brush.linearGradient(listOf(WarningOrange, Color(0xFFFFD54F))))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "🔥", fontSize = 22.sp)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = streak.toString(),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+@Composable
+private fun GameHeroCard(
+    item: GameModeItem,
+    highScore: Int,
+    onClick: () -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.94f else 1f,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "card_scale"
+    )
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceAround,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .aspectRatio(0.85f)
+                .scale(scale)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick
+                ),
+            shape = RoundedCornerShape(32.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .size(64.dp)
-                    .background(accentColor.copy(alpha = 0.15f), CircleShape),
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()
+                    .background(Brush.verticalGradient(item.colors))
+                    .padding(16.dp)
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                    tint = accentColor
-                )
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                HighScoreBadge(highScore, Modifier.align(Alignment.TopEnd))
+
+                // Background decorative emoji
                 Text(
-                    text = modeName,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = TextMain,
-                    textAlign = TextAlign.Center
+                    text = item.emoji,
+                    fontSize = 90.sp,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .graphicsLayer(alpha = 0.15f)
+                        .rotate(-15f)
                 )
-                Text(
-                    text = modeSubtitle,
-                    style = MaterialTheme.typography.bodySmall.copy(lineHeight = 14.sp),
-                    color = TextMain.copy(alpha = 0.7f),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconContainer(item.icon)
+
+                    Text(
+                        text = stringResource(item.nameRes).uppercase(),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Black,
+                            fontSize = 18.sp,
+                            color = Color.White
+                        )
+                    )
+                }
             }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Text(
+            text = stringResource(item.subtitleRes),
+            style = MaterialTheme.typography.labelSmall.copy(
+                lineHeight = 13.sp,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                fontWeight = FontWeight.ExtraBold
+            ),
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
+    }
+}
+
+@Composable
+private fun HighScoreBadge(highScore: Int, modifier: Modifier = Modifier) {
+    if (highScore > 0) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = Color.Black.copy(alpha = 0.25f),
+            modifier = modifier
+        ) {
+            Text(
+                text = "🏆 $highScore",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                ),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            )
         }
     }
 }
 
-private fun shortModeLabelRes(mode: GameMode): Int {
-    return when (mode) {
-        GameMode.NORMAL -> R.string.mode_short_normal
-        GameMode.TIMED -> R.string.mode_short_timed
-        GameMode.SURVIVAL -> R.string.mode_short_survival
-        GameMode.BLITZ -> R.string.mode_short_blitz
+@Composable
+private fun IconContainer(icon: ImageVector) {
+    Surface(
+        modifier = Modifier.size(56.dp),
+        shape = RoundedCornerShape(18.dp),
+        color = Color.White.copy(alpha = 0.25f)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+        }
     }
 }
 
-private fun getModeAccent(mode: GameMode): Color {
-    return when (mode) {
-        GameMode.NORMAL -> Color(0xFF43A047)
-        GameMode.TIMED -> Color(0xFF1E88E5)
-        GameMode.SURVIVAL -> Color(0xFFFBC02D)
-        GameMode.BLITZ -> SecondarySoft
+@Preview(showBackground = true)
+@Composable
+fun ModeSelectionScreenPreview() {
+    EmojiGameTheme(darkTheme = false) {
+        ModeSelectionScreen(
+            dailyStreak = 7,
+            bestScores = mapOf(
+                GameMode.NORMAL to 1250,
+                GameMode.TIMED to 840,
+                GameMode.SURVIVAL to 420,
+                GameMode.BLITZ to 2100
+            ),
+            onModeSelected = {}
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
+)
+@Composable
+fun ModeSelectionScreenDarkPreview() {
+    EmojiGameTheme {
+        ModeSelectionScreen(
+            dailyStreak = 12,
+            bestScores = mapOf(
+                GameMode.NORMAL to 2500,
+                GameMode.TIMED to 1500,
+                GameMode.SURVIVAL to 800,
+                GameMode.BLITZ to 5000
+            ),
+            onModeSelected = {}
+        )
     }
 }
