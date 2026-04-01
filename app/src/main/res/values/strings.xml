@@ -80,4 +80,7 @@
     <string name="sticker_book_count">%1$d stickers collected</string>
     <string name="sticker_book_count_with_latest">%1$d stickers collected • latest: %2$s</string>
     <string name="sticker_daily_reward">New sticker unlocked: %1$s</string>
+    <string name="pet_companion_title">Pet Companion</string>
+    <string name="pet_companion_growing">Your buddy is growing with you</string>
+    <string name="pet_companion_advanced">Your buddy is super happy today!</string>
 </resources>

@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
@@ -77,7 +78,6 @@ import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
 import com.play.emojireactionchain.ui.theme.TextSecondary
 import com.play.emojireactionchain.ui.theme.WarningOrange
-import com.play.emojireactionchain.utils.AchievementBadge
 
 private data class GameModeItem(
     val mode: GameMode,
@@ -114,14 +114,9 @@ private val gameModes = listOf(
 fun ModeSelectionScreen(
     dailyStreak: Int,
     bestScores: Map<GameMode, Int>,
-    stickerCount: Int = 0,
-    latestSticker: String? = null,
     newStickerEmoji: String? = null,
-    avatarEmoji: String = "",
-    avatarTitle: String = "",
-    avatarSubtitle: String = "",
-    unlockedBadges: List<AchievementBadge> = emptyList(),
-    onModeSelected: (GameMode) -> Unit
+    onModeSelected: (GameMode) -> Unit,
+    onCollectionSelected: () -> Unit
 ) {
     val isPreview = LocalInspectionMode.current
     var visible by remember { mutableStateOf(isPreview) }
@@ -135,9 +130,9 @@ fun ModeSelectionScreen(
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            HeaderSection(visible, isDark, dailyStreak, stickerCount, latestSticker, avatarEmoji, avatarTitle, avatarSubtitle, unlockedBadges)
+            HeaderSection(visible, isDark, dailyStreak, onCollectionSelected)
 
             if (newStickerEmoji != null) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -159,93 +154,37 @@ private fun HeaderSection(
     visible: Boolean,
     isDark: Boolean,
     dailyStreak: Int,
-    stickerCount: Int,
-    latestSticker: String?,
-    avatarEmoji: String,
-    avatarTitle: String,
-    avatarSubtitle: String,
-    unlockedBadges: List<AchievementBadge>
+    onCollectionSelected: () -> Unit
 ) {
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn(tween(800)) + slideInVertically(initialOffsetY = { -40 })
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.mode_selection_brand_title),
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Black,
-                            brush = Brush.horizontalGradient(listOf(PrimarySoft, SecondarySoft)),
-                            letterSpacing = 1.sp
-                        )
-                    )
-                    Text(
-                        text = stringResource(R.string.mode_selection_brand_subtitle),
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            color = if (isDark) Color.White.copy(alpha = 0.5f) else TextSecondary,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp
-                        )
-                    )
-                }
-
-                StreakBadge(dailyStreak)
-            }
-
-            StickerBookBadge(stickerCount, latestSticker)
-
-            if (avatarEmoji.isNotBlank()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                AvatarProgressBadge(avatarEmoji, avatarTitle, avatarSubtitle)
-            }
-
-            if (unlockedBadges.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                BadgeRow(unlockedBadges)
-            }
-        }
-    }
-}
-
-@Composable
-private fun StickerBookBadge(stickerCount: Int, latestSticker: String?) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(2.dp, Brush.linearGradient(listOf(SecondarySoft, PrimarySoft)))
-    ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = "📒", fontSize = 22.sp)
-            Spacer(modifier = Modifier.width(10.dp))
             Column {
                 Text(
-                    text = stringResource(R.string.sticker_book_title),
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Black),
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = stringResource(R.string.mode_selection_brand_title),
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        brush = Brush.horizontalGradient(listOf(PrimarySoft, SecondarySoft)),
+                        letterSpacing = 1.sp
+                    )
                 )
                 Text(
-                    text = if (latestSticker != null) {
-                        stringResource(R.string.sticker_book_count_with_latest, stickerCount, latestSticker)
-                    } else {
-                        stringResource(R.string.sticker_book_count, stickerCount)
-                    },
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                    text = stringResource(R.string.mode_selection_brand_subtitle),
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = if (isDark) Color.White.copy(alpha = 0.5f) else TextSecondary,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    )
                 )
             }
+
+            StreakBadge(dailyStreak, onCollectionSelected)
         }
     }
 }
@@ -255,84 +194,22 @@ private fun StickerCelebrationCard(stickerEmoji: String) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        color = SecondarySoft.copy(alpha = 0.14f),
-        border = BorderStroke(1.dp, SecondarySoft.copy(alpha = 0.6f))
+        color = SecondarySoft.copy(alpha = 0.22f),
+        border = BorderStroke(2.dp, Brush.linearGradient(listOf(PrimarySoft, SecondarySoft)))
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "✨", fontSize = 18.sp)
+            Text(text = "✨", fontSize = 22.sp)
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = stringResource(R.string.sticker_daily_reward, stickerEmoji),
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Black),
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = stickerEmoji, fontSize = 24.sp)
-        }
-    }
-}
-
-@Composable
-private fun AvatarProgressBadge(avatarEmoji: String, avatarTitle: String, avatarSubtitle: String) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        color = PrimarySoft.copy(alpha = 0.08f),
-        border = BorderStroke(1.dp, PrimarySoft.copy(alpha = 0.55f))
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = avatarEmoji, fontSize = 28.sp)
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = avatarTitle,
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Black),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = avatarSubtitle,
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun BadgeRow(badges: List<AchievementBadge>) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = "Achievement Badges",
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Black),
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            badges.take(3).forEach { badge ->
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = WarningOrange.copy(alpha = 0.12f),
-                    border = BorderStroke(1.dp, WarningOrange.copy(alpha = 0.45f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = badge.emoji, fontSize = 16.sp)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = badge.title,
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }
-                }
-            }
+            Text(text = stickerEmoji, fontSize = 28.sp)
         }
     }
 }
@@ -412,13 +289,13 @@ private fun GameModesGrid(
 }
 
 @Composable
-private fun StreakBadge(streak: Int) {
+private fun StreakBadge(streak: Int, onClick: () -> Unit) {
     val infiniteTransition = rememberInfiniteTransition(label = "streak_animation")
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.08f,
+        targetValue = 1.12f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = EaseInOutSine),
+            animation = tween(800, easing = EaseInOutSine),
             repeatMode = RepeatMode.Reverse
         ),
         label = "streak_scale"
@@ -427,22 +304,24 @@ private fun StreakBadge(streak: Int) {
     Surface(
         modifier = Modifier
             .scale(scale)
-            .shadow(16.dp, RoundedCornerShape(24.dp), ambientColor = WarningOrange),
-        shape = RoundedCornerShape(24.dp),
+            .shadow(20.dp, CircleShape, ambientColor = WarningOrange)
+            .clickable(onClick = onClick),
+        shape = CircleShape,
         color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(2.dp, Brush.linearGradient(listOf(WarningOrange, Color(0xFFFFD54F))))
+        border = BorderStroke(3.dp, Brush.linearGradient(listOf(WarningOrange, Color(0xFFFFD54F), WarningOrange)))
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier.padding(12.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Text(text = "🔥", fontSize = 22.sp)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = streak.toString(),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = "🔥", fontSize = 28.sp)
+                Text(
+                    text = streak.toString(),
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 }
@@ -575,7 +454,8 @@ fun ModeSelectionScreenPreview() {
                 GameMode.SURVIVAL to 420,
                 GameMode.BLITZ to 2100
             ),
-            onModeSelected = {}
+            onModeSelected = {},
+            onCollectionSelected = {}
         )
     }
 }
@@ -595,7 +475,8 @@ fun ModeSelectionScreenDarkPreview() {
                 GameMode.SURVIVAL to 800,
                 GameMode.BLITZ to 5000
             ),
-            onModeSelected = {}
+            onModeSelected = {},
+            onCollectionSelected = {}
         )
     }
 }

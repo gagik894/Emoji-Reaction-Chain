@@ -36,6 +36,7 @@ object Routes {
     const val TIMED_MODE = "timed"
     const val SURVIVAL_MODE = "survival"
     const val BLITZ_MODE = "blitz"
+    const val COLLECTION = "collection"
 }
 
 object AdManager {
@@ -83,7 +84,7 @@ fun EmojiGameApp() {
     var dailyStreak by rememberSaveable { mutableIntStateOf(1) }
     var modeHighScores by remember { mutableStateOf(emptyMap<GameMode, Int>()) }
     var stickerCount by rememberSaveable { mutableIntStateOf(0) }
-    var latestSticker by rememberSaveable { mutableStateOf<String?>(null) }
+    var unlockedStickers by remember { mutableStateOf(stickerBookManager.getUnlockedStickers()) }
     var dailyStickerEmoji by rememberSaveable { mutableStateOf<String?>(null) }
     var avatarLevelEmoji by rememberSaveable { mutableStateOf("") }
     var avatarLevelTitle by rememberSaveable { mutableStateOf("") }
@@ -116,21 +117,22 @@ fun EmojiGameApp() {
                         dailyStreak = dailyStreakManager.updateAndGetCurrentStreak()
                         modeHighScores = highScoreManager.getAllHighScores()
                         stickerCount = stickerBookManager.getStickerCount()
-                        latestSticker = stickerBookManager.getLatestSticker()
+                        unlockedStickers = stickerBookManager.getUnlockedStickers()
                         dailyStickerEmoji = stickerBookManager.awardDailyStickerIfNeeded()?.sticker
-                        stickerCount = stickerBookManager.getStickerCount()
-                        latestSticker = stickerBookManager.getLatestSticker()
+                        
+                        if (dailyStickerEmoji != null) {
+                            stickerCount = stickerBookManager.getStickerCount()
+                            unlockedStickers = stickerBookManager.getUnlockedStickers()
+                            
+                            celebrationSoundManager.playCorrectSound()
+                            celebrationSoundManager.playCorrectHaptic()
+                        }
 
                         val avatarProgress = avatarProgressManager.getAvatarProgress(stickerCount)
                         avatarLevelEmoji = avatarProgress.emoji
                         avatarLevelTitle = avatarProgress.title
                         avatarLevelSubtitle = avatarProgress.subtitle
                         unlockedBadges = achievementBadgeManager.getUnlockedBadges(dailyStreak, modeHighScores, stickerCount)
-
-                        if (dailyStickerEmoji != null) {
-                            celebrationSoundManager.playCorrectSound()
-                            celebrationSoundManager.playCorrectHaptic()
-                        }
 
                         if (AdManager.shouldShowAdOnHomeReturn() && activity != null) {
                             showInterstitialAd(
@@ -147,13 +149,7 @@ fun EmojiGameApp() {
                     ModeSelectionScreen(
                         dailyStreak = dailyStreak,
                         bestScores = modeHighScores,
-                        stickerCount = stickerCount,
-                        latestSticker = latestSticker,
                         newStickerEmoji = dailyStickerEmoji,
-                        avatarEmoji = avatarLevelEmoji,
-                        avatarTitle = avatarLevelTitle,
-                        avatarSubtitle = avatarLevelSubtitle,
-                        unlockedBadges = unlockedBadges,
                         onModeSelected = { mode ->
                             val route = when (mode) {
                                 GameMode.NORMAL -> Routes.NORMAL_MODE
@@ -162,7 +158,8 @@ fun EmojiGameApp() {
                                 GameMode.BLITZ -> Routes.BLITZ_MODE
                             }
                             navController.navigate(route)
-                        }
+                        },
+                        onCollectionSelected = { navController.navigate(Routes.COLLECTION) }
                     )
                 }
                 composable(Routes.NORMAL_MODE) {
@@ -185,6 +182,16 @@ fun EmojiGameApp() {
                         navController.popBackStack(Routes.START, inclusive = false)
 
                     })
+                }
+                composable(Routes.COLLECTION) {
+                    CollectionScreen(
+                        unlockedStickers = unlockedStickers,
+                        avatarEmoji = avatarLevelEmoji,
+                        avatarTitle = avatarLevelTitle,
+                        avatarSubtitle = avatarLevelSubtitle,
+                        unlockedBadges = unlockedBadges,
+                        onBack = { navController.popBackStack() }
+                    )
                 }
             }
         }

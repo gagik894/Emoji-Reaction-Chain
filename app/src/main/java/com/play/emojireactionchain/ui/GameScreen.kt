@@ -101,8 +101,8 @@ fun TimeBonusAnimation(bonusPoints: Int) {
         Text(
             text = stringResource(R.string.time_bonus_text, bonusPoints),
             style = MaterialTheme.typography.titleLarge,
-            color = SuccessGreen,
-            fontSize = 32.sp,
+            color = SecondarySoft,
+            fontSize = 36.sp,
             modifier = Modifier
                 .offset(y = with(density) { translateYPx.value.toDp() })
                 .graphicsLayer(scaleX = scale.value, scaleY = scale.value, alpha = alpha.value)

@@ -17,25 +17,25 @@ class AchievementBadgeManager {
         val badges = mutableListOf<AchievementBadge>()
 
         if (stickerCount >= 1) {
-            badges += AchievementBadge("First Sticker", "🎁", "Collected your first sticker")
+            badges += AchievementBadge("Sticker Sprout", "🎁", "Collected your very first sticker")
         }
         if (stickerCount >= 5) {
-            badges += AchievementBadge("Sticker Collector", "📒", "Collected 5 stickers")
+            badges += AchievementBadge("Sticker Explorer", "📒", "Collected 5 stickers and counting")
         }
         if (stickerCount >= 10) {
-            badges += AchievementBadge("Sticker Master", "🌟", "Collected 10 stickers")
+            badges += AchievementBadge("Sticker Star", "🌟", "Collected 10 stickers and shining bright")
         }
         if (dailyStreak >= 3) {
-            badges += AchievementBadge("Streak Starter", "🔥", "Played 3 days in a row")
+            badges += AchievementBadge("Cuddle Streak", "🔥", "Played 3 days in a row")
         }
         if (dailyStreak >= 7) {
-            badges += AchievementBadge("Daily Champ", "🏆", "Played 7 days in a row")
+            badges += AchievementBadge("Daily Hero", "🏆", "Played 7 days in a row")
         }
         if ((bestScores.values.maxOrNull() ?: 0) >= 1000) {
-            badges += AchievementBadge("Score Star", "⭐", "Reached a score of 1000")
+            badges += AchievementBadge("Score Spark", "⭐", "Reached a super sparkly score of 1000")
         }
         if (bestScores.values.count { it >= 500 } >= 2) {
-            badges += AchievementBadge("Mode Mixer", "🎮", "Scored well in 2 modes")
+            badges += AchievementBadge("Mode Explorer", "🎮", "Scored well in 2 modes")
         }
 
         return badges
