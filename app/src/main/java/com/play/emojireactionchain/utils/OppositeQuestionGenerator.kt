@@ -69,7 +69,9 @@ class OppositeQuestionGenerator : QuestionGenerator {
         choices.add(correctAnswerEmoji)
 
         val oppositeEmojiMap = BaseGameViewModel.oppositeEmojiMap
-        val allEmojis = BaseGameViewModel.emojiCategories.values.flatMap { it.emojis }.distinct()
+        val allEmojis = availableEmojis.distinct().ifEmpty {
+            BaseGameViewModel.emojiCategories.values.flatMap { it.emojis }.distinct()
+        }
 
         // Distractors:  Not the correct answer, not in the chain, and *not* the opposite of the correct answer.
         val validDistractors = allEmojis.filterNot { emoji ->
@@ -105,7 +107,7 @@ class OppositeQuestionGenerator : QuestionGenerator {
             }
         }
         //Reduce number of distractors if not enough available
-        while (distractorChoices.size < numDistractors && numDistractors > 0) {
+        while (distractorChoices.size < numDistractors) {
             numDistractors--
             distractorChoices = if (level > 4) {
                 //Level 5+ prioritize using opposites of emojis.

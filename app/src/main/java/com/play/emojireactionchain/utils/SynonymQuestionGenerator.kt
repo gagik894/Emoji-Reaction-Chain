@@ -65,7 +65,9 @@ class SynonymQuestionGenerator : QuestionGenerator {
         choices.add(correctAnswerEmoji)
 
         // All emojis for wider distractor selection
-        val allEmojis = BaseGameViewModel.emojiCategories.values.flatMap { it.emojis }.distinct()
+        val allEmojis = availableEmojis.distinct().ifEmpty {
+            BaseGameViewModel.emojiCategories.values.flatMap { it.emojis }.distinct()
+        }
 
 
         // Distractors that are NOT synonyms and are not in the chain
@@ -100,7 +102,7 @@ class SynonymQuestionGenerator : QuestionGenerator {
             }
         }
 
-        while(distractorChoices.size < numDistractors && numDistractors > 0){
+        while(distractorChoices.size < numDistractors){
             numDistractors--
             distractorChoices = if(level > 4){
                 //Level 5+ prioritize synonyms

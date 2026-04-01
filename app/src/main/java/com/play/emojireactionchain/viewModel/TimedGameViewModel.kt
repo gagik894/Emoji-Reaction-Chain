@@ -22,6 +22,7 @@ class TimedGameViewModel(
 
     private val totalGameTimeSeconds: Int = 60
     private val timeBonusPerCorrectAnswer: Int = 2
+    private val timePenaltyPerIncorrectAnswer: Int = 2
     private var timerJob: Job = Job()
     private val _remainingGameTimeFlow = MutableStateFlow(0L)
     val remainingGameTimeFlow = _remainingGameTimeFlow.asStateFlow()
@@ -58,7 +59,11 @@ class TimedGameViewModel(
         val ruleCategory = selectRuleAndCategory(level)
         val category = ruleCategory.category
         val rule = ruleCategory.rule
-        val availableEmojis = category.emojis
+        val availableEmojis = if (rule.name == "Category Mix-Up") {
+            emojiCategories.values.flatMap { it.emojis }.distinct()
+        } else {
+            category.emojis
+        }
 
         val questionGenerator: QuestionGenerator = getQuestionGenerator(rule.name)
         return questionGenerator.generateQuestion(availableEmojis, level)
@@ -110,17 +115,22 @@ class TimedGameViewModel(
 
 
     override suspend fun handleIncorrectChoice() {
-        // No timer to cancel here either
         currentStreak = 0
+        _remainingGameTimeFlow.value = (_remainingGameTimeFlow.value - (timePenaltyPerIncorrectAnswer * 1000L)).coerceAtLeast(0L)
 
-        // Don't end the game immediately, just reduce time
         _gameState.value = _gameState.value.copy(
             isCorrectAnswer = false,
-            currentTimeBonus = 0,
+            currentTimeBonus = -timePenaltyPerIncorrectAnswer,
             currentStreakBonus = 0,
             currentStreakCount = currentStreak,
             gameResult = GameResult.InProgress // Stay in progress
         )
+
+        if (_remainingGameTimeFlow.value <= 0L) {
+            endGame(GameResult.Lost(LossReason.TimeOut))
+            return
+        }
+
         soundManager.playIncorrectSoundAndHaptic()
         delay(500)
         nextQuestion()

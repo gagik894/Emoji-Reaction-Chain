@@ -96,6 +96,7 @@ abstract class BaseGameViewModel(
     protected var currentStreak: Int = 0
     protected val streakBonusThreshold: Int = 3
     protected val streakBonusPoints: Int = 20
+    private var isAnswerInFlight: Boolean = false
 
 
     // --- Initialization ---
@@ -145,7 +146,7 @@ abstract class BaseGameViewModel(
             } else {
                 // Handle the case where no valid question could be generated
                 // This is VERY important to prevent crashes/infinite loops
-                endGame(GameResult.Lost(LossReason.OutOfLives)) // Or some other appropriate action
+                endGame(GameResult.Lost(LossReason.GenerationFailed), offerContinue = false)
             }
         }
     }
@@ -229,14 +230,20 @@ abstract class BaseGameViewModel(
 
     // --- Handle Choice (Common logic, but calls mode-specific handling) ---
     fun handleChoice(chosenEmoji: String) {
-        viewModelScope.launch {
-            if (_gameState.value.gameResult != GameResult.InProgress) return@launch
-            if (_gameState.value.isCorrectAnswer != null) return@launch
+        if (_gameState.value.gameResult != GameResult.InProgress) return
+        if (_gameState.value.isCorrectAnswer != null) return
+        if (isAnswerInFlight) return
 
-            if (chosenEmoji == _gameState.value.correctAnswerEmoji) {
-                handleCorrectChoice()
-            } else {
-                handleIncorrectChoice()
+        isAnswerInFlight = true
+        viewModelScope.launch {
+            try {
+                if (chosenEmoji == _gameState.value.correctAnswerEmoji) {
+                    handleCorrectChoice()
+                } else {
+                    handleIncorrectChoice()
+                }
+            } finally {
+                isAnswerInFlight = false
             }
         }
     }

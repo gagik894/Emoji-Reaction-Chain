@@ -41,7 +41,11 @@ class NormalGameViewModel(
         val ruleCategory = selectRuleAndCategory(level)
         val category = ruleCategory.category
         val rule = ruleCategory.rule
-        val availableEmojis = category.emojis
+        val availableEmojis = if (rule.name == "Category Mix-Up") {
+            emojiCategories.values.flatMap { it.emojis }.distinct()
+        } else {
+            category.emojis
+        }
 
         val questionGenerator: QuestionGenerator = getQuestionGenerator(rule.name)
         return questionGenerator.generateQuestion(availableEmojis, level)

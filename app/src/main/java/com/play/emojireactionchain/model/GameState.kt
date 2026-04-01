@@ -9,7 +9,8 @@ sealed class GameResult {
 
 enum class LossReason {
     OutOfLives,
-    TimeOut,  // Useful for timed modes
+    TimeOut,
+    GenerationFailed,
     // Add other reasons as needed, e.g., IncorrectDecoding
 }
 

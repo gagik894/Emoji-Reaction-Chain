@@ -530,6 +530,7 @@ fun GameEndDialog(
         when (reason) {
             LossReason.OutOfLives -> stringResource(R.string.game_end_message_out_of_lives)
             LossReason.TimeOut -> stringResource(R.string.game_end_message_time_up)
+            LossReason.GenerationFailed -> stringResource(R.string.game_end_message_generation_failed)
             null -> stringResource(R.string.game_end_message_game_over)
         }
     }

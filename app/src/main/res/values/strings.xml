@@ -56,6 +56,7 @@
     <string name="game_end_message_master">You\'re a master!</string>
     <string name="game_end_message_out_of_lives">Out of lives!</string>
     <string name="game_end_message_time_up">Time\'s Up!</string>
+    <string name="game_end_message_generation_failed">No more valid questions available.</string>
     <string name="game_end_message_game_over">Game Over!</string>
     <string name="game_end_watch_ad">WATCH AD TO CONTINUE</string>
     <string name="game_end_continue">CONTINUE</string>
