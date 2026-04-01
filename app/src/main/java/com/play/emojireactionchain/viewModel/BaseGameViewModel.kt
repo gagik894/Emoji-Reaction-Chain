@@ -97,6 +97,8 @@ abstract class BaseGameViewModel(
     protected val streakBonusThreshold: Int = 3
     protected val streakBonusPoints: Int = 20
     private var isAnswerInFlight: Boolean = false
+    private var previousRuleName: String? = null
+    private var previousCategoryName: String? = null
 
 
     // --- Initialization ---
@@ -125,7 +127,10 @@ abstract class BaseGameViewModel(
             while (questionData == null && attempts < 10){
                 attempts++
                 val (emojis, correctAnswer, choices) = generateQuestionData(level)
-                if(correctAnswer.isNotBlank() && choices.isNotEmpty() && choices.contains(correctAnswer)){
+                val repeatsPreviousAnswer =
+                    _gameState.value.correctAnswerEmoji.isNotBlank() && _gameState.value.correctAnswerEmoji == correctAnswer
+
+                if(correctAnswer.isNotBlank() && choices.isNotEmpty() && choices.contains(correctAnswer) && !repeatsPreviousAnswer){
                     questionData = Triple(emojis, correctAnswer, choices)
                 }
             }
@@ -163,7 +168,8 @@ abstract class BaseGameViewModel(
             else -> rules.map { it.name } // All rules available at higher levels
         }
 
-        val ruleName = availableRules.random()
+        val candidateRules = availableRules.filter { it != previousRuleName }.ifEmpty { availableRules }
+        val ruleName = candidateRules.random()
 
         // Level-based category selection (optional, but recommended)
         val availableCategories = when {
@@ -171,8 +177,12 @@ abstract class BaseGameViewModel(
             level <= 5 -> emojiCategories.keys.toList()  // All categories
             else -> emojiCategories.keys.toList() // All categories
         }
-        val categoryName = availableCategories.random()
+        val candidateCategories = availableCategories.filter { it != previousCategoryName }.ifEmpty { availableCategories }
+        val categoryName = candidateCategories.random()
         val category = emojiCategories[categoryName] ?: emojiCategories.values.random() // Fallback
+
+        previousRuleName = ruleName
+        previousCategoryName = category.name
 
         return RuleCategory(GameRule(ruleName), category) // Return a RuleCategory object
     }

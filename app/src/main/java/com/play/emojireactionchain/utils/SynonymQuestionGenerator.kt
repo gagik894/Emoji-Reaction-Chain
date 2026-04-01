@@ -83,35 +83,11 @@ class SynonymQuestionGenerator : QuestionGenerator {
             else -> 3
         }
 
-        var distractorChoices: List<String> = when (level) {
-            1, 2 -> {
-                // Levels 1 & 2:  Mostly random distractors.
-                validDistractors.shuffled().take(numDistractors)
-            }
-            3, 4 -> {
-                // Level 3, 4: One synonym (if available), others random.
-                val synonymDistractor = synonymGroup.filterNot { it == correctAnswerEmoji || emojiChain.contains(it) }.shuffled().take(1)
-                val otherDistractors = validDistractors.shuffled().take(numDistractors - synonymDistractor.size)
-                (synonymDistractor + otherDistractors).distinct().take(numDistractors)
-            }
-            else -> {
-                // Level 5+: As many synonyms as possible.
-                val synonymDistractors = synonymGroup.filterNot { it == correctAnswerEmoji || emojiChain.contains(it) }.shuffled().take(numDistractors)
-                val otherDistractors = validDistractors.shuffled().take(numDistractors - synonymDistractors.size)
-                (synonymDistractors + otherDistractors).distinct().take(numDistractors)
-            }
-        }
+        var distractorChoices: List<String> = validDistractors.shuffled().take(numDistractors)
 
         while(distractorChoices.size < numDistractors){
             numDistractors--
-            distractorChoices = if(level > 4){
-                //Level 5+ prioritize synonyms
-                val synonymDistractors = synonymGroup.filterNot { it == correctAnswerEmoji || emojiChain.contains(it) }.shuffled().take(numDistractors)
-                val otherDistractors = validDistractors.shuffled().take(numDistractors - synonymDistractors.size)
-                (synonymDistractors + otherDistractors).distinct().take(numDistractors)
-            }else{
-                validDistractors.shuffled().take(numDistractors)
-            }
+            distractorChoices = validDistractors.shuffled().take(numDistractors)
             distractorChoices = distractorChoices.take(numDistractors) // Prevent exceeding limit
         }
 

@@ -129,6 +129,11 @@ class MixUpQuestionGenerator : QuestionGenerator {
             val questionChain = selectedChain.chain.toMutableList()
             val correctAnswerEmoji = questionChain.removeAt(selectedChain.correctAnswerIndex)
 
+            if (questionChain.contains(correctAnswerEmoji)) {
+                attempts++
+                continue
+            }
+
             if (!availableEmojis.contains(correctAnswerEmoji)) {
                 attempts++
                 continue
