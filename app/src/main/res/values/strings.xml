@@ -76,4 +76,8 @@
     <string name="ad_reward_earned">Congratulations! You earned a reward!</string>
     <string name="ad_show_interstitial">Show Interstitial Ad</string>
     <string name="ad_interstitial_shown">Ad was shown successfully!</string>
+    <string name="sticker_book_title">Sticker Book</string>
+    <string name="sticker_book_count">%1$d stickers collected</string>
+    <string name="sticker_book_count_with_latest">%1$d stickers collected • latest: %2$s</string>
+    <string name="sticker_daily_reward">New sticker unlocked: %1$s</string>
 </resources>

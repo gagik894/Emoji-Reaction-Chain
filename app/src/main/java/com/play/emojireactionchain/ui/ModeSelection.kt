@@ -113,6 +113,9 @@ private val gameModes = listOf(
 fun ModeSelectionScreen(
     dailyStreak: Int,
     bestScores: Map<GameMode, Int>,
+    stickerCount: Int = 0,
+    latestSticker: String? = null,
+    newStickerEmoji: String? = null,
     onModeSelected: (GameMode) -> Unit
 ) {
     val isPreview = LocalInspectionMode.current
@@ -129,7 +132,12 @@ fun ModeSelectionScreen(
     ) {
             Spacer(modifier = Modifier.height(48.dp))
 
-            HeaderSection(visible, isDark, dailyStreak)
+            HeaderSection(visible, isDark, dailyStreak, stickerCount, latestSticker)
+
+            if (newStickerEmoji != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                StickerCelebrationCard(newStickerEmoji)
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -142,36 +150,108 @@ fun ModeSelectionScreen(
 }
 
 @Composable
-private fun HeaderSection(visible: Boolean, isDark: Boolean, dailyStreak: Int) {
+private fun HeaderSection(
+    visible: Boolean,
+    isDark: Boolean,
+    dailyStreak: Int,
+    stickerCount: Int,
+    latestSticker: String?
+) {
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn(tween(800)) + slideInVertically(initialOffsetY = { -40 })
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column {
-                Text(
-                    text = stringResource(R.string.mode_selection_brand_title),
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Black,
-                        brush = Brush.horizontalGradient(listOf(PrimarySoft, SecondarySoft)),
-                        letterSpacing = 1.sp
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.mode_selection_brand_title),
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Black,
+                            brush = Brush.horizontalGradient(listOf(PrimarySoft, SecondarySoft)),
+                            letterSpacing = 1.sp
+                        )
                     )
-                )
-                Text(
-                    text = stringResource(R.string.mode_selection_brand_subtitle),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        color = if (isDark) Color.White.copy(alpha = 0.5f) else TextSecondary,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp
+                    Text(
+                        text = stringResource(R.string.mode_selection_brand_subtitle),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = if (isDark) Color.White.copy(alpha = 0.5f) else TextSecondary,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp
+                        )
                     )
-                )
+                }
+
+                StreakBadge(dailyStreak)
             }
 
-            StreakBadge(dailyStreak)
+            StickerBookBadge(stickerCount, latestSticker)
+        }
+    }
+}
+
+@Composable
+private fun StickerBookBadge(stickerCount: Int, latestSticker: String?) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(2.dp, Brush.linearGradient(listOf(SecondarySoft, PrimarySoft)))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "📒", fontSize = 22.sp)
+            Spacer(modifier = Modifier.width(10.dp))
+            Column {
+                Text(
+                    text = stringResource(R.string.sticker_book_title),
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Black),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = if (latestSticker != null) {
+                        stringResource(R.string.sticker_book_count_with_latest, stickerCount, latestSticker)
+                    } else {
+                        stringResource(R.string.sticker_book_count, stickerCount)
+                    },
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StickerCelebrationCard(stickerEmoji: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = SecondarySoft.copy(alpha = 0.14f),
+        border = BorderStroke(1.dp, SecondarySoft.copy(alpha = 0.6f))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "✨", fontSize = 18.sp)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = stringResource(R.string.sticker_daily_reward, stickerEmoji),
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = stickerEmoji, fontSize = 24.sp)
         }
     }
 }

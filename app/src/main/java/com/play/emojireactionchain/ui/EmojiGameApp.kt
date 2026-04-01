@@ -22,6 +22,7 @@ import androidx.navigation.compose.rememberNavController
 import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.utils.DailyStreakManager
 import com.play.emojireactionchain.utils.HighScoreManager
+import com.play.emojireactionchain.utils.StickerBookManager
 
 
 object Routes {
@@ -65,10 +66,14 @@ fun EmojiGameApp() {
     val context = LocalContext.current
     val highScoreManager = remember(context) { HighScoreManager(context) }
     val dailyStreakManager = remember(context) { DailyStreakManager(context) }
+    val stickerBookManager = remember(context) { StickerBookManager(context) }
 
     var showTutorial by rememberSaveable { mutableStateOf(isFirstLaunch(context)) }
     var dailyStreak by rememberSaveable { mutableIntStateOf(1) }
     var modeHighScores by remember { mutableStateOf(emptyMap<GameMode, Int>()) }
+    var stickerCount by rememberSaveable { mutableIntStateOf(0) }
+    var latestSticker by rememberSaveable { mutableStateOf<String?>(null) }
+    var dailyStickerEmoji by rememberSaveable { mutableStateOf<String?>(null) }
 
     val activity = context as? Activity
     val interstitialAdState = rememberInterstitialAd("ca-app-pub-2523891738770793/6480157179")
@@ -95,6 +100,11 @@ fun EmojiGameApp() {
                     LaunchedEffect(Unit) {
                         dailyStreak = dailyStreakManager.updateAndGetCurrentStreak()
                         modeHighScores = highScoreManager.getAllHighScores()
+                            stickerCount = stickerBookManager.getStickerCount()
+                            latestSticker = stickerBookManager.getLatestSticker()
+                            dailyStickerEmoji = stickerBookManager.awardDailyStickerIfNeeded()?.sticker
+                            stickerCount = stickerBookManager.getStickerCount()
+                            latestSticker = stickerBookManager.getLatestSticker()
 
                         if (AdManager.shouldShowAdOnHomeReturn() && activity != null) {
                             showInterstitialAd(
@@ -111,6 +121,9 @@ fun EmojiGameApp() {
                     ModeSelectionScreen(
                         dailyStreak = dailyStreak,
                         bestScores = modeHighScores,
+                            stickerCount = stickerCount,
+                            latestSticker = latestSticker,
+                            newStickerEmoji = dailyStickerEmoji,
                         onModeSelected = { mode ->
                             val route = when (mode) {
                                 GameMode.NORMAL -> Routes.NORMAL_MODE
