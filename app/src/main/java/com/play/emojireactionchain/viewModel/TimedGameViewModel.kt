@@ -37,6 +37,7 @@ class TimedGameViewModel(
             currentGameScore = 0
             currentQuestionCount = 0
             currentStreak = 0
+            resetEngagementLayer()
             _remainingGameTimeFlow.value = totalGameTimeSeconds * 1000L
             // No need to call loadHighScore here
 

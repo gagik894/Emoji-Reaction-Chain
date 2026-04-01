@@ -87,6 +87,7 @@ fun SurvivalModeScreen(onNavigateToStart: () -> Unit = {}) {
                     Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                         Column(modifier = Modifier.weight(1f)) {
                             Scoreboard(gameState.score, gameState.highScore, gameState.lives, gameState.currentStreakCount)
+                            EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
                             LevelIndicator(viewModel.level)
                             EmojiChainDisplay(gameState.emojiChain)
                         }
@@ -96,6 +97,7 @@ fun SurvivalModeScreen(onNavigateToStart: () -> Unit = {}) {
                     }
                 } else {
                     Scoreboard(gameState.score, gameState.highScore, gameState.lives, gameState.currentStreakCount)
+                    EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
                     LevelIndicator(viewModel.level)
                     EmojiChainDisplay(gameState.emojiChain)
                     ChoiceButtons(gameState.choices, gameState.correctAnswerEmoji, gameState.isCorrectAnswer, viewModel::handleChoice)

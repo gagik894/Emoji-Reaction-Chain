@@ -24,6 +24,7 @@ class NormalGameViewModel(
             currentGameScore = 0
             currentQuestionCount = 0
             currentStreak = 0
+            resetEngagementLayer()
             // No need to call loadHighScore here, it's done in init
             _gameState.value = _gameState.value.copy(
                 totalQuestions = questionCountPerGame, // Use base class property

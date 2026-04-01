@@ -28,6 +28,11 @@ data class GameRule(
     val name: String
 )
 
+private data class RulePerformance(
+    val attempts: Int = 0,
+    val correct: Int = 0
+)
+
 abstract class BaseGameViewModel(
     protected val soundManager: SoundManager,
     protected val highScoreManager: HighScoreManager
@@ -99,10 +104,26 @@ abstract class BaseGameViewModel(
     private var isAnswerInFlight: Boolean = false
     private var previousRuleName: String? = null
     private var previousCategoryName: String? = null
+    private val rulePerformance = mutableMapOf<String, RulePerformance>()
+    private var currentRuleName: String = rules.first().name
+    private var currentCategoryName: String = emojiCategories.keys.first()
+    private var currentQuestionIsBonusRound: Boolean = false
+    private val bonusRoundInterval = 5
+    private var streakMissionTarget = 3
+    private var streakMissionProgress = 0
+    private var streakMissionReward = 25
 
 
     // --- Initialization ---
     init {
+        resetEngagementLayer()
+    }
+
+    protected fun resetEngagementLayer() {
+        rulePerformance.clear()
+        currentQuestionIsBonusRound = false
+        streakMissionProgress = 0
+        updateMission(level = 1)
     }
 
     protected fun loadHighScore(gameMode: GameMode) { // Add gameMode parameter
@@ -117,6 +138,7 @@ abstract class BaseGameViewModel(
 
         viewModelScope.launch {
             currentQuestionCount++
+            currentQuestionIsBonusRound = currentQuestionCount % bonusRoundInterval == 0
 
             // Allow mode-specific early stop checks before generating a new prompt.
             handleNextQuestionModeSpecific()
@@ -144,9 +166,13 @@ abstract class BaseGameViewModel(
                     correctAnswerEmoji = questionData.second,
                     isCorrectAnswer = null,
                     questionNumber = currentQuestionCount,
-                    rule = null, // Common behavior: don't display rule
+                    rule = currentRuleName,
                     gameResult = GameResult.InProgress,
-                    lives = _gameState.value.lives //keep current value
+                    lives = _gameState.value.lives,
+                    isBonusRound = currentQuestionIsBonusRound,
+                    streakMissionTarget = streakMissionTarget,
+                    streakMissionProgress = streakMissionProgress,
+                    currentEngagementBonus = 0
                 )
             } else {
                 // Handle the case where no valid question could be generated
@@ -169,7 +195,7 @@ abstract class BaseGameViewModel(
         }
 
         val candidateRules = availableRules.filter { it != previousRuleName }.ifEmpty { availableRules }
-        val ruleName = candidateRules.random()
+        val ruleName = pickWeightedRule(candidateRules)
 
         // Level-based category selection (optional, but recommended)
         val availableCategories = when {
@@ -183,8 +209,35 @@ abstract class BaseGameViewModel(
 
         previousRuleName = ruleName
         previousCategoryName = category.name
+        currentRuleName = ruleName
+        currentCategoryName = category.name
 
         return RuleCategory(GameRule(ruleName), category) // Return a RuleCategory object
+    }
+
+    private fun pickWeightedRule(candidateRules: List<String>): String {
+        var totalWeight = 0.0
+        val weighted = candidateRules.map { rule ->
+            val perf = rulePerformance[rule] ?: RulePerformance()
+            val accuracy = if (perf.attempts == 0) 0.5 else perf.correct.toDouble() / perf.attempts
+            val novelty = 1.0 / (perf.attempts + 1)
+            val pressure = 1.0 - accuracy
+            val weight = 0.2 + novelty + pressure
+            totalWeight += weight
+            rule to weight
+        }
+
+        var pick = Math.random() * totalWeight
+        for ((rule, weight) in weighted) {
+            pick -= weight
+            if (pick <= 0.0) return rule
+        }
+        return candidateRules.random()
+    }
+
+    protected fun rememberQuestionContext(rule: GameRule, category: EmojiCategory) {
+        currentRuleName = rule.name
+        currentCategoryName = category.name
     }
 
 
@@ -249,13 +302,76 @@ abstract class BaseGameViewModel(
             try {
                 if (chosenEmoji == _gameState.value.correctAnswerEmoji) {
                     handleCorrectChoice()
+                    handleEngagementForCorrect()
                 } else {
                     handleIncorrectChoice()
+                    handleEngagementForIncorrect()
                 }
             } finally {
                 isAnswerInFlight = false
             }
         }
+    }
+
+    private fun handleEngagementForCorrect() {
+        recordRuleOutcome(correct = true)
+
+        var engagementBonus = 0
+        streakMissionProgress++
+        if (streakMissionProgress >= streakMissionTarget) {
+            engagementBonus += streakMissionReward
+            streakMissionProgress = 0
+            updateMission(level)
+        }
+
+        if (currentQuestionIsBonusRound) {
+            engagementBonus += (8 + level * 2)
+        }
+
+        if (engagementBonus > 0) {
+            currentGameScore += engagementBonus
+            _gameState.value = _gameState.value.copy(
+                score = currentGameScore,
+                currentEngagementBonus = engagementBonus,
+                streakMissionTarget = streakMissionTarget,
+                streakMissionProgress = streakMissionProgress,
+                currentStreakBonus = _gameState.value.currentStreakBonus + engagementBonus
+            )
+        } else {
+            _gameState.value = _gameState.value.copy(
+                streakMissionTarget = streakMissionTarget,
+                streakMissionProgress = streakMissionProgress,
+                currentEngagementBonus = 0
+            )
+        }
+    }
+
+    private fun handleEngagementForIncorrect() {
+        recordRuleOutcome(correct = false)
+        streakMissionProgress = 0
+        _gameState.value = _gameState.value.copy(
+            streakMissionTarget = streakMissionTarget,
+            streakMissionProgress = streakMissionProgress,
+            currentEngagementBonus = 0
+        )
+    }
+
+    private fun recordRuleOutcome(correct: Boolean) {
+        val current = rulePerformance[currentRuleName] ?: RulePerformance()
+        rulePerformance[currentRuleName] = current.copy(
+            attempts = current.attempts + 1,
+            correct = current.correct + if (correct) 1 else 0
+        )
+    }
+
+    private fun updateMission(level: Int) {
+        val target = when {
+            level <= 2 -> 2
+            level <= 5 -> 3
+            else -> 4
+        }
+        streakMissionTarget = target
+        streakMissionReward = 10 + (target * 8)
     }
 
     protected open fun getQuestionGenerator(ruleName: String): QuestionGenerator {

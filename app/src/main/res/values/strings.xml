@@ -61,6 +61,8 @@
     <string name="game_end_watch_ad">WATCH AD TO CONTINUE</string>
     <string name="game_end_continue">CONTINUE</string>
     <string name="game_end_play_again">Play Again</string>
+    <string name="engagement_bonus_round">BONUS ROUND</string>
+    <string name="engagement_streak_mission">MISSION %1$d/%2$d</string>
 
     <string name="mode_selection_brand_title">EMOJI CHAIN</string>
     <string name="mode_selection_brand_subtitle">MASTER THE LINK</string>

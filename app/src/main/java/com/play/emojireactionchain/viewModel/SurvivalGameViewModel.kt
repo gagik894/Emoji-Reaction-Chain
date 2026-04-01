@@ -28,6 +28,7 @@ class SurvivalGameViewModel(
             currentGameScore = 0
             currentQuestionCount = 0
             currentStreak = 0
+            resetEngagementLayer()
             lives = 3 // Reset lives
             loadHighScore(GameMode.SURVIVAL)
 
@@ -84,6 +85,7 @@ class SurvivalGameViewModel(
             else -> emojiCategories.values.random() // Default case
         }
 
+        rememberQuestionContext(rule, category)
         return RuleCategory(rule, category)
     }
     override fun generateQuestionData(level: Int): Triple<List<String>, String, List<String>> {

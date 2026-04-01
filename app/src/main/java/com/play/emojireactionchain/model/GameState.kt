@@ -29,5 +29,9 @@ data class GameState(
     val currentTimeBonus: Int = 0,
     val currentStreakBonus: Int = 0,
     val currentStreakCount: Int = 0,
-    val gameMode: GameMode = GameMode.NORMAL
+    val gameMode: GameMode = GameMode.NORMAL,
+    val isBonusRound: Boolean = false,
+    val streakMissionTarget: Int = 3,
+    val streakMissionProgress: Int = 0,
+    val currentEngagementBonus: Int = 0
 )

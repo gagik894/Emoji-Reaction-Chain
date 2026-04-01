@@ -34,6 +34,7 @@ class BlitzGameViewModel(
             currentGameScore = 0
             currentQuestionCount = 0
             currentStreak = 0
+            resetEngagementLayer()
             countDownTimer?.cancel()
             _remainingQuestionTimeMs.value = maxTimePerQuestionSeconds * 1000L
 

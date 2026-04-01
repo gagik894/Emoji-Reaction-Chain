@@ -87,6 +87,7 @@ fun TimedModeScreen(
                     Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                         Column(modifier = Modifier.weight(1f)) {
                             Scoreboard(gameState.score, gameState.highScore, null, gameState.currentStreakCount)
+                            EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
                             TimerDisplay(remainingTime)
                             EmojiChainDisplay(gameState.emojiChain)
                         }
@@ -96,6 +97,7 @@ fun TimedModeScreen(
                     }
                 } else {
                     Scoreboard(gameState.score, gameState.highScore, null, gameState.currentStreakCount)
+                    EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
                     TimerDisplay(remainingTime)
                     EmojiChainDisplay(gameState.emojiChain)
                     ChoiceButtons(gameState.choices, gameState.correctAnswerEmoji, gameState.isCorrectAnswer, viewModel::handleChoice)

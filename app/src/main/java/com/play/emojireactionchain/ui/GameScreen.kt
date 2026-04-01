@@ -246,6 +246,46 @@ fun QuestionProgress(questionNumber: Int, totalQuestions: Int) {
 }
 
 @Composable
+fun EngagementStrip(
+    isBonusRound: Boolean,
+    missionProgress: Int,
+    missionTarget: Int
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+    ) {
+        if (isBonusRound) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = SecondarySoft.copy(alpha = 0.18f)
+            ) {
+                Text(
+                    text = stringResource(R.string.engagement_bonus_round),
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
+                    color = SecondarySoft,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                )
+            }
+        }
+
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = PrimarySoft.copy(alpha = 0.12f)
+        ) {
+            Text(
+                text = stringResource(R.string.engagement_streak_mission, missionProgress, missionTarget),
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = PrimarySoft,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+            )
+        }
+    }
+}
+
+@Composable
 fun EmojiChainDisplay(emojiChain: List<String>) {
     Surface(
         modifier = Modifier
@@ -434,6 +474,7 @@ fun NormalModeScreen(
                     Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                         Column(modifier = Modifier.weight(1f)) {
                             Scoreboard(gameState.score, gameState.highScore, gameState.lives, gameState.currentStreakCount)
+                            EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
                             EmojiChainDisplay(gameState.emojiChain)
                         }
                         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
@@ -442,6 +483,7 @@ fun NormalModeScreen(
                     }
                 } else {
                     Scoreboard(gameState.score, gameState.highScore, gameState.lives, gameState.currentStreakCount)
+                    EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
                     QuestionProgress(gameState.questionNumber, gameState.totalQuestions)
                     EmojiChainDisplay(gameState.emojiChain)
                     ChoiceButtons(gameState.choices, gameState.correctAnswerEmoji, gameState.isCorrectAnswer, viewModel::handleChoice)
