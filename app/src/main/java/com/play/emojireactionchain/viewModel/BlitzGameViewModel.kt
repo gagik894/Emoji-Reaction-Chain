@@ -8,7 +8,6 @@ import com.play.emojireactionchain.model.LossReason
 import com.play.emojireactionchain.utils.HighScoreManager
 import com.play.emojireactionchain.utils.QuestionGenerator
 import com.play.emojireactionchain.utils.SoundManager
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -18,7 +17,6 @@ class BlitzGameViewModel(
 ) : BaseGameViewModel(soundManager, highScoreManager) {
 
     override val maxTimePerQuestionSeconds: Int = 3
-    private var timerJob: Job = Job()
     override val questionCountPerGame: Int = Int.MAX_VALUE
     val maxLives: Int = 3
     private var countDownTimer: CountDownTimer? = null
@@ -29,17 +27,21 @@ class BlitzGameViewModel(
 
     override fun startGame() { // Remove gameMode parameter
         viewModelScope.launch {
-            // No need to call loadHighScore here, it's done in init
+            currentGameScore = 0
+            currentQuestionCount = 0
+            currentStreak = 0
+            countDownTimer?.cancel()
 
             _gameState.value = _gameState.value.copy( //add game mode
                 gameMode = GameMode.BLITZ,
                 gameResult = GameResult.InProgress,
                 score = 0,
+                questionNumber = 0,
                 lives = maxLives,
                 currentStreakCount = 0,
                 currentStreakBonus = 0,
                 currentTimeBonus = 0,
-                isCorrectAnswer = false
+                isCorrectAnswer = null
             )
             nextQuestion()
         }
@@ -83,7 +85,7 @@ class BlitzGameViewModel(
 
     // ... (rest of BlitzGameViewModel, no other changes needed) ...
     override suspend fun handleCorrectChoice() {
-        timerJob.cancel() // Use simple cancel, no join needed
+        countDownTimer?.cancel()
 
         val answerTimeMillis = System.currentTimeMillis() - questionStartTime
         val timeBonus =
@@ -119,13 +121,11 @@ class BlitzGameViewModel(
 
     suspend fun handleIncorrectChoice(isTimeout: Boolean) {
         soundManager.playIncorrectSoundAndHaptic()
-        timerJob.cancel()
+        countDownTimer?.cancel()
         currentStreak = 0
 
-        println(_gameState.value.lives > 1)
         // Just remove one life regardless of whether it's timeout or wrong answer
         if (_gameState.value.lives > 1) {
-            println("Next question")
             _gameState.value = _gameState.value.copy(
                 isCorrectAnswer = false,
                 lives = _gameState.value.lives - 1,
@@ -134,11 +134,11 @@ class BlitzGameViewModel(
                 currentStreakCount = currentStreak
             )
             delay(150)
-            println("Next question")
             nextQuestion() // This will start a new timer through handleNextQuestionModeSpecific()
         } else {
             // If this was the last life, end the game
             val lossReason = if (isTimeout) LossReason.TimeOut else LossReason.OutOfLives
+            _gameState.value = _gameState.value.copy(isCorrectAnswer = false, lives = 0)
             endGame(GameResult.Lost(lossReason))
         }
     }
@@ -148,7 +148,7 @@ class BlitzGameViewModel(
             lives = maxLives,
             gameResult = GameResult.InProgress
         )
-        timerJob.cancel()
+        countDownTimer?.cancel()
         nextQuestion()
     }
 

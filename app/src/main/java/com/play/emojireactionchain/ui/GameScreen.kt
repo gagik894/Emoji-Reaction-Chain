@@ -295,11 +295,9 @@ fun AnimatedChoiceButton(
     
     val backgroundColor = when {
         showResult && isCorrect -> SuccessGreen
-        showResult && isChosen && !isCorrect -> ErrorRed
+        showResult && isChosen -> ErrorRed
         else -> MaterialTheme.colorScheme.surface
     }
-    
-    val contentColor = if (showResult && (isCorrect || isChosen)) Color.White else TextMain
 
     LaunchedEffect(isCorrectAnswer, isChosen) {
         if (isChosen && showResult) {

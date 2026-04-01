@@ -79,7 +79,6 @@ class NormalGameViewModel(
         soundManager.playCorrectHaptic()
         delay(500)
         nextQuestion()
-        println("Correct! Score: $currentGameScore, Time Bonus: $timeBonus, Streak Bonus: $streakBonus, Current Streak: $currentStreak")//keep this for debugging
     }
 
 
@@ -100,7 +99,6 @@ class NormalGameViewModel(
             soundManager.playIncorrectHaptic()
             delay(1000)
             nextQuestion()
-            println("Incorrect! Lives Remaining: ${currentLives - 1}, Streak Reset!") // Print streak reset info
         } else {
             _gameState.value = _gameState.value.copy(
                 isCorrectAnswer = false,
@@ -110,7 +108,6 @@ class NormalGameViewModel(
             soundManager.playIncorrectHaptic()
             delay(500)
             endGame(GameResult.Lost(LossReason.OutOfLives))
-            println("Game Over! Final Score: $currentGameScore, Streak Reset!") // Print streak reset info at game over
         }
     }
     override fun handleAdReward() {

@@ -91,7 +91,9 @@ class MixUpQuestionGenerator : QuestionGenerator {
         PredefinedChain(listOf("👧", "📚", "📝", "🎓", "👩‍🎓"), 4, 2, 5), // Medium, longer
     )
 
-    private val emojiCategories: Map<String, String> = BaseGameViewModel.emojiCategories.mapValues { it.value.name }
+    private val emojiCategories: Map<String, String> = BaseGameViewModel.emojiCategories.values
+        .flatMap { category -> category.emojis.map { emoji -> emoji to category.name } }
+        .toMap()
 
 
     override fun generateQuestion(
@@ -161,7 +163,9 @@ class MixUpQuestionGenerator : QuestionGenerator {
         choices.add(correctAnswerEmoji)
 
         // All emojis for wider distractor selection
-        val allEmojis = BaseGameViewModel.emojiCategories.values.flatMap { it.emojis }.distinct()
+        val allEmojis = availableEmojis.distinct().ifEmpty {
+            BaseGameViewModel.emojiCategories.values.flatMap { it.emojis }.distinct()
+        }
 
         val unrelatedDistractors = allEmojis.filterNot {
             it == correctAnswerEmoji || emojiChain.contains(it)
@@ -189,7 +193,7 @@ class MixUpQuestionGenerator : QuestionGenerator {
             unrelatedDistractors.shuffled().take(numDistractors)
         }
 
-        while (distractorChoices.size < numDistractors && numDistractors > 0){
+        while (distractorChoices.size < numDistractors) {
             numDistractors--
 
             distractorChoices = if(level > 3){

@@ -42,7 +42,7 @@ class TimedGameViewModel(
             _gameState.value = GameState(
                 score = 0,
                 totalQuestions = questionCountPerGame,
-                lives = 3, // Infinite lives
+                lives = 1,
                 currentTimeBonus = 0,
                 currentStreakBonus = 0,
                 currentStreakCount = 0,
@@ -66,11 +66,13 @@ class TimedGameViewModel(
     private fun startTotalGameTimer() {
         timerJob.cancel() // Ensure any previous timer is cancelled
         timerJob = viewModelScope.launch {
-            while (_remainingGameTimeFlow.value > 0) {
+            while (_remainingGameTimeFlow.value > 0 && _gameState.value.gameResult == GameResult.InProgress) {
                 delay(100) // Update every 100ms for smoother countdown
-                _remainingGameTimeFlow.value -= 100
+                _remainingGameTimeFlow.value = (_remainingGameTimeFlow.value - 100).coerceAtLeast(0L)
             }
-            endGame(GameResult.Lost(LossReason.TimeOut)) // Game Over - Time's Up
+            if (_gameState.value.gameResult == GameResult.InProgress) {
+                endGame(GameResult.Lost(LossReason.TimeOut))
+            }
         }
     }
 
@@ -138,7 +140,7 @@ class TimedGameViewModel(
                 emojiChain = emptyList(),
                 choices = emptyList(),
                 correctAnswerEmoji = "",
-                lives = 1, //reset to one for timed mode and keep 3 for normal mode
+                lives = 1,
                 currentTimeBonus = 0,
                 currentStreakBonus = 0,
                 currentStreakCount = 0,

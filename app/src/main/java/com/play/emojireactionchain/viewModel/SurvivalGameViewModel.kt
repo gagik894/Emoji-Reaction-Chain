@@ -154,8 +154,9 @@ class SurvivalGameViewModel(
         }
     }
     override fun handleAdReward() {
+        lives = 3
         _gameState.value = _gameState.value.copy(
-            lives = 3,
+            lives = lives,
             gameResult = GameResult.InProgress,
             isCorrectAnswer = true
         )

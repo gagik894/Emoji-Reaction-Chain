@@ -114,9 +114,11 @@ abstract class BaseGameViewModel(
 
         viewModelScope.launch {
             currentQuestionCount++
-            println(currentQuestionCount)
-            // --- Leveling Logic ---
-            println(level)
+
+            // Allow mode-specific early stop checks before generating a new prompt.
+            handleNextQuestionModeSpecific()
+            if (_gameState.value.gameResult != GameResult.InProgress) return@launch
+
             var attempts = 0 // prevent infinit loop
             var questionData: Triple<List<String>, String, List<String>>? = null
             while (questionData == null && attempts < 10){
@@ -145,7 +147,6 @@ abstract class BaseGameViewModel(
                 // This is VERY important to prevent crashes/infinite loops
                 endGame(GameResult.Lost(LossReason.OutOfLives)) // Or some other appropriate action
             }
-            handleNextQuestionModeSpecific()
         }
     }
 
@@ -215,7 +216,7 @@ abstract class BaseGameViewModel(
                 emojiChain = emptyList(),
                 choices = emptyList(),
                 correctAnswerEmoji = "",
-                lives = 3, //reset to one for timed mode and keep 3 for normal mode
+                lives = 3,
                 currentTimeBonus = 0,
                 currentStreakBonus = 0,
                 currentStreakCount = 0,
@@ -229,6 +230,9 @@ abstract class BaseGameViewModel(
     // --- Handle Choice (Common logic, but calls mode-specific handling) ---
     fun handleChoice(chosenEmoji: String) {
         viewModelScope.launch {
+            if (_gameState.value.gameResult != GameResult.InProgress) return@launch
+            if (_gameState.value.isCorrectAnswer != null) return@launch
+
             if (chosenEmoji == _gameState.value.correctAnswerEmoji) {
                 handleCorrectChoice()
             } else {

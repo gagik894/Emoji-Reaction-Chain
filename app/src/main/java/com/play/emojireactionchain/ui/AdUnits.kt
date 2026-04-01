@@ -84,7 +84,6 @@ fun rememberRewardedAd(adUnitId: String): RewardedAdState {
     val context = LocalContext.current
     var rewardedAd by remember { mutableStateOf<RewardedAd?>(null) }
     var isLoading by remember { mutableStateOf(false) }
-    var adLoadError by remember { mutableStateOf<LoadAdError?>(null) }
 
     val loadAd = {
         if (!isLoading) {
@@ -94,11 +93,9 @@ fun rememberRewardedAd(adUnitId: String): RewardedAdState {
                 onAdLoaded = { ad ->
                     rewardedAd = ad
                     isLoading = false
-                    adLoadError = null
                 },
-                onAdFailedToLoad = { error ->
+                onAdFailedToLoad = {
                     isLoading = false
-                    adLoadError = error
                 }
             )
         }
@@ -184,7 +181,6 @@ fun rememberInterstitialAd(adUnitId: String): InterstitialAdState {
     val context = LocalContext.current
     var interstitialAd by remember { mutableStateOf<InterstitialAd?>(null) }
     var isLoading by remember { mutableStateOf(false) }
-    var adLoadError by remember { mutableStateOf<LoadAdError?>(null) }
 
     val loadAd = {
         if (!isLoading) {
@@ -194,11 +190,9 @@ fun rememberInterstitialAd(adUnitId: String): InterstitialAdState {
                 onAdLoaded = { ad ->
                     interstitialAd = ad
                     isLoading = false
-                    adLoadError = null
                 },
-                onAdFailedToLoad = { error ->
+                onAdFailedToLoad = {
                     isLoading = false
-                    adLoadError = error
                 }
             )
         }

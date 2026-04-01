@@ -1,7 +1,6 @@
 package com.play.emojireactionchain.utils
 
 import com.play.emojireactionchain.viewModel.BaseGameViewModel
-import com.play.emojireactionchain.viewModel.EmojiCategory
 
 class SequentialQuestionGenerator : QuestionGenerator {
 
@@ -10,8 +9,11 @@ class SequentialQuestionGenerator : QuestionGenerator {
         level: Int
     ): Triple<List<String>, String, List<String>> {
 
-        val category = BaseGameViewModel.emojiCategories.values.random()
-        val categoryEmojis = category.emojis
+        val categoryEmojis = if (availableEmojis.size >= 3) {
+            availableEmojis.distinct()
+        } else {
+            BaseGameViewModel.emojiCategories.values.random().emojis
+        }
 
         if (categoryEmojis.size < 3) {  // Need at least 3 for a minimal chain
             return Triple(emptyList(), "", emptyList())
@@ -25,10 +27,10 @@ class SequentialQuestionGenerator : QuestionGenerator {
         while (attempts < maxAttempts) {
             attempts++
 
-            val startIndex = (0..categoryEmojis.size - 1).random()
+            val startIndex = (0..<categoryEmojis.size).random()
             val emojiChain = mutableListOf<String>()
             var currentIndex = startIndex
-            for (i in 0 until actualChainLength) {
+            while (emojiChain.size < actualChainLength) {
                 emojiChain.add(categoryEmojis[currentIndex])
                 currentIndex = (currentIndex + step).mod(categoryEmojis.size)
                 if (emojiChain.distinct().size != emojiChain.size) break // No duplicates
@@ -40,7 +42,7 @@ class SequentialQuestionGenerator : QuestionGenerator {
             val correctAnswerEmoji = categoryEmojis[nextIndex]
             if (emojiChain.contains(correctAnswerEmoji)) continue
 
-            val choices = generateOptions(correctAnswerEmoji, category, emojiChain, level)
+            val choices = generateOptions(correctAnswerEmoji, emojiChain, level, categoryEmojis)
 
             if (correctAnswerEmoji.isNotBlank() && choices.contains(correctAnswerEmoji) && choices.size >= 3) {
                 return Triple(emojiChain, correctAnswerEmoji, choices)
@@ -63,71 +65,50 @@ class SequentialQuestionGenerator : QuestionGenerator {
     }
     private fun generateOptions(
         correctAnswerEmoji: String,
-        category: EmojiCategory,
         emojiChain: List<String>,
-        level: Int
+        level: Int,
+        categoryEmojis: List<String>
     ): List<String> {
-        val choices = mutableListOf<String>()
-        choices.add(correctAnswerEmoji)
-
-        var numDistractors = when (level) {
+        val targetDistractors = when (level) {
             1, 2, 3 -> 2
             4, 5, 6 -> 3
             else -> 3
         }
 
-        val categoryEmojis = category.emojis
-        val otherCategoryEmojis = getEmojisFromOtherCategories(category)
+        val allEmojis = BaseGameViewModel.emojiCategories.values.flatMap { it.emojis }.distinct()
 
         val sameCategoryDistractors = categoryEmojis
             .filterNot { it == correctAnswerEmoji || emojiChain.contains(it) }
             .shuffled()
 
-        val diffCategoryDistractors = otherCategoryEmojis
+        val diffCategoryDistractors = allEmojis
             .filterNot { it == correctAnswerEmoji || emojiChain.contains(it) }
             .shuffled()
 
-        val distractors = mutableListOf<String>()
-
-        when {
+        val prioritized = when {
             level <= 3 -> {
-                distractors.addAll(diffCategoryDistractors.take(numDistractors))
-                distractors.addAll(sameCategoryDistractors.take(numDistractors - distractors.size))
+                diffCategoryDistractors + sameCategoryDistractors
             }
             level <= 6 -> {
-                distractors.addAll(sameCategoryDistractors.take(1))
-                distractors.addAll(diffCategoryDistractors.take(numDistractors - 1))
-                distractors.addAll(sameCategoryDistractors.take(numDistractors - distractors.size))
+                sameCategoryDistractors.take(1) + diffCategoryDistractors + sameCategoryDistractors.drop(1)
             }
             else -> {
-                distractors.addAll(sameCategoryDistractors.take(numDistractors))
-                distractors.addAll(diffCategoryDistractors.take(numDistractors - distractors.size))
+                sameCategoryDistractors + diffCategoryDistractors
             }
         }
 
-        distractors.take(numDistractors)
-
-        while (distractors.size < numDistractors && numDistractors > 0){
-            numDistractors--
-            if(level > 6){ //prioritize same category
-                distractors.addAll(sameCategoryDistractors.take(numDistractors))
-                distractors.addAll(diffCategoryDistractors.take(numDistractors - distractors.size))
-
-            } else{ //prioritize diff category
-                distractors.addAll(diffCategoryDistractors.take(numDistractors))
-                distractors.addAll(sameCategoryDistractors.take(numDistractors - distractors.size))
-            }
-        }
-
-        choices.addAll(distractors)
-        return choices.shuffled()
-    }
-
-    private fun getEmojisFromOtherCategories(category: EmojiCategory): List<String> {
-        return BaseGameViewModel.emojiCategories.values
-            .filterNot { it.name == category.name }
-            .flatMap { it.emojis }
+        val distractors = prioritized
             .distinct()
-            .toList()
+            .filterNot { it == correctAnswerEmoji || emojiChain.contains(it) }
+            .take(targetDistractors)
+
+        val fallback = (sameCategoryDistractors + diffCategoryDistractors)
+            .distinct()
+            .filterNot { it == correctAnswerEmoji || emojiChain.contains(it) || distractors.contains(it) }
+
+        val finalDistractors = (distractors + fallback)
+            .take(targetDistractors)
+
+        return (listOf(correctAnswerEmoji) + finalDistractors).shuffled()
     }
 }
