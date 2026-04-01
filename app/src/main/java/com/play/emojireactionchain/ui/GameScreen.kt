@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -60,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.play.emojireactionchain.R
 import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.model.GameState
 import com.play.emojireactionchain.model.LossReason
@@ -98,7 +100,7 @@ fun TimeBonusAnimation(bonusPoints: Int) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "+$bonusPoints Time Bonus!",
+            text = stringResource(R.string.time_bonus_text, bonusPoints),
             style = MaterialTheme.typography.titleLarge,
             color = SuccessGreen,
             fontSize = 32.sp,
@@ -133,14 +135,14 @@ fun GameHeader(showBack: Boolean = true, onBack: () -> Unit = {}) {
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.game_header_back_description),
                         tint = TextMain
                     )
                 }
             }
 
             Text(
-                text = "Emoji Chain",
+                text = stringResource(R.string.game_header_title),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Black,
@@ -170,7 +172,7 @@ fun Scoreboard(score: Int, highScore: Int, lives: Int?, currentStreakCount: Int)
         // Score section
         Column {
             Text(
-                text = "SCORE",
+                text = stringResource(R.string.score_label),
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                 color = TextSecondary
             )
@@ -191,7 +193,7 @@ fun Scoreboard(score: Int, highScore: Int, lives: Int?, currentStreakCount: Int)
                 color = WarningOrange.copy(alpha = 0.15f)
             ) {
                 Text(
-                    text = "🔥 $currentStreakCount",
+                    text = stringResource(R.string.streak_label, currentStreakCount),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
                     color = WarningOrange,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -215,7 +217,7 @@ fun Scoreboard(score: Int, highScore: Int, lives: Int?, currentStreakCount: Int)
                 }
             }
             Text(
-                text = "BEST: $highScore",
+                text = stringResource(R.string.best_score_label, highScore),
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                 color = TextSecondary
             )
@@ -236,7 +238,7 @@ fun QuestionProgress(questionNumber: Int, totalQuestions: Int) {
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         ) {
             Text(
-                "$questionNumber / $totalQuestions",
+                stringResource(R.string.question_progress, questionNumber, totalQuestions),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
             )
@@ -437,8 +439,8 @@ fun NormalModeScreen(
             
             if (gameState.questionNumber == 0) {
                 PreGameContent(
-                    gameModeName = "Normal Mode",
-                    gameDescription = "Answer questions to increase your score!",
+                    R.string.mode_normal_name,
+                    R.string.pregame_normal_description,
                     highScore = gameState.highScore,
                     onStartGame = { viewModel.startGame() }
                 )
@@ -496,11 +498,13 @@ fun StyledAlertDialog(
     title: String,
     message: @Composable () -> Unit,
     confirmButtonText: String,
-    dismissButtonText: String = "Cancel",
+    dismissButtonText: String? = null,
     onConfirm: () -> Unit,
     onDismiss: (() -> Unit)? = null,
     isError: Boolean = true
 ) {
+    val dismissText = dismissButtonText ?: stringResource(R.string.dialog_cancel)
+
     AlertDialog(
         onDismissRequest = { onDismiss?.invoke() },
         title = {
@@ -520,7 +524,7 @@ fun StyledAlertDialog(
         dismissButton = {
             if (onDismiss != null) {
                 TextButton(onClick = onDismiss) {
-                    Text(dismissButtonText, color = TextSecondary)
+                    Text(dismissText, color = TextSecondary)
                 }
             }
         },
@@ -539,12 +543,12 @@ fun GameEndDialog(
     adWatched: Boolean = false,
     onBack: () -> Unit = {}
 ) {
-    val title = if (isWon) "Victory!" else "Nice Try!"
-    val mainMessage = if (isWon) "You're a master!" else {
+    val title = stringResource(if (isWon) R.string.game_end_title_victory else R.string.game_end_title_nice_try)
+    val mainMessage = if (isWon) stringResource(R.string.game_end_message_master) else {
         when (reason) {
-            LossReason.OutOfLives -> "Out of lives!"
-            LossReason.TimeOut -> "Time's Up!"
-            null -> "Game Over!"
+            LossReason.OutOfLives -> stringResource(R.string.game_end_message_out_of_lives)
+            LossReason.TimeOut -> stringResource(R.string.game_end_message_time_up)
+            null -> stringResource(R.string.game_end_message_game_over)
         }
     }
 
@@ -560,10 +564,10 @@ fun GameEndDialog(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 ) {
                     Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("SCORE", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text(stringResource(R.string.score_label), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                         Text("${gameState.score}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black, color = PrimarySoft)
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                        Text("BEST: ${gameState.highScore}", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.best_score_label, gameState.highScore), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -580,13 +584,13 @@ fun GameEndDialog(
                         } else {
                             Icon(Icons.Filled.PlayArrow, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(if (adWatched) "CONTINUE" else "WATCH AD TO CONTINUE")
+                            Text(stringResource(if (adWatched) R.string.game_end_continue else R.string.game_end_watch_ad))
                         }
                     }
                 }
             }
         },
-        confirmButtonText = "Play Again",
+        confirmButtonText = stringResource(R.string.game_end_play_again),
         onConfirm = onPlayAgain,
         onDismiss = onBack,
         isError = !isWon

@@ -154,7 +154,7 @@ private fun HeaderSection(visible: Boolean, isDark: Boolean, dailyStreak: Int) {
         ) {
             Column {
                 Text(
-                    text = "EMOJI CHAIN",
+                    text = stringResource(R.string.mode_selection_brand_title),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Black,
                         brush = Brush.horizontalGradient(listOf(PrimarySoft, SecondarySoft)),
@@ -162,7 +162,7 @@ private fun HeaderSection(visible: Boolean, isDark: Boolean, dailyStreak: Int) {
                     )
                 )
                 Text(
-                    text = "MASTER THE LINK",
+                    text = stringResource(R.string.mode_selection_brand_subtitle),
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = if (isDark) Color.White.copy(alpha = 0.5f) else TextSecondary,
                         fontWeight = FontWeight.Bold,
@@ -187,7 +187,7 @@ private fun SectionTitleSection(visible: Boolean, isDark: Boolean) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "READY TO PLAY?",
+                text = stringResource(R.string.mode_selection_ready_title),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.ExtraBold,
                     color = if (isDark) Color.White else PrimarySoft
@@ -373,7 +373,7 @@ private fun HighScoreBadge(highScore: Int, modifier: Modifier = Modifier) {
             modifier = modifier
         ) {
             Text(
-                text = "🏆 $highScore",
+                text = stringResource(R.string.mode_selection_high_score, highScore),
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color.White

@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.play.emojireactionchain.R
 import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.ui.theme.ErrorRed
 import com.play.emojireactionchain.ui.theme.TextMain
@@ -116,8 +117,8 @@ fun BlitzModeScreen(
             
             if (gameState.questionNumber == 0) {
                 PreGameContent(
-                    gameModeName = "Blitz Mode",
-                    gameDescription = "Super fast rounds! One mistake and you're out. Can you handle the speed?",
+                    R.string.mode_blitz_name,
+                    R.string.pregame_blitz_description,
                     highScore = gameState.highScore,
                     onStartGame = { viewModel.startGame() }
                 )

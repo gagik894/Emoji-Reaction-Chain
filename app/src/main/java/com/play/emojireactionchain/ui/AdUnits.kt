@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -29,6 +30,7 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import com.play.emojireactionchain.R
 
 @Composable
 fun BannerAd(adUnitId: String) {
@@ -255,9 +257,9 @@ fun RewardScreen() {
 
     Column(modifier = Modifier.padding(16.dp)) {
         if (rewardedAdState.isLoading) {
-            Text("Loading rewarded ad...")
+            Text(stringResource(R.string.ad_loading_rewarded))
         } else if (rewardedAdState.rewardedAd == null) {
-            Text("Ad not loaded. Tap button to try again.")
+            Text(stringResource(R.string.ad_not_loaded_retry))
         }
 
         Button(onClick = {
@@ -272,11 +274,11 @@ fun RewardScreen() {
                 rewardedAdState.loadAd()
             }
         }) {
-            Text("Watch Ad to Earn Reward")
+            Text(stringResource(R.string.ad_watch_reward))
         }
 
         if (rewardEarned) {
-            Text("Congratulations! You earned a reward!")
+            Text(stringResource(R.string.ad_reward_earned))
         }
     }
 }
@@ -291,9 +293,9 @@ fun InterstitialAdScreen() {
 
     Column(modifier = Modifier.padding(16.dp)) {
         if (interstitialAdState.isLoading) {
-            Text("Loading interstitial ad...")
+            Text(stringResource(R.string.ad_loading_interstitial))
         } else if (interstitialAdState.interstitialAd == null) {
-            Text("Ad not loaded. Tap button to try again.")
+            Text(stringResource(R.string.ad_not_loaded_retry))
         }
 
         Button(onClick = {
@@ -310,11 +312,11 @@ fun InterstitialAdScreen() {
                 interstitialAdState.loadAd()
             }
         }) {
-            Text("Show Interstitial Ad")
+            Text(stringResource(R.string.ad_show_interstitial))
         }
 
         if (adShown) {
-            Text("Ad was shown successfully!")
+            Text(stringResource(R.string.ad_interstitial_shown))
         }
     }
 }

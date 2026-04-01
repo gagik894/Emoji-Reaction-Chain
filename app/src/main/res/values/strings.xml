@@ -33,4 +33,44 @@
     <string name="tutorial_action_back">Back</string>
     <string name="tutorial_action_skip">Skip</string>
     <string name="tutorial_action_start">Start Playing</string>
+
+    <string name="game_header_title">Emoji Chain</string>
+    <string name="game_header_back_description">Back</string>
+    <string name="time_bonus_text">+%1$d Time Bonus!</string>
+    <string name="score_label">SCORE</string>
+    <string name="best_score_label">BEST: %1$d</string>
+    <string name="streak_label">🔥 %1$d</string>
+    <string name="question_progress">%1$d / %2$d</string>
+
+    <string name="pregame_normal_description">Answer questions to increase your score!</string>
+    <string name="pregame_timed_description">Answer as many as you can! Correct answers add time.</string>
+    <string name="pregame_survival_description">One mistake and you lose a life. How long can you survive?</string>
+    <string name="pregame_blitz_description">Super fast rounds! One mistake and you\'re out. Can you handle the speed?</string>
+    <string name="pregame_best_score">BEST SCORE: %1$d</string>
+    <string name="pregame_start_playing">START PLAYING</string>
+    <string name="survival_level">LEVEL %1$d</string>
+
+    <string name="dialog_cancel">Cancel</string>
+    <string name="game_end_title_victory">Victory!</string>
+    <string name="game_end_title_nice_try">Nice Try!</string>
+    <string name="game_end_message_master">You\'re a master!</string>
+    <string name="game_end_message_out_of_lives">Out of lives!</string>
+    <string name="game_end_message_time_up">Time\'s Up!</string>
+    <string name="game_end_message_game_over">Game Over!</string>
+    <string name="game_end_watch_ad">WATCH AD TO CONTINUE</string>
+    <string name="game_end_continue">CONTINUE</string>
+    <string name="game_end_play_again">Play Again</string>
+
+    <string name="mode_selection_brand_title">EMOJI CHAIN</string>
+    <string name="mode_selection_brand_subtitle">MASTER THE LINK</string>
+    <string name="mode_selection_ready_title">READY TO PLAY?</string>
+    <string name="mode_selection_high_score">🏆 %1$d</string>
+
+    <string name="ad_loading_rewarded">Loading rewarded ad…</string>
+    <string name="ad_loading_interstitial">Loading interstitial ad…</string>
+    <string name="ad_not_loaded_retry">Ad not loaded. Tap button to try again.</string>
+    <string name="ad_watch_reward">Watch Ad to Earn Reward</string>
+    <string name="ad_reward_earned">Congratulations! You earned a reward!</string>
+    <string name="ad_show_interstitial">Show Interstitial Ad</string>
+    <string name="ad_interstitial_shown">Ad was shown successfully!</string>
 </resources>
