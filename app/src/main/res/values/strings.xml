@@ -83,4 +83,11 @@
     <string name="pet_companion_title">Pet Companion</string>
     <string name="pet_companion_growing">Your buddy is growing with you</string>
     <string name="pet_companion_advanced">Your buddy is super happy today!</string>
+
+    <string name="hint_sequential_category">Look for the next pattern in the same group.</string>
+    <string name="hint_category_mixup">One group is hiding a theme — trust the pattern!</string>
+    <string name="hint_opposite_meaning">Think of the opposite meaning.</string>
+    <string name="hint_synonym_chain">Pick the emoji that feels most similar.</string>
+    <string name="hint_default">Look carefully for the best fit.</string>
+    <string name="hint_bonus_round">Bonus round: go fast and have fun!</string>
 </resources>

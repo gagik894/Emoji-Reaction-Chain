@@ -2,6 +2,7 @@ package com.play.emojireactionchain.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.play.emojireactionchain.R
 import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.model.GameState
@@ -49,12 +50,12 @@ abstract class BaseGameViewModel(
             EmojiCategory("Clothing", listOf("👕", "👚", "👗", "👖", "👔", "🧣", "🧤", "🧦", "🧢", "👒", "🎩", "👟")),
             EmojiCategory("Sports", listOf("⚽️", "🏀", "🏈", "⚾️", "🎾", "🏐", "🏓", "🏸", "🏒", "🥍", "🏏", "⛳️")),
             EmojiCategory("Food (Beyond Fruits)", listOf("🍰", "🎂", "🥨", "🥪", "🌮", "🍜", "🍕", "🍔", "🍟", "🍦", "🍩", "🍪")),
-            EmojiCategory("Drinks", listOf("☕", "🍵", "🍶", "🍺", "🍷", "🍹", "🥛", "🧃", "🥤", "🧉", "🧊", "🫗")), // Added more
-            EmojiCategory("Travel/Places", listOf("⛰️", "🏖️", "🏕️", "🗽", "🗼", "🕌", "⛩️", "🏞️", "🏟️", "🏛️", "🏘️", "🏙️")), // Added more
+            EmojiCategory("Drinks", listOf("☕", "🍵", "🍶", "🍺", "🍷", "🍹", "🥛", "🧃", "🥤", "🧉", "🧊", "🫗")),
+            EmojiCategory("Travel/Places", listOf("⛰️", "🏖️", "🏕️", "🗽", "🗼", "🕌", "⛩️", "🏞️", "🏟️", "🏛️", "🏘️", "🏙️")),
             EmojiCategory("Time/Date/Weather", listOf("⏰", "🗓️", "☀️", "🌧️", "❄️", "🌈", "🌪️", "⚡️", "☔️", "🌬️", "📅", "⏱️")),
-            EmojiCategory("Household Objects", listOf("🛋️", "🛏️", "🚪", "🪑", "💡", "🧸", "🪞", "🧽", "🪣", "🔑", "🖼️", "🚽")), // Added more
+            EmojiCategory("Household Objects", listOf("🛋️", "🛏️", "🚪", "🪑", "💡", "🧸", "🪞", "🧽", "🪣", "🔑", "🖼️", "🚽")),
             EmojiCategory("Technology", listOf("📱", "💻", "⌨️", "🖱️", "🎧", "📺", "⌚️", "📷", "📹", "🕹️", "💾", "💽")),
-            EmojiCategory("Tools/Instruments", listOf("🔨", "🔧", "🧰", "🧪", "🔬", "🔭", "🪛", "🪚", "🪓", "🪤", "🧲", "🔦")), // Added more
+            EmojiCategory("Tools/Instruments", listOf("🔨", "🔧", "🧰", "🧪", "🔬", "🔭", "🪛", "🪚", "🪓", "🪤", "🧲", "🔦")),
             EmojiCategory("Music", listOf("🎵", "🎶", "🎤", "🎧", "🎼", "🎹", "🎸", "🎻", "🎺", "🥁", "🎷", "📻")),
             EmojiCategory("Office/School Supplies", listOf("📚", "📓", "📐", "📏", "🖇️", "✏️", "📝", "📁", "📂", "📅", "📊", "📈"))
         ).associateBy { it.name }
@@ -66,17 +67,39 @@ abstract class BaseGameViewModel(
         )
 
         val synonymPairs = listOf(
-            listOf("😀", "😊", "😄", "😁", "😆", "😅"), // Happy faces
-            listOf("😢", "😥", "😓", "😔", "😟", "🙁"), // Sad faces
-            listOf("😠", "😡", "😤", "🤬"),       // Angry faces
-            listOf("😨", "😱", "😰"),          // Scared faces
-            listOf("😴", "😪", "💤"),       // Sleepy emojis
-            listOf("🚗", "🚕", "🚙", "🚓"),    // Cars
-            listOf("🏠", "🏡", "🏘️", "🏢"),   // Buildings
-            listOf("☀️", "🌤️", "⛅️", "🔆"), // Sunny weather
-            listOf("🌧️", "☔️", "⛈️"),       // Rainy weather
+            listOf("😀", "😊", "😄", "😁", "😆", "😅"),
+            listOf("😢", "😥", "😓", "😔", "😟", "🙁"),
+            listOf("😠", "😡", "😤", "🤬"),
+            listOf("😨", "😱", "😰"),
+            listOf("😴", "😪", "💤"),
+            listOf("🚗", "🚕", "🚙", "🚓"),
+            listOf("🏠", "🏡", "🏘️", "🏢"),
+            listOf("☀️", "🌤️", "⛅️", "🔆"),
+            listOf("🌧️", "☔️", "⛈️")
         )
+
+        private val categoryToEmoji = mapOf(
+            "Fruits" to "🍎",
+            "Animals" to "🐶",
+            "Faces" to "😀",
+            "Emotions" to "🎭",
+            "Vehicles" to "🚗",
+            "Clothing" to "👕",
+            "Sports" to "⚽️",
+            "Food (Beyond Fruits)" to "🍔",
+            "Drinks" to "🥤",
+            "Travel/Places" to "✈️",
+            "Time/Date/Weather" to "☀️",
+            "Household Objects" to "🏠",
+            "Technology" to "💻",
+            "Tools/Instruments" to "🛠️",
+            "Music" to "🎵",
+            "Office/School Supplies" to "📚"
+        )
+
+        fun getCategoryEmoji(name: String) = categoryToEmoji[name] ?: "❓"
     }
+
     private val _rules = listOf(
         GameRule("Sequential in Category"),
         GameRule("Category Mix-Up"),
@@ -84,10 +107,9 @@ abstract class BaseGameViewModel(
         GameRule("Synonym Chain")
     )
 
-    protected val rules: List<GameRule> = _rules // Protected, accessible to subclasses
-    protected open val questionCountPerGame = 30 // Allow overriding
+    protected val rules: List<GameRule> = _rules
+    protected open val questionCountPerGame = 30
 
-    // --- Game State (Now protected) ---
     protected val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
@@ -95,7 +117,7 @@ abstract class BaseGameViewModel(
     protected var currentGameScore = 0
 
     var questionStartTime: Long = 0
-    open val maxTimePerQuestionSeconds: Int = 10  // Allow overriding
+    open val maxTimePerQuestionSeconds: Int = 10
     protected val pointsPerSecondBonus: Int = 5
 
     protected var currentStreak: Int = 0
@@ -113,8 +135,6 @@ abstract class BaseGameViewModel(
     private var streakMissionProgress = 0
     private var streakMissionReward = 25
 
-
-    // --- Initialization ---
     init {
         resetEngagementLayer()
     }
@@ -126,25 +146,21 @@ abstract class BaseGameViewModel(
         updateMission(level = 1)
     }
 
-    protected fun loadHighScore(gameMode: GameMode) { // Add gameMode parameter
+    protected fun loadHighScore(gameMode: GameMode) {
         val highScore = highScoreManager.getHighScore(gameMode)
-        _gameState.value = _gameState.value.copy(highScore = highScore, gameMode = gameMode) // Also, set gameMode
+        _gameState.value = _gameState.value.copy(highScore = highScore, gameMode = gameMode)
     }
 
-
-    // --- Abstract Methods (To be implemented by subclasses) ---
     abstract fun startGame()
-    protected open fun nextQuestion() { // Make it open for potential overrides, but provide a default implementation
-
+    protected open fun nextQuestion() {
         viewModelScope.launch {
             currentQuestionCount++
             currentQuestionIsBonusRound = currentQuestionCount % bonusRoundInterval == 0
 
-            // Allow mode-specific early stop checks before generating a new prompt.
             handleNextQuestionModeSpecific()
             if (_gameState.value.gameResult != GameResult.InProgress) return@launch
 
-            var attempts = 0 // prevent infinit loop
+            var attempts = 0
             var questionData: Triple<List<String>, String, List<String>>? = null
             while (questionData == null && attempts < 10){
                 attempts++
@@ -162,7 +178,7 @@ abstract class BaseGameViewModel(
             if(questionData != null){
                 _gameState.value = _gameState.value.copy(
                     emojiChain = questionData.first,
-                    choices = questionData.third.shuffled(), // Shuffle choices here!
+                    choices = questionData.third.shuffled(),
                     correctAnswerEmoji = questionData.second,
                     isCorrectAnswer = null,
                     questionNumber = currentQuestionCount,
@@ -173,46 +189,40 @@ abstract class BaseGameViewModel(
                     streakMissionTarget = streakMissionTarget,
                     streakMissionProgress = streakMissionProgress,
                     currentEngagementBonus = 0,
-                    currentHint = buildHint(currentRuleName, currentCategoryName, currentQuestionIsBonusRound)
+                    hintRes = getHintRes(currentRuleName),
+                    categoryEmoji = getCategoryEmoji(currentCategoryName)
                 )
             } else {
-                // Handle the case where no valid question could be generated
-                // This is VERY important to prevent crashes/infinite loops
                 endGame(GameResult.Lost(LossReason.GenerationFailed), offerContinue = false)
             }
         }
     }
 
-    // NEW: Abstract function for mode-specific logic within nextQuestion
     protected abstract fun handleNextQuestionModeSpecific()
 
-    // --- Common Methods ---
     protected open fun selectRuleAndCategory(level: Int): RuleCategory {
-        // Level-based rule selection (more sophisticated)
         val availableRules = when {
-            level <= 3 -> listOf("Sequential in Category", "Category Mix-Up") // Easier rules
+            level <= 3 -> listOf("Sequential in Category", "Category Mix-Up")
             level <= 6 -> listOf("Sequential in Category", "Category Mix-Up", "Opposite Meaning")
-            else -> rules.map { it.name } // All rules available at higher levels
+            else -> rules.map { it.name }
         }
 
         val candidateRules = availableRules.filter { it != previousRuleName }.ifEmpty { availableRules }
         val ruleName = pickWeightedRule(candidateRules)
 
-        // Level-based category selection (optional, but recommended)
         val availableCategories = when {
-            level <= 2 -> listOf("Fruits", "Animals", "Faces", "Emotions") // Basic categories
-            level <= 5 -> emojiCategories.keys.toList()  // All categories
-            else -> emojiCategories.keys.toList() // All categories
+            level <= 2 -> listOf("Fruits", "Animals", "Faces", "Emotions")
+            else -> emojiCategories.keys.toList()
         }
         val candidateCategories = availableCategories.filter { it != previousCategoryName }.ifEmpty { availableCategories }
         val categoryName = candidateCategories.random()
-        val category = emojiCategories[categoryName] ?: emojiCategories.values.random() // Fallback
+        val category = emojiCategories[categoryName] ?: emojiCategories.values.random()
 
         previousRuleName = ruleName
         previousCategoryName = category.name
         rememberQuestionContext(GameRule(ruleName), category)
 
-        return RuleCategory(GameRule(ruleName), category) // Return a RuleCategory object
+        return RuleCategory(GameRule(ruleName), category)
     }
 
     private fun pickWeightedRule(candidateRules: List<String>): String {
@@ -240,12 +250,9 @@ abstract class BaseGameViewModel(
         currentCategoryName = category.name
     }
 
-
-    // --- Abstract Choice Handling (Implemented by subclasses) ---
     protected abstract suspend fun handleCorrectChoice()
     protected abstract suspend fun handleIncorrectChoice()
 
-    // --- End Game (Common logic) ---
     protected fun endGame(result: GameResult, offerContinue: Boolean = true) {
         val finalScore = currentGameScore
         highScoreManager.updateHighScoreIfNewRecord(finalScore, _gameState.value.gameMode)
@@ -266,7 +273,6 @@ abstract class BaseGameViewModel(
         }
     }
 
-    // --- Reset Game (Common logic) ---
     open fun resetGame() {
         currentGameScore = 0
         currentQuestionCount = 0
@@ -284,15 +290,15 @@ abstract class BaseGameViewModel(
                 currentTimeBonus = 0,
                 currentStreakBonus = 0,
                 currentStreakCount = 0,
-                gameResult = GameResult.InProgress, // Reset to InProgress
-                currentHint = ""
+                gameResult = GameResult.InProgress,
+                hintRes = null,
+                categoryEmoji = null
             )
         }
     }
 
     protected abstract fun generateQuestionData(level: Int): Triple<List<String>, String, List<String>>
 
-    // --- Handle Choice (Common logic, but calls mode-specific handling) ---
     fun handleChoice(chosenEmoji: String) {
         if (_gameState.value.gameResult != GameResult.InProgress) return
         if (_gameState.value.isCorrectAnswer != null) return
@@ -336,15 +342,13 @@ abstract class BaseGameViewModel(
                 currentEngagementBonus = engagementBonus,
                 streakMissionTarget = streakMissionTarget,
                 streakMissionProgress = streakMissionProgress,
-                currentStreakBonus = _gameState.value.currentStreakBonus + engagementBonus,
-                currentHint = buildHint(currentRuleName, currentCategoryName, currentQuestionIsBonusRound)
+                currentStreakBonus = _gameState.value.currentStreakBonus + engagementBonus
             )
         } else {
             _gameState.value = _gameState.value.copy(
                 streakMissionTarget = streakMissionTarget,
                 streakMissionProgress = streakMissionProgress,
-                currentEngagementBonus = 0,
-                currentHint = buildHint(currentRuleName, currentCategoryName, currentQuestionIsBonusRound)
+                currentEngagementBonus = 0
             )
         }
     }
@@ -355,8 +359,7 @@ abstract class BaseGameViewModel(
         _gameState.value = _gameState.value.copy(
             streakMissionTarget = streakMissionTarget,
             streakMissionProgress = streakMissionProgress,
-            currentEngagementBonus = 0,
-            currentHint = buildHint(currentRuleName, currentCategoryName, currentQuestionIsBonusRound)
+            currentEngagementBonus = 0
         )
     }
 
@@ -378,30 +381,13 @@ abstract class BaseGameViewModel(
         streakMissionReward = 10 + (target * 8)
     }
 
-    protected fun buildHint(ruleName: String, categoryName: String, isBonusRound: Boolean): String {
-        val ruleHint = when (ruleName) {
-            "Sequential in Category" -> "Look for the next pattern in the same group."
-            "Category Mix-Up" -> "One group is hiding a theme — trust the pattern!"
-            "Opposite Meaning" -> "Think of the opposite meaning."
-            "Synonym Chain" -> "Pick the emoji that feels most similar."
-            else -> "Look carefully for the best fit."
-        }
-
-        val categoryHint = when (categoryName) {
-            "Fruits" -> "This round leans fruity and fun."
-            "Animals" -> "Animal buddies are in play."
-            "Faces" -> "Watch the expressions closely."
-            "Emotions" -> "Feelings matter here."
-            "Vehicles" -> "Think about things that move."
-            "Time/Date/Weather" -> "This round may be about weather or time."
-            else -> "Stay focused on the emoji theme."
-        }
-
-        return buildString {
-            append(ruleHint)
-            append(' ')
-            append(categoryHint)
-            if (isBonusRound) append(" Bonus round: go fast and have fun!")
+    private fun getHintRes(ruleName: String): Int {
+        return when (ruleName) {
+            "Sequential in Category" -> R.string.hint_sequential_category
+            "Category Mix-Up" -> R.string.hint_category_mixup
+            "Opposite Meaning" -> R.string.hint_opposite_meaning
+            "Synonym Chain" -> R.string.hint_synonym_chain
+            else -> R.string.hint_default
         }
     }
 
@@ -411,13 +397,12 @@ abstract class BaseGameViewModel(
             "Category Mix-Up" -> MixUpQuestionGenerator()
             "Opposite Meaning" -> OppositeQuestionGenerator()
             "Synonym Chain" -> SynonymQuestionGenerator()
-            else -> SequentialQuestionGenerator() // Default
+            else -> SequentialQuestionGenerator()
         }
     }
 
     abstract fun handleAdReward()
 
-    // --- Level Calculation (New) ---
      val level: Int
-        get() = (currentQuestionCount / 5) + 1  // Increase level every 5 questions
+        get() = (currentQuestionCount / 5) + 1
 }

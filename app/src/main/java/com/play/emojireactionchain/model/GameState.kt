@@ -4,14 +4,13 @@ sealed class GameResult {
     object InProgress : GameResult()
     object Won : GameResult()
     data class Lost(val reason: LossReason) : GameResult()
-    data class AdContinueOffered(val underlyingResult: GameResult) : GameResult() // New state
+    data class AdContinueOffered(val underlyingResult: GameResult) : GameResult()
 }
 
 enum class LossReason {
     OutOfLives,
     TimeOut,
     GenerationFailed,
-    // Add other reasons as needed, e.g., IncorrectDecoding
 }
 
 data class GameState(
@@ -23,8 +22,8 @@ data class GameState(
     val choices: List<String> = emptyList(),
     val correctAnswerEmoji: String = "",
     val isCorrectAnswer: Boolean? = null,
-    val gameResult: GameResult = GameResult.InProgress, // Use the sealed class
-    val lives: Int = 3, //keep it
+    val gameResult: GameResult = GameResult.InProgress,
+    val lives: Int = 3,
     val rule: String? = null,
     val currentTimeBonus: Int = 0,
     val currentStreakBonus: Int = 0,
@@ -34,5 +33,6 @@ data class GameState(
     val streakMissionTarget: Int = 3,
     val streakMissionProgress: Int = 0,
     val currentEngagementBonus: Int = 0,
-    val currentHint: String = ""
+    val hintRes: Int? = null,
+    val categoryEmoji: String? = null
 )

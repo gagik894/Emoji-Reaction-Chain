@@ -88,7 +88,7 @@ fun BlitzModeScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Scoreboard(gameState.score, gameState.highScore, gameState.lives, gameState.currentStreakCount)
                             EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
-                            HintCard(gameState.currentHint)
+                            HintCard(gameState.hintRes, gameState.categoryEmoji)
                             BlitzTimerDisplay(remainingQuestionTimeMs / 1000.0)
                             EmojiChainDisplay(gameState.emojiChain)
                         }
@@ -99,7 +99,7 @@ fun BlitzModeScreen(
                 } else {
                     Scoreboard(gameState.score, gameState.highScore, gameState.lives, gameState.currentStreakCount)
                     EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
-                    HintCard(gameState.currentHint)
+                    HintCard(gameState.hintRes, gameState.categoryEmoji)
                     BlitzTimerDisplay(remainingQuestionTimeMs / 1000.0)
                     EmojiChainDisplay(gameState.emojiChain)
                     ChoiceButtons(gameState.choices, gameState.correctAnswerEmoji, gameState.isCorrectAnswer, viewModel::handleChoice)
