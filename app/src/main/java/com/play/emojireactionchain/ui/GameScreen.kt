@@ -286,6 +286,33 @@ fun EngagementStrip(
 }
 
 @Composable
+fun HintCard(hint: String) {
+    if (hint.isBlank()) return
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.32f),
+        border = BorderStroke(1.dp, SecondarySoft.copy(alpha = 0.35f))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "💡", fontSize = 18.sp)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = hint,
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
+                color = TextMain
+            )
+        }
+    }
+}
+
+@Composable
 fun EmojiChainDisplay(emojiChain: List<String>) {
     Surface(
         modifier = Modifier
@@ -475,6 +502,7 @@ fun NormalModeScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Scoreboard(gameState.score, gameState.highScore, gameState.lives, gameState.currentStreakCount)
                             EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
+                            HintCard(gameState.currentHint)
                             EmojiChainDisplay(gameState.emojiChain)
                         }
                         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
@@ -484,6 +512,7 @@ fun NormalModeScreen(
                 } else {
                     Scoreboard(gameState.score, gameState.highScore, gameState.lives, gameState.currentStreakCount)
                     EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
+                    HintCard(gameState.currentHint)
                     QuestionProgress(gameState.questionNumber, gameState.totalQuestions)
                     EmojiChainDisplay(gameState.emojiChain)
                     ChoiceButtons(gameState.choices, gameState.correctAnswerEmoji, gameState.isCorrectAnswer, viewModel::handleChoice)

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -20,8 +21,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.play.emojireactionchain.model.GameMode
+import com.play.emojireactionchain.utils.AchievementBadgeManager
+import com.play.emojireactionchain.utils.AvatarProgressManager
 import com.play.emojireactionchain.utils.DailyStreakManager
 import com.play.emojireactionchain.utils.HighScoreManager
+import com.play.emojireactionchain.utils.SoundManager
 import com.play.emojireactionchain.utils.StickerBookManager
 
 
@@ -67,6 +71,13 @@ fun EmojiGameApp() {
     val highScoreManager = remember(context) { HighScoreManager(context) }
     val dailyStreakManager = remember(context) { DailyStreakManager(context) }
     val stickerBookManager = remember(context) { StickerBookManager(context) }
+    val avatarProgressManager = remember { AvatarProgressManager() }
+    val achievementBadgeManager = remember { AchievementBadgeManager() }
+    val celebrationSoundManager = remember(context) { SoundManager(context) }
+
+    DisposableEffect(Unit) {
+        onDispose { celebrationSoundManager.release() }
+    }
 
     var showTutorial by rememberSaveable { mutableStateOf(isFirstLaunch(context)) }
     var dailyStreak by rememberSaveable { mutableIntStateOf(1) }
@@ -74,6 +85,10 @@ fun EmojiGameApp() {
     var stickerCount by rememberSaveable { mutableIntStateOf(0) }
     var latestSticker by rememberSaveable { mutableStateOf<String?>(null) }
     var dailyStickerEmoji by rememberSaveable { mutableStateOf<String?>(null) }
+    var avatarLevelEmoji by rememberSaveable { mutableStateOf("") }
+    var avatarLevelTitle by rememberSaveable { mutableStateOf("") }
+    var avatarLevelSubtitle by rememberSaveable { mutableStateOf("") }
+    var unlockedBadges by remember { mutableStateOf(emptyList<com.play.emojireactionchain.utils.AchievementBadge>()) }
 
     val activity = context as? Activity
     val interstitialAdState = rememberInterstitialAd("ca-app-pub-2523891738770793/6480157179")
@@ -100,11 +115,22 @@ fun EmojiGameApp() {
                     LaunchedEffect(Unit) {
                         dailyStreak = dailyStreakManager.updateAndGetCurrentStreak()
                         modeHighScores = highScoreManager.getAllHighScores()
-                            stickerCount = stickerBookManager.getStickerCount()
-                            latestSticker = stickerBookManager.getLatestSticker()
-                            dailyStickerEmoji = stickerBookManager.awardDailyStickerIfNeeded()?.sticker
-                            stickerCount = stickerBookManager.getStickerCount()
-                            latestSticker = stickerBookManager.getLatestSticker()
+                        stickerCount = stickerBookManager.getStickerCount()
+                        latestSticker = stickerBookManager.getLatestSticker()
+                        dailyStickerEmoji = stickerBookManager.awardDailyStickerIfNeeded()?.sticker
+                        stickerCount = stickerBookManager.getStickerCount()
+                        latestSticker = stickerBookManager.getLatestSticker()
+
+                        val avatarProgress = avatarProgressManager.getAvatarProgress(stickerCount)
+                        avatarLevelEmoji = avatarProgress.emoji
+                        avatarLevelTitle = avatarProgress.title
+                        avatarLevelSubtitle = avatarProgress.subtitle
+                        unlockedBadges = achievementBadgeManager.getUnlockedBadges(dailyStreak, modeHighScores, stickerCount)
+
+                        if (dailyStickerEmoji != null) {
+                            celebrationSoundManager.playCorrectSound()
+                            celebrationSoundManager.playCorrectHaptic()
+                        }
 
                         if (AdManager.shouldShowAdOnHomeReturn() && activity != null) {
                             showInterstitialAd(
@@ -121,9 +147,13 @@ fun EmojiGameApp() {
                     ModeSelectionScreen(
                         dailyStreak = dailyStreak,
                         bestScores = modeHighScores,
-                            stickerCount = stickerCount,
-                            latestSticker = latestSticker,
-                            newStickerEmoji = dailyStickerEmoji,
+                        stickerCount = stickerCount,
+                        latestSticker = latestSticker,
+                        newStickerEmoji = dailyStickerEmoji,
+                        avatarEmoji = avatarLevelEmoji,
+                        avatarTitle = avatarLevelTitle,
+                        avatarSubtitle = avatarLevelSubtitle,
+                        unlockedBadges = unlockedBadges,
                         onModeSelected = { mode ->
                             val route = when (mode) {
                                 GameMode.NORMAL -> Routes.NORMAL_MODE

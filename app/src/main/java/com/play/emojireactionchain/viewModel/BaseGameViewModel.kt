@@ -172,7 +172,8 @@ abstract class BaseGameViewModel(
                     isBonusRound = currentQuestionIsBonusRound,
                     streakMissionTarget = streakMissionTarget,
                     streakMissionProgress = streakMissionProgress,
-                    currentEngagementBonus = 0
+                    currentEngagementBonus = 0,
+                    currentHint = buildHint(currentRuleName, currentCategoryName, currentQuestionIsBonusRound)
                 )
             } else {
                 // Handle the case where no valid question could be generated
@@ -209,8 +210,7 @@ abstract class BaseGameViewModel(
 
         previousRuleName = ruleName
         previousCategoryName = category.name
-        currentRuleName = ruleName
-        currentCategoryName = category.name
+        rememberQuestionContext(GameRule(ruleName), category)
 
         return RuleCategory(GameRule(ruleName), category) // Return a RuleCategory object
     }
@@ -284,7 +284,8 @@ abstract class BaseGameViewModel(
                 currentTimeBonus = 0,
                 currentStreakBonus = 0,
                 currentStreakCount = 0,
-                gameResult = GameResult.InProgress // Reset to InProgress
+                gameResult = GameResult.InProgress, // Reset to InProgress
+                currentHint = ""
             )
         }
     }
@@ -335,13 +336,15 @@ abstract class BaseGameViewModel(
                 currentEngagementBonus = engagementBonus,
                 streakMissionTarget = streakMissionTarget,
                 streakMissionProgress = streakMissionProgress,
-                currentStreakBonus = _gameState.value.currentStreakBonus + engagementBonus
+                currentStreakBonus = _gameState.value.currentStreakBonus + engagementBonus,
+                currentHint = buildHint(currentRuleName, currentCategoryName, currentQuestionIsBonusRound)
             )
         } else {
             _gameState.value = _gameState.value.copy(
                 streakMissionTarget = streakMissionTarget,
                 streakMissionProgress = streakMissionProgress,
-                currentEngagementBonus = 0
+                currentEngagementBonus = 0,
+                currentHint = buildHint(currentRuleName, currentCategoryName, currentQuestionIsBonusRound)
             )
         }
     }
@@ -352,7 +355,8 @@ abstract class BaseGameViewModel(
         _gameState.value = _gameState.value.copy(
             streakMissionTarget = streakMissionTarget,
             streakMissionProgress = streakMissionProgress,
-            currentEngagementBonus = 0
+            currentEngagementBonus = 0,
+            currentHint = buildHint(currentRuleName, currentCategoryName, currentQuestionIsBonusRound)
         )
     }
 
@@ -372,6 +376,33 @@ abstract class BaseGameViewModel(
         }
         streakMissionTarget = target
         streakMissionReward = 10 + (target * 8)
+    }
+
+    protected fun buildHint(ruleName: String, categoryName: String, isBonusRound: Boolean): String {
+        val ruleHint = when (ruleName) {
+            "Sequential in Category" -> "Look for the next pattern in the same group."
+            "Category Mix-Up" -> "One group is hiding a theme — trust the pattern!"
+            "Opposite Meaning" -> "Think of the opposite meaning."
+            "Synonym Chain" -> "Pick the emoji that feels most similar."
+            else -> "Look carefully for the best fit."
+        }
+
+        val categoryHint = when (categoryName) {
+            "Fruits" -> "This round leans fruity and fun."
+            "Animals" -> "Animal buddies are in play."
+            "Faces" -> "Watch the expressions closely."
+            "Emotions" -> "Feelings matter here."
+            "Vehicles" -> "Think about things that move."
+            "Time/Date/Weather" -> "This round may be about weather or time."
+            else -> "Stay focused on the emoji theme."
+        }
+
+        return buildString {
+            append(ruleHint)
+            append(' ')
+            append(categoryHint)
+            if (isBonusRound) append(" Bonus round: go fast and have fun!")
+        }
     }
 
     protected open fun getQuestionGenerator(ruleName: String): QuestionGenerator {

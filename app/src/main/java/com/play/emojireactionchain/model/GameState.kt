@@ -33,5 +33,6 @@ data class GameState(
     val isBonusRound: Boolean = false,
     val streakMissionTarget: Int = 3,
     val streakMissionProgress: Int = 0,
-    val currentEngagementBonus: Int = 0
+    val currentEngagementBonus: Int = 0,
+    val currentHint: String = ""
 )

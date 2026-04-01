@@ -77,6 +77,7 @@ import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
 import com.play.emojireactionchain.ui.theme.TextSecondary
 import com.play.emojireactionchain.ui.theme.WarningOrange
+import com.play.emojireactionchain.utils.AchievementBadge
 
 private data class GameModeItem(
     val mode: GameMode,
@@ -116,6 +117,10 @@ fun ModeSelectionScreen(
     stickerCount: Int = 0,
     latestSticker: String? = null,
     newStickerEmoji: String? = null,
+    avatarEmoji: String = "",
+    avatarTitle: String = "",
+    avatarSubtitle: String = "",
+    unlockedBadges: List<AchievementBadge> = emptyList(),
     onModeSelected: (GameMode) -> Unit
 ) {
     val isPreview = LocalInspectionMode.current
@@ -132,7 +137,7 @@ fun ModeSelectionScreen(
     ) {
             Spacer(modifier = Modifier.height(48.dp))
 
-            HeaderSection(visible, isDark, dailyStreak, stickerCount, latestSticker)
+            HeaderSection(visible, isDark, dailyStreak, stickerCount, latestSticker, avatarEmoji, avatarTitle, avatarSubtitle, unlockedBadges)
 
             if (newStickerEmoji != null) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -155,7 +160,11 @@ private fun HeaderSection(
     isDark: Boolean,
     dailyStreak: Int,
     stickerCount: Int,
-    latestSticker: String?
+    latestSticker: String?,
+    avatarEmoji: String,
+    avatarTitle: String,
+    avatarSubtitle: String,
+    unlockedBadges: List<AchievementBadge>
 ) {
     AnimatedVisibility(
         visible = visible,
@@ -193,6 +202,16 @@ private fun HeaderSection(
             }
 
             StickerBookBadge(stickerCount, latestSticker)
+
+            if (avatarEmoji.isNotBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                AvatarProgressBadge(avatarEmoji, avatarTitle, avatarSubtitle)
+            }
+
+            if (unlockedBadges.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                BadgeRow(unlockedBadges)
+            }
         }
     }
 }
@@ -252,6 +271,68 @@ private fun StickerCelebrationCard(stickerEmoji: String) {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = stickerEmoji, fontSize = 24.sp)
+        }
+    }
+}
+
+@Composable
+private fun AvatarProgressBadge(avatarEmoji: String, avatarTitle: String, avatarSubtitle: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = PrimarySoft.copy(alpha = 0.08f),
+        border = BorderStroke(1.dp, PrimarySoft.copy(alpha = 0.55f))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = avatarEmoji, fontSize = 28.sp)
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = avatarTitle,
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Black),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = avatarSubtitle,
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BadgeRow(badges: List<AchievementBadge>) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = "Achievement Badges",
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Black),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            badges.take(3).forEach { badge ->
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = WarningOrange.copy(alpha = 0.12f),
+                    border = BorderStroke(1.dp, WarningOrange.copy(alpha = 0.45f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = badge.emoji, fontSize = 16.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = badge.title,
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+                }
+            }
         }
     }
 }
