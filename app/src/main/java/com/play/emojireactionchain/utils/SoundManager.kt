@@ -5,6 +5,7 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.os.VibratorManager
 import com.play.emojireactionchain.R
 
 class SoundManager(context: Context) {
@@ -16,7 +17,12 @@ class SoundManager(context: Context) {
     init {
         correctSoundPlayer = MediaPlayer.create(context, R.raw.correct_answer)
         incorrectSoundPlayer = MediaPlayer.create(context, R.raw.incorrect_answer)
-        vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator // Initialize Vibrator
+        vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            (context.getSystemService(VibratorManager::class.java))?.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        }
     }
 
     fun playCorrectSound() {
@@ -26,9 +32,9 @@ class SoundManager(context: Context) {
     fun playIncorrectSound() {
         incorrectSoundPlayer?.start()
     }
+
     fun playIncorrectSoundAndHaptic() {
         playIncorrectSound()
-        Thread.sleep(150)
         playIncorrectHaptic()
     }
 

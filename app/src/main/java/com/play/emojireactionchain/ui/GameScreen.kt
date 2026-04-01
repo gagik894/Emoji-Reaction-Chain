@@ -59,7 +59,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.play.emojireactionchain.R
 import com.play.emojireactionchain.model.GameResult
@@ -386,21 +385,6 @@ fun GameScreenLayout(content: @Composable () -> Unit) {
     }
 }
 
-// Custom ViewModel Factory
-class NormalGameViewModelFactory(
-    private val soundManager: SoundManager,
-    private val highScoreManager: HighScoreManager
-) : ViewModelProvider.Factory {
-    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(NormalGameViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return NormalGameViewModel(soundManager, highScoreManager) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
-
-
 @Composable
 fun NormalModeScreen(
     onNavigateToStart: () -> Unit
@@ -414,7 +398,7 @@ fun NormalModeScreen(
     }
 
     val viewModel: NormalGameViewModel = viewModel(
-        factory = NormalGameViewModelFactory(soundManager, highScoreManager)
+        factory = gameViewModelFactory { NormalGameViewModel(soundManager, highScoreManager) }
     )
 
     val gameState by viewModel.gameState.collectAsState()

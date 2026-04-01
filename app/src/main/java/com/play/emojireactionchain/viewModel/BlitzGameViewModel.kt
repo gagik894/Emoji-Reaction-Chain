@@ -9,6 +9,8 @@ import com.play.emojireactionchain.utils.HighScoreManager
 import com.play.emojireactionchain.utils.QuestionGenerator
 import com.play.emojireactionchain.utils.SoundManager
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class BlitzGameViewModel(
@@ -19,6 +21,8 @@ class BlitzGameViewModel(
     override val maxTimePerQuestionSeconds: Int = 3
     override val questionCountPerGame: Int = Int.MAX_VALUE
     val maxLives: Int = 3
+    private val _remainingQuestionTimeMs = MutableStateFlow(maxTimePerQuestionSeconds * 1000L)
+    val remainingQuestionTimeMsFlow = _remainingQuestionTimeMs.asStateFlow()
     private var countDownTimer: CountDownTimer? = null
 
     init {
@@ -31,6 +35,7 @@ class BlitzGameViewModel(
             currentQuestionCount = 0
             currentStreak = 0
             countDownTimer?.cancel()
+            _remainingQuestionTimeMs.value = maxTimePerQuestionSeconds * 1000L
 
             _gameState.value = _gameState.value.copy( //add game mode
                 gameMode = GameMode.BLITZ,
@@ -63,13 +68,15 @@ class BlitzGameViewModel(
 
     private fun startTimer() {
         countDownTimer?.cancel()
+        _remainingQuestionTimeMs.value = maxTimePerQuestionSeconds * 1000L
 
         countDownTimer = object : CountDownTimer(maxTimePerQuestionSeconds * 1000L, 100) {
             override fun onTick(millisUntilFinished: Long) {
-                // Optional: Update a time state value if needed for UI
+                _remainingQuestionTimeMs.value = millisUntilFinished
             }
 
             override fun onFinish() {
+                _remainingQuestionTimeMs.value = 0L
                 if (_gameState.value.gameResult == GameResult.InProgress) {
                     viewModelScope.launch {
                         handleIncorrectChoice(true)
@@ -86,6 +93,7 @@ class BlitzGameViewModel(
     // ... (rest of BlitzGameViewModel, no other changes needed) ...
     override suspend fun handleCorrectChoice() {
         countDownTimer?.cancel()
+        _remainingQuestionTimeMs.value = maxTimePerQuestionSeconds * 1000L
 
         val answerTimeMillis = System.currentTimeMillis() - questionStartTime
         val timeBonus =
@@ -122,6 +130,7 @@ class BlitzGameViewModel(
     suspend fun handleIncorrectChoice(isTimeout: Boolean) {
         soundManager.playIncorrectSoundAndHaptic()
         countDownTimer?.cancel()
+        _remainingQuestionTimeMs.value = maxTimePerQuestionSeconds * 1000L
         currentStreak = 0
 
         // Just remove one life regardless of whether it's timeout or wrong answer
@@ -149,12 +158,14 @@ class BlitzGameViewModel(
             gameResult = GameResult.InProgress
         )
         countDownTimer?.cancel()
+        _remainingQuestionTimeMs.value = maxTimePerQuestionSeconds * 1000L
         nextQuestion()
     }
 
     override fun onCleared() {
         super.onCleared()
         countDownTimer?.cancel()
+        _remainingQuestionTimeMs.value = 0L
         countDownTimer = null
     }
 }

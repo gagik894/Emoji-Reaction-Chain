@@ -38,13 +38,11 @@ object AdManager {
     private var shouldShowAdOnHomeReturn = false
 
     fun incrementGamePlayCount(): Int {
-        println("increment Game play count: $gamePlayCount")
         gamePlayCount++
         return gamePlayCount
     }
 
     fun shouldShowAd(): Boolean {
-        println("ShouldShowAd Game play count: $gamePlayCount")
         return gamePlayCount % 3 == 0 && gamePlayCount > 0
     }
 
@@ -58,10 +56,6 @@ object AdManager {
 
     fun shouldShowAdOnHomeReturn(): Boolean {
         return shouldShowAdOnHomeReturn
-    }
-
-    fun resetGamePlayCount() {
-        gamePlayCount = 0
     }
 }
 

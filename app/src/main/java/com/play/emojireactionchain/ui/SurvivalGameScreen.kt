@@ -30,7 +30,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.play.emojireactionchain.R
 import com.play.emojireactionchain.ui.theme.PrimarySoft
@@ -40,19 +39,6 @@ import com.play.emojireactionchain.utils.HighScoreManager
 import com.play.emojireactionchain.utils.SoundManager
 import com.play.emojireactionchain.viewModel.SurvivalGameViewModel
 import kotlinx.coroutines.delay
-
-class SurvivalGameViewModelFactory(
-    private val soundManager: SoundManager,
-    private val highScoreManager: HighScoreManager
-) : ViewModelProvider.Factory {
-    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(SurvivalGameViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return SurvivalGameViewModel(soundManager, highScoreManager) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
 
 @Composable
 fun SurvivalModeScreen(onNavigateToStart: () -> Unit = {}) {
@@ -66,7 +52,7 @@ fun SurvivalModeScreen(onNavigateToStart: () -> Unit = {}) {
 
     val viewModel: SurvivalGameViewModel = viewModel(
         key = "SurvivalGameViewModel",
-        factory = SurvivalGameViewModelFactory(soundManager, highScoreManager)
+        factory = gameViewModelFactory { SurvivalGameViewModel(soundManager, highScoreManager) }
     )
     val gameState by viewModel.gameState.collectAsState()
 

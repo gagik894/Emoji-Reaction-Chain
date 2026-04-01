@@ -27,7 +27,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.play.emojireactionchain.R
 import com.play.emojireactionchain.ui.theme.ErrorRed
@@ -36,19 +35,6 @@ import com.play.emojireactionchain.utils.HighScoreManager
 import com.play.emojireactionchain.utils.SoundManager
 import com.play.emojireactionchain.viewModel.TimedGameViewModel
 import kotlinx.coroutines.delay
-
-class TimedGameViewModelFactory(
-    private val soundManager: SoundManager,
-    private val highScoreManager: HighScoreManager
-) : ViewModelProvider.Factory {
-    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(TimedGameViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return TimedGameViewModel(soundManager, highScoreManager) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -65,7 +51,7 @@ fun TimedModeScreen(
 
     val viewModel: TimedGameViewModel = viewModel(
         key = "TimedGameViewModel",
-        factory = TimedGameViewModelFactory(soundManager, highScoreManager)
+        factory = gameViewModelFactory { TimedGameViewModel(soundManager, highScoreManager) }
     )
     val gameState by viewModel.gameState.collectAsState()
     val remainingTime by viewModel.remainingGameTimeFlow.collectAsState()
