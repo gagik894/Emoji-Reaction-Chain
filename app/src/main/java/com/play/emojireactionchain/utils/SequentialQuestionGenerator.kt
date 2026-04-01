@@ -21,6 +21,7 @@ class SequentialQuestionGenerator : QuestionGenerator {
 
         val (chainLength, step) = getChainParameters(level)
         val actualChainLength = chainLength.coerceAtMost(categoryEmojis.size - 1).coerceAtMost(5) // Max 5!
+        val effectiveStep = resolveStep(categoryEmojis.size, step, actualChainLength) ?: return Triple(emptyList(), "", emptyList())
 
         var attempts = 0
         val maxAttempts = 20
@@ -32,7 +33,7 @@ class SequentialQuestionGenerator : QuestionGenerator {
             var currentIndex = startIndex
             while (emojiChain.size < actualChainLength) {
                 emojiChain.add(categoryEmojis[currentIndex])
-                currentIndex = (currentIndex + step).mod(categoryEmojis.size)
+                currentIndex = (currentIndex + effectiveStep).mod(categoryEmojis.size)
                 if (emojiChain.distinct().size != emojiChain.size) break // No duplicates
             }
 
@@ -63,6 +64,27 @@ class SequentialQuestionGenerator : QuestionGenerator {
             else -> Pair(5, (1..3).random()) // Always max length 5
         }
     }
+
+    private fun resolveStep(size: Int, preferredStep: Int, chainLength: Int): Int? {
+        val candidates = listOf(preferredStep, 1, 2, 3).distinct()
+        return candidates.firstOrNull { step ->
+            val normalized = step.mod(size).let { if (it == 0) 1 else it }
+            val cycleLength = size / gcd(size, normalized)
+            cycleLength > chainLength
+        }
+    }
+
+    private fun gcd(a: Int, b: Int): Int {
+        var x = a
+        var y = b
+        while (y != 0) {
+            val temp = x % y
+            x = y
+            y = temp
+        }
+        return x
+    }
+
     private fun generateOptions(
         correctAnswerEmoji: String,
         emojiChain: List<String>,

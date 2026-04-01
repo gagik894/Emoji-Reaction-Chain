@@ -685,6 +685,7 @@ fun GameResultHandler(
                             onUserEarnedReward = {
                                 adWatched = true
                                 isLoadingState.value = false
+                                onHandleAdReward()
                             },
                             onAdClosed = {
                                 isLoadingState.value = false
