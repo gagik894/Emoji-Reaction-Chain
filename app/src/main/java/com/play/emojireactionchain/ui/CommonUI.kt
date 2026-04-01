@@ -1,13 +1,27 @@
 package com.play.emojireactionchain.ui
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.EaseInOutSine
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Attractions
+import androidx.compose.material.icons.filled.Gamepad
+import androidx.compose.material.icons.filled.Rocket
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -15,7 +29,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
 
@@ -65,39 +78,47 @@ private fun FloatingGameDecorations(isDark: Boolean) {
     Box(modifier = Modifier.fillMaxSize()) {
         // Strategic placement of decorations to avoid being covered by main UI elements
         // Upper left area
-        Text(
-            text = "🎮",
-            fontSize = 40.sp,
+        Icon(
+            imageVector = Icons.Filled.Gamepad,
+            contentDescription = null,
+            tint = PrimarySoft.copy(alpha = alpha),
             modifier = Modifier
+                .size(40.dp)
                 .offset(x = 30.dp, y = 100.dp + yOffset.dp)
                 .graphicsLayer(alpha = alpha)
         )
         
         // Upper right area
-        Text(
-            text = "✨",
-            fontSize = 32.sp,
+        Icon(
+            imageVector = Icons.Filled.Star,
+            contentDescription = null,
+            tint = PrimarySoft.copy(alpha = alpha),
             modifier = Modifier
+                .size(32.dp)
                 .align(Alignment.TopEnd)
                 .offset(x = (-30).dp, y = 150.dp - yOffset.dp)
                 .graphicsLayer(alpha = alpha)
         )
         
         // Lower left area
-        Text(
-            text = "🎯",
-            fontSize = 44.sp,
+        Icon(
+            imageVector = Icons.Filled.Attractions,
+            contentDescription = null,
+            tint = PrimarySoft.copy(alpha = alpha),
             modifier = Modifier
+                .size(44.dp)
                 .align(Alignment.BottomStart)
                 .offset(x = 40.dp, y = (-120).dp + yOffset.dp)
                 .graphicsLayer(alpha = alpha)
         )
         
         // Lower right area
-        Text(
-            text = "🚀",
-            fontSize = 36.sp,
+        Icon(
+            imageVector = Icons.Filled.Rocket,
+            contentDescription = null,
+            tint = SecondarySoft.copy(alpha = alpha),
             modifier = Modifier
+                .size(36.dp)
                 .align(Alignment.BottomEnd)
                 .offset(x = (-40).dp, y = (-180).dp - yOffset.dp)
                 .graphicsLayer(alpha = alpha)

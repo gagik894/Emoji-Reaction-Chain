@@ -24,7 +24,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -77,160 +75,152 @@ fun TutorialScreen(onTutorialFinished: () -> Unit) {
     )
 
     var currentStep by remember { mutableIntStateOf(0) }
-    val step = steps[currentStep]
     val isLastStep = currentStep == steps.lastIndex
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(MaterialTheme.colorScheme.background, Color.White)
-                    )
-                )
+        Text(
+            text = stringResource(R.string.tutorial_title),
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontWeight = FontWeight.ExtraBold,
+                color = PrimarySoft,
+                fontSize = 32.sp
+            ),
+            modifier = Modifier.padding(top = 16.dp)
+        )
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
+            // Mascot Emoji
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
+                    .size(100.dp)
+                    .background(Color.White, CircleShape)
+                    .shadow(4.dp, CircleShape),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = stringResource(R.string.tutorial_title),
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.ExtraBold,
-                        color = PrimarySoft,
-                        fontSize = 32.sp
-                    ),
-                    modifier = Modifier.padding(top = 16.dp)
-                )
+                Text("🤖", fontSize = 50.sp)
+            }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            AnimatedContent(
+                targetState = currentStep,
+                transitionSpec = {
+                    if (targetState > initialState) {
+                        (slideInHorizontally(animationSpec = tween(300)) { width -> width } + fadeIn(
+                            animationSpec = tween(300)
+                        )).togetherWith(
+                            slideOutHorizontally(animationSpec = tween(300)) { width -> -width } + fadeOut(
+                                animationSpec = tween(300)
+                            ))
+                    } else {
+                        (slideInHorizontally(animationSpec = tween(300)) { width -> -width } + fadeIn(
+                            animationSpec = tween(300)
+                        )).togetherWith(
+                            slideOutHorizontally(animationSpec = tween(300)) { width -> width } + fadeOut(
+                                animationSpec = tween(300)
+                            ))
+                    }
+                },
+                label = "TutorialStepAnimation"
+            ) { targetStepIndex ->
+                val targetStep = steps[targetStepIndex]
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Mascot Emoji
-                    Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .background(Color.White, CircleShape)
-                            .shadow(4.dp, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("🤖", fontSize = 50.sp)
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    AnimatedContent(
-                        targetState = currentStep,
-                        transitionSpec = {
-                            if (targetState > initialState) {
-                                (slideInHorizontally(animationSpec = tween(300)) { width -> width } + fadeIn(animationSpec = tween(300))).togetherWith(
-                                    slideOutHorizontally(animationSpec = tween(300)) { width -> -width } + fadeOut(animationSpec = tween(300)))
-                            } else {
-                                (slideInHorizontally(animationSpec = tween(300)) { width -> -width } + fadeIn(animationSpec = tween(300))).togetherWith(
-                                    slideOutHorizontally(animationSpec = tween(300)) { width -> width } + fadeOut(animationSpec = tween(300)))
-                            }
-                        },
-                        label = "TutorialStepAnimation"
-                    ) { targetStepIndex ->
-                        val targetStep = steps[targetStepIndex]
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(targetStep.bubbleColor, RoundedCornerShape(24.dp))
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(targetStep.emoji, fontSize = 48.sp)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = stringResource(targetStep.titleRes),
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = TextMain
-                                ),
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = stringResource(targetStep.bodyRes),
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    lineHeight = 22.sp,
-                                    color = TextMain.copy(alpha = 0.8f)
-                                ),
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
-
-                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        .background(targetStep.bubbleColor, RoundedCornerShape(24.dp))
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if (currentStep > 0) {
-                        OutlinedButton(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(56.dp),
-                            onClick = { currentStep-- },
-                            shape = RoundedCornerShape(28.dp),
-                            border = null
-                        ) {
-                            Text(
-                                stringResource(R.string.tutorial_action_back),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    } else {
-                        OutlinedButton(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(56.dp),
-                            onClick = onTutorialFinished,
-                            shape = RoundedCornerShape(28.dp),
-                            border = null
-                        ) {
-                            Text(
-                                stringResource(R.string.tutorial_action_skip),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    Button(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(56.dp)
-                            .shadow(8.dp, RoundedCornerShape(28.dp)),
-                        onClick = {
-                            if (isLastStep) onTutorialFinished() else currentStep++
-                        },
-                        shape = RoundedCornerShape(28.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isLastStep) SecondarySoft else PrimarySoft
-                        )
-                    ) {
-                        Text(
-                            text = if (isLastStep) {
-                                stringResource(R.string.tutorial_action_start)
-                            } else {
-                                stringResource(R.string.tutorial_action_next)
-                            },
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 18.sp
-                        )
-                    }
+                    Text(targetStep.emoji, fontSize = 48.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(targetStep.titleRes),
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = TextMain
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(targetStep.bodyRes),
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            lineHeight = 22.sp,
+                            color = TextMain.copy(alpha = 0.8f)
+                        ),
+                        textAlign = TextAlign.Center
+                    )
                 }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (currentStep > 0) {
+                OutlinedButton(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                    onClick = { currentStep-- },
+                    shape = RoundedCornerShape(28.dp),
+                    border = null
+                ) {
+                    Text(
+                        stringResource(R.string.tutorial_action_back),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            } else {
+                OutlinedButton(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                    onClick = onTutorialFinished,
+                    shape = RoundedCornerShape(28.dp),
+                    border = null
+                ) {
+                    Text(
+                        stringResource(R.string.tutorial_action_skip),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Button(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
+                    .shadow(8.dp, RoundedCornerShape(28.dp)),
+                onClick = {
+                    if (isLastStep) onTutorialFinished() else currentStep++
+                },
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isLastStep) SecondarySoft else PrimarySoft
+                )
+            ) {
+                Text(
+                    text = if (isLastStep) {
+                        stringResource(R.string.tutorial_action_start)
+                    } else {
+                        stringResource(R.string.tutorial_action_next)
+                    },
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 18.sp
+                )
             }
         }
     }
