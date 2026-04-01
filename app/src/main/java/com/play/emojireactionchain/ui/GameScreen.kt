@@ -1,7 +1,9 @@
 package com.play.emojireactionchain.ui
 
 import android.app.Activity
+import android.content.res.Configuration
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,9 +16,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -38,51 +42,33 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun TimeBonusAnimation(bonusPoints: Int) {
-    if (bonusPoints <= 0) return // Don't show animation if no bonus points
+    if (bonusPoints <= 0) return
 
-    val translateYPx = remember { Animatable(0f) } // Animate Float in pixels
+    val translateYPx = remember { Animatable(0f) }
     val scale = remember { Animatable(0f) }
     val alpha = remember { Animatable(0f) }
-    val density = LocalDensity.current // Get density for DP to PX conversion
+    val density = LocalDensity.current
 
-    LaunchedEffect(bonusPoints) { // Animate when bonusPoints changes (on new bonus)
-        translateYPx.animateTo(
-            -150f, // Throw upwards in pixels (adjust value as needed)
-            animationSpec = tween(durationMillis = 300)
-        )
-        scale.animateTo(
-            1.3f, // Scale up slightly less
-            animationSpec = tween(durationMillis = 200)
-        )
-        alpha.animateTo(
-            1f, // Fade in
-            animationSpec = tween(durationMillis = 200)
-        )
-        translateYPx.animateTo(
-            0f, // Fall back down to center
-            animationSpec = tween(durationMillis = 400)
-        )
-        scale.animateTo(
-            1f, // Scale back to normal
-            animationSpec = tween(durationMillis = 300)
-        )
-        alpha.animateTo(
-            0f, // Fade out
-            animationSpec = tween(durationMillis = 300)
-        )
+    LaunchedEffect(bonusPoints) {
+        translateYPx.animateTo(-150f, animationSpec = tween(300))
+        scale.animateTo(1.3f, animationSpec = tween(200))
+        alpha.animateTo(1f, animationSpec = tween(200))
+        translateYPx.animateTo(0f, animationSpec = tween(400))
+        scale.animateTo(1f, animationSpec = tween(300))
+        alpha.animateTo(0f, animationSpec = tween(300))
     }
 
-    Box( // Wrap Text in Box to allow central positioning
-        modifier = Modifier.fillMaxSize(), // Fill the available space
-        contentAlignment = Alignment.Center // Center content in the Box
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = "+$bonusPoints Time Bonus!",
-            style = MaterialTheme.typography.titleLarge, // Use titleLarge for more impact
-            color = Color.Green.copy(alpha = 0.95f), // Slightly brighter green
-            fontSize = 32.sp, // Slightly larger font
+            style = MaterialTheme.typography.titleLarge,
+            color = SuccessGreen,
+            fontSize = 32.sp,
             modifier = Modifier
-                .offset(y = with(density) { translateYPx.value.toDp() }) // Convert float pixels to Dp for offset
+                .offset(y = with(density) { translateYPx.value.toDp() })
                 .graphicsLayer(scaleX = scale.value, scaleY = scale.value, alpha = alpha.value)
         )
     }
@@ -90,159 +76,165 @@ fun TimeBonusAnimation(bonusPoints: Int) {
 
 @Composable
 fun GameHeader(showBack: Boolean = true, onBack: () -> Unit = {}) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Column {
-        BannerAd(adUnitId = "ca-app-pub-2523891738770793/9481725035")
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color.Transparent
+        if (!isLandscape) BannerAd(adUnitId = "ca-app-pub-2523891738770793/9481725035")
+        
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (showBack) {
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .background(Color.White, CircleShape)
-                            .shadow(2.dp, CircleShape)
-                            .clickable(onClick = onBack),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            modifier = Modifier.size(24.dp),
-                            tint = PrimarySoft
-                        )
-                    }
-                }
-
-                Text(
-                    text = "Emoji Chain",
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 0.5.sp
-                    ),
-                    color = PrimarySoft,
-                    modifier = Modifier.weight(1f),
-                )
-
-                if (showBack) {
-                    Spacer(modifier = Modifier.width(44.dp))
+            if (showBack) {
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = TextMain
+                    )
                 }
             }
+
+            Text(
+                text = "Emoji Chain",
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = (-0.5).sp
+                ),
+                color = TextMain,
+                modifier = Modifier.weight(1f),
+            )
+
+            if (showBack) Spacer(modifier = Modifier.width(40.dp))
         }
     }
 }
 
 @Composable
 fun Scoreboard(score: Int, highScore: Int, lives: Int?, currentStreakCount: Int) {
-    Card(
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .padding(vertical = if (isLandscape) 4.dp else 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
+        // Score section
+        Column {
+            Text(
+                text = "SCORE",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = TextSecondary
+            )
+            Text(
+                text = "$score",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Black,
+                    fontSize = 28.sp
+                ),
+                color = PrimarySoft
+            )
+        }
+
+        // Streak indicator
+        if (currentStreakCount > 1) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = WarningOrange.copy(alpha = 0.15f)
+            ) {
                 Text(
-                    text = "SCORE",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "$score",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    color = PrimarySoft
+                    text = "🔥 $currentStreakCount",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
+                    color = WarningOrange,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                 )
             }
+        }
 
-            if (currentStreakCount > 0) {
-                Box(
-                    modifier = Modifier
-                        .background(SecondarySoft.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = "$currentStreakCount 🔥",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = SecondarySoft
-                    )
-                }
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
-                lives?.let {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        repeat(3) { index ->
-                            Text(
-                                text = if (index < it) "❤️" else "🖤",
-                                fontSize = 20.sp,
-                                modifier = Modifier.graphicsLayer {
-                                    alpha = if (index < it) 1f else 0.3f
-                                }
-                            )
-                        }
+        // Lives/Best section
+        Column(horizontalAlignment = Alignment.End) {
+            lives?.let {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    repeat(3) { index ->
+                        Text(
+                            text = "❤️",
+                            fontSize = 18.sp,
+                            modifier = Modifier.graphicsLayer {
+                                alpha = if (index < it) 1f else 0.2f
+                            }
+                        )
                     }
                 }
-                Text(
-                    text = "BEST: $highScore",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
             }
+            Text(
+                text = "BEST: $highScore",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = TextSecondary
+            )
         }
     }
 }
 
 @Composable
 fun QuestionProgress(questionNumber: Int, totalQuestions: Int) {
-    Text(
-        "Question: $questionNumber / $totalQuestions",
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-        textAlign = TextAlign.Center,
-        modifier = Modifier.padding(bottom = 24.dp)
-    )
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ) {
+            Text(
+                "$questionNumber / $totalQuestions",
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+            )
+        }
+    }
 }
 
 @Composable
 fun EmojiChainDisplay(emojiChain: List<String>) {
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
-        var fontSize by remember { mutableStateOf(40.sp) }
-
-        // Use onTextLayout to adjust font size *before* drawing
-        val textStyle = remember(fontSize) { TextStyle(fontSize = fontSize) }
-
-        Text(
-            text = emojiChain.joinToString(" "), // Join to a single string
-            modifier = Modifier.padding(horizontal = 8.dp),
-            style = textStyle,
-            maxLines = 1,
-            textAlign = TextAlign.Center,
-            overflow = TextOverflow.Ellipsis, // Required for onTextLayout
-            onTextLayout = { textLayoutResult ->
-                if (textLayoutResult.didOverflowWidth) {
-                    fontSize *= 0.9f // Reduce font size by 10%
-                }
-            }
-        )
+        Box(
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            var fontSize by remember { mutableStateOf(48.sp) }
+            Text(
+                text = emojiChain.joinToString(" "),
+                style = TextStyle(fontSize = fontSize, fontWeight = FontWeight.Bold),
+                maxLines = 1,
+                textAlign = TextAlign.Center,
+                overflow = TextOverflow.Ellipsis,
+                onTextLayout = { if (it.didOverflowWidth) fontSize *= 0.9f }
+            )
+        }
     }
 }
 
@@ -253,69 +245,63 @@ fun AnimatedChoiceButton(
     correctAnswerEmoji: String,
     onChoiceSelected: (String) -> Unit
 ) {
-    val density = LocalDensity.current
     var isChosen by remember { mutableStateOf(false) }
     val scale = remember { Animatable(1f) }
     val shakeOffset = remember { Animatable(0f) }
-    val animatedColorState = remember { mutableStateOf<Color?>(null) }
 
     LaunchedEffect(isCorrectAnswer) {
-        if (isCorrectAnswer == null) {
-            isChosen = false
-            animatedColorState.value = null
-        }
+        if (isCorrectAnswer == null) isChosen = false
     }
 
     val isCorrect = choiceEmoji == correctAnswerEmoji
-    val isIncorrectlyChosen = isCorrectAnswer == false && isChosen
-
+    val showResult = isCorrectAnswer != null
+    
     val backgroundColor = when {
-        animatedColorState.value != null -> animatedColorState.value!!
-        isCorrect && isCorrectAnswer != null -> SuccessGreen.copy(alpha = 0.9f)
-        isIncorrectlyChosen -> ErrorRed.copy(alpha = 0.9f)
-        else -> PrimarySoft
+        showResult && isCorrect -> SuccessGreen
+        showResult && isChosen && !isCorrect -> ErrorRed
+        else -> MaterialTheme.colorScheme.surface
     }
+    
+    val contentColor = if (showResult && (isCorrect || isChosen)) Color.White else TextMain
 
     LaunchedEffect(isCorrectAnswer, isChosen) {
-        if (isChosen && isCorrectAnswer != null) {
+        if (isChosen && showResult) {
             if (isCorrect) {
-                animatedColorState.value = Color.Green.copy(alpha = 0.7f)
-                scale.animateTo(1.2f, tween(100))
-                scale.animateTo(1f, tween(150))
-                animatedColorState.value = null
-            } else if (isIncorrectlyChosen) {
-                animatedColorState.value = Color.Red.copy(alpha = 0.7f)
-                density.run {
-                    shakeOffset.animateTo(
-                        20.dp.toPx(),
-                        repeatable(5, tween(50, easing = FastOutLinearInEasing), RepeatMode.Reverse)
-                    )
-                    shakeOffset.animateTo(0f, tween(100))
+                scale.animateTo(1.1f, tween(100))
+                scale.animateTo(1f, tween(100))
+            } else {
+                repeat(3) {
+                    shakeOffset.animateTo(10f, tween(50))
+                    shakeOffset.animateTo(-10f, tween(50))
                 }
-                animatedColorState.value = null
+                shakeOffset.animateTo(0f, tween(50))
             }
         }
     }
 
-    Button(
+    Surface(
         onClick = {
-            isChosen = true
-            onChoiceSelected(choiceEmoji)
+            if (!showResult) {
+                isChosen = true
+                onChoiceSelected(choiceEmoji)
+            }
         },
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp)
-            .shadow(if (isChosen) 0.dp else 6.dp, RoundedCornerShape(32.dp))
+            .height(72.dp)
             .graphicsLayer {
                 scaleX = scale.value
                 scaleY = scale.value
                 translationX = shakeOffset.value
             },
-        shape = RoundedCornerShape(32.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = backgroundColor, contentColor = Color.White),
-        elevation = null
+        shape = RoundedCornerShape(20.dp),
+        color = backgroundColor,
+        border = if (!showResult) BorderStroke(2.dp, MaterialTheme.colorScheme.outlineVariant) else null,
+        shadowElevation = if (showResult) 0.dp else 4.dp
     ) {
-        Text(text = choiceEmoji, fontSize = 32.sp)
+        Box(contentAlignment = Alignment.Center) {
+            Text(text = choiceEmoji, fontSize = 36.sp)
+        }
     }
 }
 
@@ -326,40 +312,46 @@ fun ChoiceButtons(
     isCorrectAnswer: Boolean?,
     onChoiceSelected: (String) -> Unit
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        choices.forEach { choiceEmoji ->
-            AnimatedChoiceButton(
-                choiceEmoji = choiceEmoji,
-                isCorrectAnswer = isCorrectAnswer,
-                correctAnswerEmoji = correctAnswerEmoji,
-                onChoiceSelected = onChoiceSelected
-            )
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    if (isLandscape) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            choices.forEach { choice ->
+                Box(modifier = Modifier.weight(1f)) {
+                    AnimatedChoiceButton(choice, isCorrectAnswer, correctAnswerEmoji, onChoiceSelected)
+                }
+            }
+        }
+    } else {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            choices.forEach { choice ->
+                AnimatedChoiceButton(choice, isCorrectAnswer, correctAnswerEmoji, onChoiceSelected)
+            }
         }
     }
 }
 
-//Optional GameScreen Layout
 @Composable
 fun GameScreenLayout(content: @Composable () -> Unit) {
-    Surface(
-        color = MaterialTheme.colorScheme.background,
-        modifier = Modifier.fillMaxSize()
-    ) {
+    GameBackground {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceAround
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             content()
         }
     }
 }
-
 
 // Custom ViewModel Factory
 class NormalGameViewModelFactory(
@@ -379,18 +371,15 @@ class NormalGameViewModelFactory(
 @Composable
 fun NormalModeScreen(
     onNavigateToStart: () -> Unit
-) { // Removed default viewModel parameter
+) {
     val context = LocalContext.current
     val soundManager = remember { SoundManager(context) }
     val highScoreManager = remember { HighScoreManager(context) }
 
     DisposableEffect(Unit) {
-        onDispose {
-            soundManager.release()
-        }
+        onDispose { soundManager.release() }
     }
 
-    // Use the custom factory
     val viewModel: NormalGameViewModel = viewModel(
         factory = NormalGameViewModelFactory(soundManager, highScoreManager)
     )
@@ -411,9 +400,8 @@ fun NormalModeScreen(
 
     Box {
         GameScreenLayout {
-            GameHeader(
-                onBack = onNavigateToStart,
-            )
+            GameHeader(onBack = onNavigateToStart)
+            
             if (gameState.questionNumber == 0) {
                 PreGameContent(
                     gameModeName = "Normal Mode",
@@ -422,30 +410,30 @@ fun NormalModeScreen(
                     onStartGame = { viewModel.startGame() }
                 )
             } else {
-                Scoreboard(
-                    score = gameState.score,
-                    highScore = gameState.highScore,
-                    lives = gameState.lives,
-                    currentStreakCount = gameState.currentStreakCount
-                )
-                QuestionProgress(
-                    questionNumber = gameState.questionNumber,
-                    totalQuestions = gameState.totalQuestions
-                )
-                EmojiChainDisplay(emojiChain = gameState.emojiChain)
+                val configuration = LocalConfiguration.current
+                val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                
+                if (isLandscape) {
+                    Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Scoreboard(gameState.score, gameState.highScore, gameState.lives, gameState.currentStreakCount)
+                            EmojiChainDisplay(gameState.emojiChain)
+                        }
+                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                            ChoiceButtons(gameState.choices, gameState.correctAnswerEmoji, gameState.isCorrectAnswer, viewModel::handleChoice)
+                        }
+                    }
+                } else {
+                    Scoreboard(gameState.score, gameState.highScore, gameState.lives, gameState.currentStreakCount)
+                    QuestionProgress(gameState.questionNumber, gameState.totalQuestions)
+                    EmojiChainDisplay(gameState.emojiChain)
+                    ChoiceButtons(gameState.choices, gameState.correctAnswerEmoji, gameState.isCorrectAnswer, viewModel::handleChoice)
+                }
 
-                ChoiceButtons(
-                    choices = gameState.choices,
-                    correctAnswerEmoji = gameState.correctAnswerEmoji,
-                    isCorrectAnswer = gameState.isCorrectAnswer,
-                    onChoiceSelected = { choice -> viewModel.handleChoice(choice) }
-                )
                 GameResultHandler(
                     gameState = gameState,
                     onStartGame = { viewModel.startGame() },
-                    onHandleAdReward = {
-                        viewModel.handleAdReward()
-                    },
+                    onHandleAdReward = { viewModel.handleAdReward() },
                     onBack = onNavigateToStart
                 )
             }
@@ -453,46 +441,20 @@ fun NormalModeScreen(
         if (showTimeBonusAnimation) {
             TimeBonusAnimation(bonusPoints = currentBonusPointsForAnimation)
         }
-
     }
 }
 
 @Composable
 fun StyledActionButton(text: String, onClick: () -> Unit) {
-    val buttonScaleState = remember { mutableFloatStateOf(1f) }
-    val scaleAnimation by animateFloatAsState(
-        targetValue = buttonScaleState.floatValue,
-        animationSpec = spring(),
-        label = "buttonScale"
-    )
-
-    LaunchedEffect(buttonScaleState.floatValue) {
-        if (buttonScaleState.floatValue < 1f) {
-            delay(100)
-            buttonScaleState.floatValue = 1f
-        }
-    }
-
     Button(
-        onClick = {
-            buttonScaleState.floatValue = 0.95f
-            onClick()
-        },
+        onClick = onClick,
         modifier = Modifier
-            .fillMaxWidth(0.6f) // Make buttons slightly narrower
-            .padding(vertical = 8.dp) // Add vertical padding
-            .graphicsLayer(scaleX = scaleAnimation, scaleY = scaleAnimation),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        ),
-        shape = MaterialTheme.shapes.medium
+            .fillMaxWidth(0.8f)
+            .height(56.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = PrimarySoft)
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleMedium, // Use titleMedium for button text
-            color = MaterialTheme.colorScheme.onPrimary
-        )
+        Text(text = text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -512,22 +474,24 @@ fun StyledAlertDialog(
             Text(
                 title,
                 style = MaterialTheme.typography.titleLarge,
-                color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                color = if (isError) ErrorRed else PrimarySoft,
+                fontWeight = FontWeight.Black
             )
         },
         text = message,
         confirmButton = {
-            Button(onClick = onConfirm) {
+            Button(onClick = onConfirm, colors = ButtonDefaults.buttonColors(containerColor = PrimarySoft)) {
                 Text(confirmButtonText)
             }
         },
         dismissButton = {
             if (onDismiss != null) {
                 TextButton(onClick = onDismiss) {
-                    Text(dismissButtonText)
+                    Text(dismissButtonText, color = TextSecondary)
                 }
             }
-        }
+        },
+        shape = RoundedCornerShape(28.dp)
     )
 }
 
@@ -542,53 +506,48 @@ fun GameEndDialog(
     adWatched: Boolean = false,
     onBack: () -> Unit = {}
 ) {
-    val title = if (isWon) "Congratulations!" else "Game Over!"
-    val mainMessage = if (isWon) "You completed all questions!" else {
+    val title = if (isWon) "Victory!" else "Nice Try!"
+    val mainMessage = if (isWon) "You're a master!" else {
         when (reason) {
-            LossReason.OutOfLives -> "You ran out of lives!"
+            LossReason.OutOfLives -> "Out of lives!"
             LossReason.TimeOut -> "Time's Up!"
-            null -> "You Lost!"
+            null -> "Game Over!"
         }
     }
 
     StyledAlertDialog(
         title = title,
         message = {
-            Column {
-                Text(mainMessage, style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Final Score: ${gameState.score}", style = MaterialTheme.typography.bodyMedium)
-                Text("High Score: ${gameState.highScore}", style = MaterialTheme.typography.bodyMedium)
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Text(mainMessage, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("SCORE", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text("${gameState.score}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black, color = PrimarySoft)
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                        Text("BEST: ${gameState.highScore}", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                    }
+                }
 
                 if (onWatchAd != null && !isWon) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedButton(
+                    Button(
                         enabled = !isLoading,
                         onClick = onWatchAd,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = SecondarySoft)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            if (isLoading) {
-                                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Loading Ad...")
-                            } else if (adWatched) {
-                                Icon(Icons.Filled.PlayArrow, contentDescription = "Continue", modifier = Modifier.size(24.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Continue Game")
-                            } else {
-                                Icon(
-                                    painter = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_media_play),
-                                    contentDescription = "Watch Ad",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Watch Ad to Continue")
-                            }
+                        if (isLoading) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
+                        } else {
+                            Icon(Icons.Filled.PlayArrow, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(if (adWatched) "CONTINUE" else "WATCH AD TO CONTINUE")
                         }
                     }
                 }
@@ -614,11 +573,9 @@ fun GameResultHandler(
     val interstitialAdState = rememberInterstitialAd("ca-app-pub-2523891738770793/2652053805")
     val isLoadingState = remember { mutableStateOf(false) }
 
-    // Track ad states
     var adWatched by remember { mutableStateOf(false) }
     var previousGameResult by remember { mutableStateOf<GameResult?>(null) }
 
-    // Function to show interstitial ad and then perform an action
     val showInterstitialAndThen: (action: () -> Unit) -> Unit = { action ->
         if (AdManager.shouldShowAd()) {
             showInterstitialAd(
@@ -634,32 +591,24 @@ fun GameResultHandler(
         }
     }
 
-    // Reset adWatched when game result changes
     LaunchedEffect(gameState.gameResult) {
         if (gameState.gameResult != previousGameResult) {
             adWatched = false
             previousGameResult = gameState.gameResult
-            println("Game result changed to ${gameState.gameResult} ${AdManager.shouldShowAd()}")
-            // Check if we should show an interstitial ad (game completion)
             if ((gameState.gameResult is GameResult.Won || gameState.gameResult is GameResult.Lost)
                 && AdManager.shouldShowAd()
             ) {
                 showInterstitialAd(
                     interstitialAd = interstitialAdState.interstitialAd,
                     activity = activity,
-                    onAdClosed = {
-                        interstitialAdState.loadAd() // Reload for next time
-                    }
+                    onAdClosed = { interstitialAdState.loadAd() }
                 )
             }
         }
     }
 
-    // Rest of your GameResultHandler implementation...
     when (val result = gameState.gameResult) {
-        GameResult.InProgress -> {
-            // No dialog when game is in progress
-        }
+        GameResult.InProgress -> {}
 
         GameResult.Won -> {
             LaunchedEffect(Unit) { AdManager.incrementGamePlayCount() }

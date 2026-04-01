@@ -1,35 +1,28 @@
 package com.play.emojireactionchain.ui
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.play.emojireactionchain.ui.theme.ErrorRed
+import com.play.emojireactionchain.ui.theme.TextMain
 import com.play.emojireactionchain.utils.HighScoreManager
 import com.play.emojireactionchain.utils.SoundManager
 import com.play.emojireactionchain.viewModel.TimedGameViewModel
 import kotlinx.coroutines.delay
 
-// Custom ViewModel Factory for TimedGameViewModel
 class TimedGameViewModelFactory(
     private val soundManager: SoundManager,
     private val highScoreManager: HighScoreManager
@@ -53,20 +46,16 @@ fun TimedModeScreen(
     val highScoreManager = remember { HighScoreManager(context) }
 
     DisposableEffect(Unit) {
-        onDispose {
-            soundManager.release()
-        }
+        onDispose { soundManager.release() }
     }
 
     val viewModel: TimedGameViewModel = viewModel(
-        key = "TimedGameViewModel", // Use a consistent key
+        key = "TimedGameViewModel",
         factory = TimedGameViewModelFactory(soundManager, highScoreManager)
     )
-    val gameState by viewModel.gameState.collectAsState() // Use collectAsStateWithLifecycle
-    val remainingTime by viewModel.remainingGameTimeFlow.collectAsState() // Observe the flow
+    val gameState by viewModel.gameState.collectAsState()
+    val remainingTime by viewModel.remainingGameTimeFlow.collectAsState()
 
-
-    // --- Time Bonus Animation ---
     var showTimeBonusAnimation by remember { mutableStateOf(false) }
     var currentBonusPointsForAnimation by remember { mutableIntStateOf(0) }
 
@@ -74,61 +63,48 @@ fun TimedModeScreen(
         if (gameState.currentTimeBonus > 0) {
             showTimeBonusAnimation = true
             currentBonusPointsForAnimation = gameState.currentTimeBonus
-            delay(500) // Shorter animation for Blitz
+            delay(1000)
             showTimeBonusAnimation = false
         }
     }
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Box {
         GameScreenLayout {
-            GameHeader(
-                onBack = onNavigateToStart,
-            )
+            GameHeader(onBack = onNavigateToStart)
+            
             if (gameState.questionNumber == 0) {
                 PreGameContent(
                     gameModeName = "Timed Mode",
-                    gameDescription = "Answer as many questions as you can before time runs out! Correct answers add time.",
+                    gameDescription = "Answer as many as you can! Correct answers add time.",
                     highScore = gameState.highScore,
                     onStartGame = { viewModel.startGame() }
                 )
             } else {
-                Scoreboard(
-                    score = gameState.score,
-                    highScore = gameState.highScore,
-                    lives = null,
-                    currentStreakCount = gameState.currentStreakCount
-                )
-                Row( // Put QuestionProgress and Timer in a Row
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically // Vertically center
-                ) {
-                    //removed question progress
-
-                    Text( // Display the timer
-                        text = String.format("%.1f", remainingTime / 1000.0),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = if (remainingTime < 5000) Color.Red else MaterialTheme.colorScheme.onSurface, //red last 5 seconds
-                        modifier = Modifier.padding(end = 10.dp)
-                    )
-
+                if (isLandscape) {
+                    Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Scoreboard(gameState.score, gameState.highScore, null, gameState.currentStreakCount)
+                            TimerDisplay(remainingTime)
+                            EmojiChainDisplay(gameState.emojiChain)
+                        }
+                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                            ChoiceButtons(gameState.choices, gameState.correctAnswerEmoji, gameState.isCorrectAnswer, viewModel::handleChoice)
+                        }
+                    }
+                } else {
+                    Scoreboard(gameState.score, gameState.highScore, null, gameState.currentStreakCount)
+                    TimerDisplay(remainingTime)
+                    EmojiChainDisplay(gameState.emojiChain)
+                    ChoiceButtons(gameState.choices, gameState.correctAnswerEmoji, gameState.isCorrectAnswer, viewModel::handleChoice)
                 }
-
-                EmojiChainDisplay(emojiChain = gameState.emojiChain)
-
-                ChoiceButtons(
-                    choices = gameState.choices,
-                    correctAnswerEmoji = gameState.correctAnswerEmoji,
-                    isCorrectAnswer = gameState.isCorrectAnswer,
-                    onChoiceSelected = { choice -> viewModel.handleChoice(choice) }
-                )
 
                 GameResultHandler(
                     gameState = gameState,
                     onStartGame = { viewModel.startGame() },
-                    onHandleAdReward = {
-                        viewModel.handleAdReward()
-                    },
+                    onHandleAdReward = { viewModel.handleAdReward() },
                     onBack = onNavigateToStart
                 )
             }
@@ -136,5 +112,26 @@ fun TimedModeScreen(
         if (showTimeBonusAnimation) {
             TimeBonusAnimation(bonusPoints = currentBonusPointsForAnimation)
         }
+    }
+}
+
+@SuppressLint("DefaultLocale")
+@Composable
+private fun TimerDisplay(remainingTime: Long) {
+    val seconds = remainingTime / 1000.0
+    val isUrgent = remainingTime < 5000
+
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = String.format("%.1f", seconds),
+            style = MaterialTheme.typography.headlineLarge.copy(
+                fontWeight = FontWeight.Black,
+                fontSize = 40.sp
+            ),
+            color = if (isUrgent) ErrorRed else TextMain
+        )
     }
 }
