@@ -64,6 +64,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -71,6 +72,7 @@ import com.play.emojireactionchain.R
 import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.model.GameState
 import com.play.emojireactionchain.model.LossReason
+import com.play.emojireactionchain.ui.theme.EmojiGameTheme
 import com.play.emojireactionchain.ui.theme.ErrorRed
 import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
@@ -809,6 +811,105 @@ fun GameResultHandler(
                 isLoading = isLoadingState.value,
                 adWatched = adWatched,
                 onBack = { AdManager.markShowAdOnHomeReturn(); onBack() }
+            )
+        }
+    }
+}
+
+@Composable
+fun PreGameContent(
+    gameModeNameRes: Int,
+    gameDescriptionRes: Int,
+    highScore: Int,
+    onStartGame: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = stringResource(gameModeNameRes),
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
+            color = TextMain
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(gameDescriptionRes),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            color = TextSecondary
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        if (highScore > 0) {
+            Text(
+                text = stringResource(R.string.pregame_best_score, highScore),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = PrimarySoft
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+
+        StyledActionButton(text = stringResource(R.string.pregame_start_playing), onClick = onStartGame)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreGameContentNormalPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            PreGameContent(
+                gameModeNameRes = R.string.mode_normal_name,
+                gameDescriptionRes = R.string.pregame_normal_description,
+                highScore = 500,
+                onStartGame = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreGameContentTimedPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            PreGameContent(
+                gameModeNameRes = R.string.mode_timed_name,
+                gameDescriptionRes = R.string.pregame_timed_description,
+                highScore = 120,
+                onStartGame = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreGameContentSurvivalPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            PreGameContent(
+                gameModeNameRes = R.string.mode_survival_name,
+                gameDescriptionRes = R.string.pregame_survival_description,
+                highScore = 45,
+                onStartGame = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreGameContentBlitzPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            PreGameContent(
+                gameModeNameRes = R.string.mode_blitz_name,
+                gameDescriptionRes = R.string.pregame_blitz_description,
+                highScore = 850,
+                onStartGame = {}
             )
         }
     }
