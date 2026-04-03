@@ -1,4 +1,4 @@
-package com.play.emojireactionchain.ui
+package com.play.emojireactionchain.ui.screens
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween

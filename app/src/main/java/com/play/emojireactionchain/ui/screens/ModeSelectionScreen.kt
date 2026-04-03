@@ -1,4 +1,4 @@
-package com.play.emojireactionchain.ui
+package com.play.emojireactionchain.ui.screens
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility

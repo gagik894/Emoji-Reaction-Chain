@@ -1,4 +1,4 @@
-package com.play.emojireactionchain.ui
+package com.play.emojireactionchain.ui.screens
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -48,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.play.emojireactionchain.ui.GameBackground
 import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
 import com.play.emojireactionchain.utils.AchievementBadge

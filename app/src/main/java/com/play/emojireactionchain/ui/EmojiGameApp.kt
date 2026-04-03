@@ -21,13 +21,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.play.emojireactionchain.model.GameMode
+import com.play.emojireactionchain.ui.screens.BlitzModeScreen
+import com.play.emojireactionchain.ui.screens.CollectionScreen
+import com.play.emojireactionchain.ui.screens.ModeSelectionScreen
+import com.play.emojireactionchain.ui.screens.NormalGameScreen
+import com.play.emojireactionchain.ui.screens.SurvivalModeScreen
+import com.play.emojireactionchain.ui.screens.TimedModeScreen
+import com.play.emojireactionchain.ui.screens.TutorialScreen
 import com.play.emojireactionchain.utils.AchievementBadgeManager
 import com.play.emojireactionchain.utils.AvatarProgressManager
 import com.play.emojireactionchain.utils.DailyStreakManager
 import com.play.emojireactionchain.utils.HighScoreManager
 import com.play.emojireactionchain.utils.SoundManager
 import com.play.emojireactionchain.utils.StickerBookManager
-
 
 object Routes {
     const val TUTORIAL = "tutorial"
@@ -163,7 +169,7 @@ fun EmojiGameApp() {
                     )
                 }
                 composable(Routes.NORMAL_MODE) {
-                    NormalModeScreen(onNavigateToStart = {
+                    NormalGameScreen(onNavigateToStart = {
                         navController.popBackStack(Routes.START, inclusive = false)
                     })
                 }
