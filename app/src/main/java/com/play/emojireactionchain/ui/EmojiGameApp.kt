@@ -2,9 +2,12 @@ package com.play.emojireactionchain.ui
 
 import android.app.Activity
 import android.content.Context
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -14,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
@@ -21,6 +25,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.play.emojireactionchain.model.GameMode
+import com.play.emojireactionchain.ui.components.PlayfulBottomBar
 import com.play.emojireactionchain.ui.screens.BlitzModeScreen
 import com.play.emojireactionchain.ui.screens.CollectionScreen
 import com.play.emojireactionchain.ui.screens.ModeSelectionScreen
@@ -43,6 +48,8 @@ object Routes {
     const val SURVIVAL_MODE = "survival"
     const val BLITZ_MODE = "blitz"
     const val COLLECTION = "collection"
+    const val SHOP = "shop"
+    const val RANK = "rank"
 }
 
 object AdManager {
@@ -100,7 +107,10 @@ fun EmojiGameApp() {
     val activity = context as? Activity
     val interstitialAdState = rememberInterstitialAd("ca-app-pub-2523891738770793/6480157179")
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = { PlayfulBottomBar(navController) }
+    ) { innerPadding ->
         GameBackground {
             NavHost(
                 navController = navController,
@@ -198,6 +208,16 @@ fun EmojiGameApp() {
                         unlockedBadges = unlockedBadges,
                         onBack = { navController.popBackStack() }
                     )
+                }
+                composable(Routes.SHOP) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Shop coming soon!", style = MaterialTheme.typography.headlineMedium)
+                    }
+                }
+                composable(Routes.RANK) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Leaderboard coming soon!", style = MaterialTheme.typography.headlineMedium)
+                    }
                 }
             }
         }
