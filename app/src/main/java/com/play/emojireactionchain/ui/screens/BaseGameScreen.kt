@@ -204,7 +204,7 @@ fun BaseGameScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Scoreboard(gameState.score, gameState.highScore, if (showLivesInScoreboard) gameState.lives else null, gameState.currentStreakCount)
                             EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
-                            HintCard(gameState.hintRes, gameState.categoryEmoji)
+                            HintCard(gameState.rule?.hintRes, gameState.categoryEmoji)
                             centerContent()
                             EmojiChainDisplay(gameState.emojiChain)
                         }
@@ -215,7 +215,7 @@ fun BaseGameScreen(
                 } else {
                     Scoreboard(gameState.score, gameState.highScore, if (showLivesInScoreboard) gameState.lives else null, gameState.currentStreakCount)
                     EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
-                    HintCard(gameState.hintRes, gameState.categoryEmoji)
+                    HintCard(gameState.rule?.hintRes, gameState.categoryEmoji)
                     centerContent()
                     EmojiChainDisplay(gameState.emojiChain)
                     ChoiceButtons(gameState.choices, gameState.correctAnswerEmoji, gameState.isCorrectAnswer, onChoiceSelected)

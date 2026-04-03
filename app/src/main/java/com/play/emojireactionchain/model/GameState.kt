@@ -24,7 +24,7 @@ data class GameState(
     val isCorrectAnswer: Boolean? = null,
     val gameResult: GameResult = GameResult.InProgress,
     val lives: Int = 3,
-    val rule: String? = null,
+    val rule: GameRule? = null,
     val currentTimeBonus: Int = 0,
     val currentStreakBonus: Int = 0,
     val currentStreakCount: Int = 0,
@@ -33,6 +33,5 @@ data class GameState(
     val streakMissionTarget: Int = 3,
     val streakMissionProgress: Int = 0,
     val currentEngagementBonus: Int = 0,
-    val hintRes: Int? = null,
     val categoryEmoji: String? = null
 )

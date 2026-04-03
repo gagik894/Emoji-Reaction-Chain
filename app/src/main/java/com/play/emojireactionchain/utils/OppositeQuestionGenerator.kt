@@ -1,13 +1,13 @@
 package com.play.emojireactionchain.utils
 
-import com.play.emojireactionchain.viewModel.BaseGameViewModel
+import com.play.emojireactionchain.model.EmojiData
 
 class OppositeQuestionGenerator : QuestionGenerator {
     override fun generateQuestion(
         availableEmojis: List<String>,
         level: Int
     ): Triple<List<String>, String, List<String>> {
-        val oppositeEmojiMap = BaseGameViewModel.oppositeEmojiMap
+        val oppositeEmojiMap = EmojiData.oppositeEmojiMap
         val validEmojis = availableEmojis.filter {
             oppositeEmojiMap.containsKey(it) || oppositeEmojiMap.containsValue(it)
         }
@@ -68,9 +68,9 @@ class OppositeQuestionGenerator : QuestionGenerator {
         if (correctAnswerEmoji.isBlank()) return choices
         choices.add(correctAnswerEmoji)
 
-        val oppositeEmojiMap = BaseGameViewModel.oppositeEmojiMap
+        val oppositeEmojiMap = EmojiData.oppositeEmojiMap
         val allEmojis = availableEmojis.distinct().ifEmpty {
-            BaseGameViewModel.emojiCategories.values.flatMap { it.emojis }.distinct()
+            EmojiData.categories.flatMap { it.emojis }.distinct()
         }
 
         // Distractors:  Not the correct answer, not in the chain, and *not* the opposite of the correct answer.
@@ -91,7 +91,7 @@ class OppositeQuestionGenerator : QuestionGenerator {
             else -> 3
         }
 
-        var distractorChoices: List<String> = when (level) { // Assign to distractorChoices
+        var distractorChoices: List<String> = when (level) {
             1, 2 -> validDistractors.shuffled().take(numDistractors)
             3, 4 -> {
                 // Try to include *one* chain opposite, if possible
@@ -113,11 +113,11 @@ class OppositeQuestionGenerator : QuestionGenerator {
                 //Level 5+ prioritize using opposites of emojis.
                 val chosenChainOpposites = chainOpposites.shuffled().take(numDistractors)
                 val otherDistractors = validDistractors.shuffled().take(numDistractors - chosenChainOpposites.size)
-                (chosenChainOpposites + otherDistractors).distinct().take(numDistractors) // Reassign, don't addAll
+                (chosenChainOpposites + otherDistractors).distinct().take(numDistractors)
             } else {
-                validDistractors.shuffled().take(numDistractors) // Reassign, don't addAll
+                validDistractors.shuffled().take(numDistractors)
             }
-            distractorChoices = distractorChoices.take(numDistractors) // Crucial to prevent IndexOutOfBounds
+            distractorChoices = distractorChoices.take(numDistractors)
         }
 
         choices.addAll(distractorChoices)

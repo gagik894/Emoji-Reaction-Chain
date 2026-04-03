@@ -2,9 +2,11 @@ package com.play.emojireactionchain.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.play.emojireactionchain.R
+import com.play.emojireactionchain.model.EmojiCategory
+import com.play.emojireactionchain.model.EmojiData
 import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.model.GameResult
+import com.play.emojireactionchain.model.GameRule
 import com.play.emojireactionchain.model.GameState
 import com.play.emojireactionchain.model.LossReason
 import com.play.emojireactionchain.utils.HighScoreManager
@@ -17,17 +19,11 @@ import com.play.emojireactionchain.utils.SynonymQuestionGenerator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 data class RuleCategory(val rule: GameRule, val category: EmojiCategory)
-data class EmojiCategory(
-    val name: String,
-    val emojis: List<String>
-)
-
-data class GameRule(
-    val name: String
-)
 
 private data class RulePerformance(
     val attempts: Int = 0,
@@ -36,103 +32,32 @@ private data class RulePerformance(
 
 abstract class BaseGameViewModel(
     protected val soundManager: SoundManager,
-    protected val highScoreManager: HighScoreManager
+    protected val highScoreManager: HighScoreManager,
+    protected val random: Random = Random.Default
 ) : ViewModel() {
 
-    // --- Companion Object (Static Data) ---
-    companion object {
-        val emojiCategories: Map<String, EmojiCategory> = listOf(
-            EmojiCategory("Fruits", listOf("🍎", "🍌", "🍇", "🍓", "🍉", "🥝", "🍍", "🥭", "🍑", "🍒", "🍈", "🥥")),
-            EmojiCategory("Animals", listOf("🐶", "🐱", "🐻", "🐼", "🐸", "🐒", "🦁", "🐯", "🦊", "🦝", "🐷", "🐮")),
-            EmojiCategory("Faces", listOf("😀", "😊", "😂", "😎", "😍", "🤯", "🤨", "🤔", "🤩", "🥳", "😳", "🥺")),
-            EmojiCategory("Emotions", listOf("😀", "😢", "😊", "😠", "😂", "😥", "😨", "😰", "😱", "🥵", "🥶", "😳")),
-            EmojiCategory("Vehicles", listOf("🚗", "🚕", "🚌", "🚑", "🚓", "🚒", "✈️", "🚀", "🚢", "⛵️", "🚁", "🚲")),
-            EmojiCategory("Clothing", listOf("👕", "👚", "👗", "👖", "👔", "🧣", "🧤", "🧦", "🧢", "👒", "🎩", "👟")),
-            EmojiCategory("Sports", listOf("⚽️", "🏀", "🏈", "⚾️", "🎾", "🏐", "🏓", "🏸", "🏒", "🥍", "🏏", "⛳️")),
-            EmojiCategory("Food (Beyond Fruits)", listOf("🍰", "🎂", "🥨", "🥪", "🌮", "🍜", "🍕", "🍔", "🍟", "🍦", "🍩", "🍪")),
-            EmojiCategory("Drinks", listOf("☕", "🍵", "🍶", "🍺", "🍷", "🍹", "🥛", "🧃", "🥤", "🧉", "🧊", "🫗")),
-            EmojiCategory("Travel/Places", listOf("⛰️", "🏖️", "🏕️", "🗽", "🗼", "🕌", "⛩️", "🏞️", "🏟️", "🏛️", "🏘️", "🏙️")),
-            EmojiCategory("Time/Date/Weather", listOf("⏰", "🗓️", "☀️", "🌧️", "❄️", "🌈", "🌪️", "⚡️", "☔️", "🌬️", "📅", "⏱️")),
-            EmojiCategory("Household Objects", listOf("🛋️", "🛏️", "🚪", "🪑", "💡", "🧸", "🪞", "🧽", "🪣", "🔑", "🖼️", "🚽")),
-            EmojiCategory("Technology", listOf("📱", "💻", "⌨️", "🖱️", "🎧", "📺", "⌚️", "📷", "📹", "🕹️", "💾", "💽")),
-            EmojiCategory("Tools/Instruments", listOf("🔨", "🔧", "🧰", "🧪", "🔬", "🔭", "🪛", "🪚", "🪓", "🪤", "🧲", "🔦")),
-            EmojiCategory("Music", listOf("🎵", "🎶", "🎤", "🎧", "🎼", "🎹", "🎸", "🎻", "🎺", "🥁", "🎷", "📻")),
-            EmojiCategory("Office/School Supplies", listOf("📚", "📓", "📐", "📏", "🖇️", "✏️", "📝", "📁", "📂", "📅", "📊", "📈"))
-        ).associateBy { it.name }
-
-        val oppositeEmojiMap = mapOf(
-            "😀" to "😢", "😢" to "😀", "😊" to "😠", "😠" to "😊", "😂" to "😥", "😥" to "😂",
-            "☀️" to "🌧️", "🌧️" to "☀️", "🔥" to "🧊", "🧊" to "🔥", "⬆️" to "⬇️", "⬇️" to "⬆️",
-            "❤️" to "💔", "💔" to "❤️", "✅" to "❌", "❌" to "✅"
-        )
-
-        val synonymPairs = listOf(
-            listOf("😀", "😊", "😄", "😁", "😆", "😅"),
-            listOf("😢", "😥", "😓", "😔", "😟", "🙁"),
-            listOf("😠", "😡", "😤", "🤬"),
-            listOf("😨", "😱", "😰"),
-            listOf("😴", "😪", "💤"),
-            listOf("🚗", "🚕", "🚙", "🚓"),
-            listOf("🏠", "🏡", "🏘️", "🏢"),
-            listOf("☀️", "🌤️", "⛅️", "🔆"),
-            listOf("🌧️", "☔️", "⛈️")
-        )
-
-        private val categoryToEmoji = mapOf(
-            "Fruits" to "🍎",
-            "Animals" to "🐶",
-            "Faces" to "😀",
-            "Emotions" to "🎭",
-            "Vehicles" to "🚗",
-            "Clothing" to "👕",
-            "Sports" to "⚽️",
-            "Food (Beyond Fruits)" to "🍔",
-            "Drinks" to "🥤",
-            "Travel/Places" to "✈️",
-            "Time/Date/Weather" to "☀️",
-            "Household Objects" to "🏠",
-            "Technology" to "💻",
-            "Tools/Instruments" to "🛠️",
-            "Music" to "🎵",
-            "Office/School Supplies" to "📚"
-        )
-
-        fun getCategoryEmoji(name: String) = categoryToEmoji[name] ?: "❓"
-    }
-
-    private val _rules = listOf(
-        GameRule("Sequential in Category"),
-        GameRule("Category Mix-Up"),
-        GameRule("Opposite Meaning"),
-        GameRule("Synonym Chain")
-    )
-
-    protected val rules: List<GameRule> = _rules
     protected open val questionCountPerGame = 30
 
     protected val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
-    protected var currentQuestionCount = 0
-    protected var currentGameScore = 0
-
-    var questionStartTime: Long = 0
+    protected var questionStartTime: Long = 0
     open val maxTimePerQuestionSeconds: Int = 10
     protected val pointsPerSecondBonus: Int = 5
 
-    protected var currentStreak: Int = 0
     protected val streakBonusThreshold: Int = 3
     protected val streakBonusPoints: Int = 20
     private var isAnswerInFlight: Boolean = false
-    private var previousRuleName: String? = null
-    private var previousCategoryName: String? = null
-    private val rulePerformance = mutableMapOf<String, RulePerformance>()
-    private var currentRuleName: String = rules.first().name
-    private var currentCategoryName: String = emojiCategories.keys.first()
+    private var previousRule: GameRule? = null
+    private var previousCategory: EmojiCategory? = null
+    private val rulePerformance = mutableMapOf<GameRule, RulePerformance>()
+    
+    private var currentRule: GameRule = GameRule.SEQUENTIAL
+    private var currentCategory: EmojiCategory = EmojiData.categories.first()
+    
     private var currentQuestionIsBonusRound: Boolean = false
     private val bonusRoundInterval = 5
     private var streakMissionTarget = 3
-    private var streakMissionProgress = 0
     private var streakMissionReward = 25
 
     init {
@@ -142,56 +67,56 @@ abstract class BaseGameViewModel(
     protected fun resetEngagementLayer() {
         rulePerformance.clear()
         currentQuestionIsBonusRound = false
-        streakMissionProgress = 0
+        _gameState.update { it.copy(streakMissionProgress = 0) }
         updateMission(level = 1)
     }
 
     protected fun loadHighScore(gameMode: GameMode) {
         val highScore = highScoreManager.getHighScore(gameMode)
-        _gameState.value = _gameState.value.copy(highScore = highScore, gameMode = gameMode)
+        _gameState.update { it.copy(highScore = highScore, gameMode = gameMode) }
     }
 
     abstract fun startGame()
+    
     protected open fun nextQuestion() {
         viewModelScope.launch {
-            currentQuestionCount++
-            currentQuestionIsBonusRound = currentQuestionCount % bonusRoundInterval == 0
+            val nextQuestionNumber = _gameState.value.questionNumber + 1
+            currentQuestionIsBonusRound = nextQuestionNumber % bonusRoundInterval == 0
 
             handleNextQuestionModeSpecific()
             if (_gameState.value.gameResult != GameResult.InProgress) return@launch
 
             var attempts = 0
             var questionData: Triple<List<String>, String, List<String>>? = null
-            while (questionData == null && attempts < 10){
+            while (questionData == null && attempts < 10) {
                 attempts++
                 val (emojis, correctAnswer, choices) = generateQuestionData(level)
                 val repeatsPreviousAnswer =
                     _gameState.value.correctAnswerEmoji.isNotBlank() && _gameState.value.correctAnswerEmoji == correctAnswer
 
-                if(correctAnswer.isNotBlank() && choices.isNotEmpty() && choices.contains(correctAnswer) && !repeatsPreviousAnswer){
+                if (correctAnswer.isNotBlank() && choices.isNotEmpty() && choices.contains(correctAnswer) && !repeatsPreviousAnswer) {
                     questionData = Triple(emojis, correctAnswer, choices)
                 }
             }
 
             questionStartTime = System.currentTimeMillis()
 
-            if(questionData != null){
-                _gameState.value = _gameState.value.copy(
-                    emojiChain = questionData.first,
-                    choices = questionData.third.shuffled(),
-                    correctAnswerEmoji = questionData.second,
-                    isCorrectAnswer = null,
-                    questionNumber = currentQuestionCount,
-                    rule = currentRuleName,
-                    gameResult = GameResult.InProgress,
-                    lives = _gameState.value.lives,
-                    isBonusRound = currentQuestionIsBonusRound,
-                    streakMissionTarget = streakMissionTarget,
-                    streakMissionProgress = streakMissionProgress,
-                    currentEngagementBonus = 0,
-                    hintRes = getHintRes(currentRuleName),
-                    categoryEmoji = getCategoryEmoji(currentCategoryName)
-                )
+            if (questionData != null) {
+                _gameState.update { state ->
+                    state.copy(
+                        emojiChain = questionData.first,
+                        choices = questionData.third.shuffled(),
+                        correctAnswerEmoji = questionData.second,
+                        isCorrectAnswer = null,
+                        questionNumber = nextQuestionNumber,
+                        rule = currentRule,
+                        gameResult = GameResult.InProgress,
+                        isBonusRound = currentQuestionIsBonusRound,
+                        streakMissionTarget = streakMissionTarget,
+                        currentEngagementBonus = 0,
+                        categoryEmoji = currentCategory.iconEmoji
+                    )
+                }
             } else {
                 endGame(GameResult.Lost(LossReason.GenerationFailed), offerContinue = false)
             }
@@ -202,30 +127,30 @@ abstract class BaseGameViewModel(
 
     protected open fun selectRuleAndCategory(level: Int): RuleCategory {
         val availableRules = when {
-            level <= 3 -> listOf("Sequential in Category", "Category Mix-Up")
-            level <= 6 -> listOf("Sequential in Category", "Category Mix-Up", "Opposite Meaning")
-            else -> rules.map { it.name }
+            level <= 3 -> listOf(GameRule.SEQUENTIAL, GameRule.MIX_UP)
+            level <= 6 -> listOf(GameRule.SEQUENTIAL, GameRule.MIX_UP, GameRule.OPPOSITE)
+            else -> GameRule.entries
         }
 
-        val candidateRules = availableRules.filter { it != previousRuleName }.ifEmpty { availableRules }
-        val ruleName = pickWeightedRule(candidateRules)
+        val candidateRules = availableRules.filter { it != previousRule }.ifEmpty { availableRules }
+        val rule = pickWeightedRule(candidateRules)
 
         val availableCategories = when {
-            level <= 2 -> listOf("Fruits", "Animals", "Faces", "Emotions")
-            else -> emojiCategories.keys.toList()
+            level <= 2 -> EmojiData.categories.take(4)
+            else -> EmojiData.categories
         }
-        val candidateCategories = availableCategories.filter { it != previousCategoryName }.ifEmpty { availableCategories }
-        val categoryName = candidateCategories.random()
-        val category = emojiCategories[categoryName] ?: emojiCategories.values.random()
+        val candidateCategories = availableCategories.filter { it != previousCategory }.ifEmpty { availableCategories }
+        val category = candidateCategories.random(random)
 
-        previousRuleName = ruleName
-        previousCategoryName = category.name
-        rememberQuestionContext(GameRule(ruleName), category)
+        previousRule = rule
+        previousCategory = category
+        currentRule = rule
+        currentCategory = category
 
-        return RuleCategory(GameRule(ruleName), category)
+        return RuleCategory(rule, category)
     }
 
-    private fun pickWeightedRule(candidateRules: List<String>): String {
+    private fun pickWeightedRule(candidateRules: List<GameRule>): GameRule {
         var totalWeight = 0.0
         val weighted = candidateRules.map { rule ->
             val perf = rulePerformance[rule] ?: RulePerformance()
@@ -237,49 +162,37 @@ abstract class BaseGameViewModel(
             rule to weight
         }
 
-        var pick = Math.random() * totalWeight
+        var pick = random.nextDouble() * totalWeight
         for ((rule, weight) in weighted) {
             pick -= weight
             if (pick <= 0.0) return rule
         }
-        return candidateRules.random()
+        return candidateRules.random(random)
     }
-
-    protected fun rememberQuestionContext(rule: GameRule, category: EmojiCategory) {
-        currentRuleName = rule.name
-        currentCategoryName = category.name
-    }
-
-    protected abstract suspend fun handleCorrectChoice()
-    protected abstract suspend fun handleIncorrectChoice()
 
     protected fun endGame(result: GameResult, offerContinue: Boolean = true) {
-        val finalScore = currentGameScore
+        val finalScore = _gameState.value.score
         highScoreManager.updateHighScoreIfNewRecord(finalScore, _gameState.value.gameMode)
         val updatedHighScore = highScoreManager.getHighScore(_gameState.value.gameMode)
 
-        if (result is GameResult.Lost && offerContinue) {
-            _gameState.value = _gameState.value.copy(
-                score = finalScore,
-                highScore = updatedHighScore,
-                gameResult = GameResult.AdContinueOffered(result)
-            )
-        } else {
-            _gameState.value = _gameState.value.copy(
-                gameResult = result,
-                score = finalScore,
-                highScore = updatedHighScore
-            )
+        _gameState.update { state ->
+            if (result is GameResult.Lost && offerContinue) {
+                state.copy(
+                    highScore = updatedHighScore,
+                    gameResult = GameResult.AdContinueOffered(result)
+                )
+            } else {
+                state.copy(
+                    gameResult = result,
+                    highScore = updatedHighScore
+                )
+            }
         }
     }
 
     open fun resetGame() {
-        currentGameScore = 0
-        currentQuestionCount = 0
-        currentStreak = 0
-
-        viewModelScope.launch {
-            _gameState.value = _gameState.value.copy(
+        _gameState.update {
+            it.copy(
                 isCorrectAnswer = null,
                 score = 0,
                 questionNumber = 0,
@@ -291,7 +204,6 @@ abstract class BaseGameViewModel(
                 currentStreakBonus = 0,
                 currentStreakCount = 0,
                 gameResult = GameResult.InProgress,
-                hintRes = null,
                 categoryEmoji = null
             )
         }
@@ -300,14 +212,15 @@ abstract class BaseGameViewModel(
     protected abstract fun generateQuestionData(level: Int): Triple<List<String>, String, List<String>>
 
     fun handleChoice(chosenEmoji: String) {
-        if (_gameState.value.gameResult != GameResult.InProgress) return
-        if (_gameState.value.isCorrectAnswer != null) return
+        val currentState = _gameState.value
+        if (currentState.gameResult != GameResult.InProgress) return
+        if (currentState.isCorrectAnswer != null) return
         if (isAnswerInFlight) return
 
         isAnswerInFlight = true
         viewModelScope.launch {
             try {
-                if (chosenEmoji == _gameState.value.correctAnswerEmoji) {
+                if (chosenEmoji == currentState.correctAnswerEmoji) {
                     handleCorrectChoice()
                     handleEngagementForCorrect()
                 } else {
@@ -320,15 +233,21 @@ abstract class BaseGameViewModel(
         }
     }
 
+    protected abstract suspend fun handleCorrectChoice()
+    protected abstract suspend fun handleIncorrectChoice()
+
     private fun handleEngagementForCorrect() {
         recordRuleOutcome(correct = true)
 
         var engagementBonus = 0
-        streakMissionProgress++
-        if (streakMissionProgress >= streakMissionTarget) {
+        val nextProgress = _gameState.value.streakMissionProgress + 1
+        
+        if (nextProgress >= streakMissionTarget) {
             engagementBonus += streakMissionReward
-            streakMissionProgress = 0
             updateMission(level)
+            _gameState.update { it.copy(streakMissionProgress = 0) }
+        } else {
+            _gameState.update { it.copy(streakMissionProgress = nextProgress) }
         }
 
         if (currentQuestionIsBonusRound) {
@@ -336,36 +255,38 @@ abstract class BaseGameViewModel(
         }
 
         if (engagementBonus > 0) {
-            currentGameScore += engagementBonus
-            _gameState.value = _gameState.value.copy(
-                score = currentGameScore,
-                currentEngagementBonus = engagementBonus,
-                streakMissionTarget = streakMissionTarget,
-                streakMissionProgress = streakMissionProgress,
-                currentStreakBonus = _gameState.value.currentStreakBonus + engagementBonus
-            )
+            _gameState.update { state ->
+                val newScore = state.score + engagementBonus
+                state.copy(
+                    score = newScore,
+                    currentEngagementBonus = engagementBonus,
+                    streakMissionTarget = streakMissionTarget,
+                    currentStreakBonus = state.currentStreakBonus + engagementBonus
+                )
+            }
         } else {
-            _gameState.value = _gameState.value.copy(
-                streakMissionTarget = streakMissionTarget,
-                streakMissionProgress = streakMissionProgress,
-                currentEngagementBonus = 0
-            )
+            _gameState.update { state ->
+                state.copy(
+                    streakMissionTarget = streakMissionTarget,
+                    currentEngagementBonus = 0
+                )
+            }
         }
     }
 
     private fun handleEngagementForIncorrect() {
         recordRuleOutcome(correct = false)
-        streakMissionProgress = 0
-        _gameState.value = _gameState.value.copy(
-            streakMissionTarget = streakMissionTarget,
-            streakMissionProgress = streakMissionProgress,
-            currentEngagementBonus = 0
-        )
+        _gameState.update { state ->
+            state.copy(
+                streakMissionProgress = 0,
+                currentEngagementBonus = 0
+            )
+        }
     }
 
     private fun recordRuleOutcome(correct: Boolean) {
-        val current = rulePerformance[currentRuleName] ?: RulePerformance()
-        rulePerformance[currentRuleName] = current.copy(
+        val current = rulePerformance[currentRule] ?: RulePerformance()
+        rulePerformance[currentRule] = current.copy(
             attempts = current.attempts + 1,
             correct = current.correct + if (correct) 1 else 0
         )
@@ -381,28 +302,17 @@ abstract class BaseGameViewModel(
         streakMissionReward = 10 + (target * 8)
     }
 
-    private fun getHintRes(ruleName: String): Int {
-        return when (ruleName) {
-            "Sequential in Category" -> R.string.hint_sequential_category
-            "Category Mix-Up" -> R.string.hint_category_mixup
-            "Opposite Meaning" -> R.string.hint_opposite_meaning
-            "Synonym Chain" -> R.string.hint_synonym_chain
-            else -> R.string.hint_default
-        }
-    }
-
-    protected open fun getQuestionGenerator(ruleName: String): QuestionGenerator {
-        return when (ruleName) {
-            "Sequential in Category" -> SequentialQuestionGenerator()
-            "Category Mix-Up" -> MixUpQuestionGenerator()
-            "Opposite Meaning" -> OppositeQuestionGenerator()
-            "Synonym Chain" -> SynonymQuestionGenerator()
-            else -> SequentialQuestionGenerator()
+    protected open fun getQuestionGenerator(rule: GameRule): QuestionGenerator {
+        return when (rule) {
+            GameRule.SEQUENTIAL -> SequentialQuestionGenerator()
+            GameRule.MIX_UP -> MixUpQuestionGenerator()
+            GameRule.OPPOSITE -> OppositeQuestionGenerator()
+            GameRule.SYNONYM -> SynonymQuestionGenerator()
         }
     }
 
     abstract fun handleAdReward()
 
-     val level: Int
-        get() = (currentQuestionCount / 5) + 1
+    val level: Int
+        get() = (_gameState.value.questionNumber / 5) + 1
 }

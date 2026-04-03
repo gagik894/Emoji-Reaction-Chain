@@ -1,6 +1,6 @@
 package com.play.emojireactionchain.utils
 
-import com.play.emojireactionchain.viewModel.BaseGameViewModel
+import com.play.emojireactionchain.model.EmojiData
 
 class SynonymQuestionGenerator : QuestionGenerator {
 
@@ -8,7 +8,7 @@ class SynonymQuestionGenerator : QuestionGenerator {
         availableEmojis: List<String>,
         level: Int
     ): Triple<List<String>, String, List<String>> {
-        val synonymPairs = BaseGameViewModel.synonymPairs
+        val synonymPairs = EmojiData.synonymPairs
 
         // Find valid synonym *groups* within the available emojis
         val validGroups = synonymPairs.map { group -> group.filter { availableEmojis.contains(it) } }
@@ -66,7 +66,7 @@ class SynonymQuestionGenerator : QuestionGenerator {
 
         // All emojis for wider distractor selection
         val allEmojis = availableEmojis.distinct().ifEmpty {
-            BaseGameViewModel.emojiCategories.values.flatMap { it.emojis }.distinct()
+            EmojiData.categories.flatMap { it.emojis }.distinct()
         }
 
 

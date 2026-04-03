@@ -1,6 +1,6 @@
 package com.play.emojireactionchain.utils
 
-import com.play.emojireactionchain.viewModel.BaseGameViewModel
+import com.play.emojireactionchain.model.EmojiData
 
 class SequentialQuestionGenerator : QuestionGenerator {
 
@@ -12,7 +12,7 @@ class SequentialQuestionGenerator : QuestionGenerator {
         val categoryEmojis = if (availableEmojis.size >= 3) {
             availableEmojis.distinct()
         } else {
-            BaseGameViewModel.emojiCategories.values.random().emojis
+            EmojiData.categories.random().emojis
         }
 
         if (categoryEmojis.size < 3) {  // Need at least 3 for a minimal chain
@@ -28,7 +28,7 @@ class SequentialQuestionGenerator : QuestionGenerator {
         while (attempts < maxAttempts) {
             attempts++
 
-            val startIndex = (0..<categoryEmojis.size).random()
+            val startIndex = (0 until categoryEmojis.size).random()
             val emojiChain = mutableListOf<String>()
             var currentIndex = startIndex
             while (emojiChain.size < actualChainLength) {
@@ -97,7 +97,7 @@ class SequentialQuestionGenerator : QuestionGenerator {
             else -> 3
         }
 
-        val allEmojis = BaseGameViewModel.emojiCategories.values.flatMap { it.emojis }.distinct()
+        val allEmojis = EmojiData.categories.flatMap { it.emojis }.distinct()
 
         val sameCategoryDistractors = categoryEmojis
             .filterNot { it == correctAnswerEmoji || emojiChain.contains(it) }
