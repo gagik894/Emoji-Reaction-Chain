@@ -1,6 +1,5 @@
 package com.play.emojireactionchain.ui.screens
 
-import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOutSine
 import androidx.compose.animation.core.RepeatMode
@@ -68,12 +67,11 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.play.emojireactionchain.R
 import com.play.emojireactionchain.model.GameMode
-import com.play.emojireactionchain.ui.theme.EmojiGameTheme
+import com.play.emojireactionchain.ui.HomeUiState
 import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
 import com.play.emojireactionchain.ui.theme.TextSecondary
@@ -107,14 +105,9 @@ private val gameModes = listOf(
     )
 )
 
-/**
- * Screen for selecting different game modes.
- */
 @Composable
 fun ModeSelectionScreen(
-    dailyStreak: Int,
-    bestScores: Map<GameMode, Int>,
-    newStickerEmoji: String? = null,
+    uiState: HomeUiState,
     onModeSelected: (GameMode) -> Unit,
     onCollectionSelected: () -> Unit
 ) {
@@ -132,11 +125,11 @@ fun ModeSelectionScreen(
     ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            HeaderSection(visible, isDark, dailyStreak, onCollectionSelected)
+            HeaderSection(visible, isDark, uiState.dailyStreak, onCollectionSelected)
 
-            if (newStickerEmoji != null) {
+            if (uiState.dailyStickerEmoji != null) {
                 Spacer(modifier = Modifier.height(16.dp))
-                StickerCelebrationCard(newStickerEmoji)
+                StickerCelebrationCard(uiState.dailyStickerEmoji)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -145,7 +138,7 @@ fun ModeSelectionScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            GameModesGrid(isPreview, bestScores, onModeSelected)
+            GameModesGrid(isPreview, uiState.modeHighScores, onModeSelected)
     }
 }
 
@@ -439,44 +432,5 @@ private fun IconContainer(icon: ImageVector) {
                 modifier = Modifier.size(32.dp)
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ModeSelectionScreenPreview() {
-    EmojiGameTheme(darkTheme = false) {
-        ModeSelectionScreen(
-            dailyStreak = 7,
-            bestScores = mapOf(
-                GameMode.NORMAL to 1250,
-                GameMode.TIMED to 840,
-                GameMode.SURVIVAL to 420,
-                GameMode.BLITZ to 2100
-            ),
-            onModeSelected = {},
-            onCollectionSelected = {}
-        )
-    }
-}
-
-@Preview(
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
-)
-@Composable
-fun ModeSelectionScreenDarkPreview() {
-    EmojiGameTheme {
-        ModeSelectionScreen(
-            dailyStreak = 12,
-            bestScores = mapOf(
-                GameMode.NORMAL to 2500,
-                GameMode.TIMED to 1500,
-                GameMode.SURVIVAL to 800,
-                GameMode.BLITZ to 5000
-            ),
-            onModeSelected = {},
-            onCollectionSelected = {}
-        )
     }
 }

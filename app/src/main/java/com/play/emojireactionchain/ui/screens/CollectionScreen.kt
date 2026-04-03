@@ -49,18 +49,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.play.emojireactionchain.ui.GameBackground
+import com.play.emojireactionchain.ui.HomeUiState
 import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
-import com.play.emojireactionchain.utils.AchievementBadge
 import com.play.emojireactionchain.utils.StickerCatalog
 
 @Composable
 fun CollectionScreen(
-    unlockedStickers: Set<String>,
-    avatarEmoji: String,
-    avatarTitle: String,
-    avatarSubtitle: String,
-    unlockedBadges: List<AchievementBadge>,
+    uiState: HomeUiState,
     onBack: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
@@ -124,18 +120,18 @@ fun CollectionScreen(
                         color = PrimarySoft.copy(alpha = 0.2f)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(text = avatarEmoji, fontSize = 40.sp)
+                            Text(text = uiState.avatarLevelEmoji, fontSize = 40.sp)
                         }
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(
-                            text = avatarTitle,
+                            text = uiState.avatarLevelTitle,
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
                             color = if (isDark) Color.White else PrimarySoft
                         )
                         Text(
-                            text = avatarSubtitle,
+                            text = uiState.avatarLevelSubtitle,
                             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                             color = (if (isDark) Color.White else Color.Black).copy(alpha = 0.6f)
                         )
@@ -147,7 +143,7 @@ fun CollectionScreen(
 
             // Collection Grid
             Text(
-                text = "STICKER BOOK (${unlockedStickers.size}/${StickerCatalog.stickers.size})",
+                text = "STICKER BOOK (${uiState.unlockedStickers.size}/${StickerCatalog.stickers.size})",
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Black,
                     letterSpacing = 2.sp
@@ -167,7 +163,7 @@ fun CollectionScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(StickerCatalog.stickers) { emoji ->
-                    val isUnlocked = unlockedStickers.contains(emoji)
+                    val isUnlocked = uiState.unlockedStickers.contains(emoji)
                     StickerItem(emoji = emoji, isUnlocked = isUnlocked)
                 }
             }

@@ -9,10 +9,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -21,9 +20,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.play.emojireactionchain.data.GameRepositoryImpl
 import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.ui.components.PlayfulBottomBar
 import com.play.emojireactionchain.ui.screens.BlitzModeScreen
@@ -82,28 +83,30 @@ object AdManager {
 fun EmojiGameApp() {
     val navController = rememberNavController()
     val context = LocalContext.current
-    val highScoreManager = remember(context) { HighScoreManager(context) }
-    val dailyStreakManager = remember(context) { DailyStreakManager(context) }
-    val stickerBookManager = remember(context) { StickerBookManager(context) }
-    val avatarProgressManager = remember { AvatarProgressManager() }
-    val achievementBadgeManager = remember { AchievementBadgeManager() }
-    val celebrationSoundManager = remember(context) { SoundManager(context) }
-
-    DisposableEffect(Unit) {
-        onDispose { celebrationSoundManager.release() }
+    
+    // Manual DI - in a real app, this would be handled by Hilt/Koin
+    val repository = remember(context) {
+        GameRepositoryImpl(
+            highScoreManager = HighScoreManager(context),
+            dailyStreakManager = DailyStreakManager(context),
+            stickerBookManager = StickerBookManager(context)
+        )
     }
 
-    var showTutorial by rememberSaveable { mutableStateOf(isFirstLaunch(context)) }
-    var dailyStreak by rememberSaveable { mutableIntStateOf(1) }
-    var modeHighScores by remember { mutableStateOf(emptyMap<GameMode, Int>()) }
-    var stickerCount by rememberSaveable { mutableIntStateOf(0) }
-    var unlockedStickers by remember { mutableStateOf(stickerBookManager.getUnlockedStickers()) }
-    var dailyStickerEmoji by rememberSaveable { mutableStateOf<String?>(null) }
-    var avatarLevelEmoji by rememberSaveable { mutableStateOf("") }
-    var avatarLevelTitle by rememberSaveable { mutableStateOf("") }
-    var avatarLevelSubtitle by rememberSaveable { mutableStateOf("") }
-    var unlockedBadges by remember { mutableStateOf(emptyList<com.play.emojireactionchain.utils.AchievementBadge>()) }
+    val homeViewModel: HomeViewModel = viewModel(
+        factory = gameViewModelFactory {
+            HomeViewModel(
+                repository = repository,
+                avatarProgressManager = AvatarProgressManager(),
+                achievementBadgeManager = AchievementBadgeManager(),
+                soundManager = SoundManager(context)
+            )
+        }
+    )
 
+    val uiState by homeViewModel.uiState.collectAsState()
+    var showTutorial by rememberSaveable { mutableStateOf(isFirstLaunch(context)) }
+    
     val activity = context as? Activity
     val interstitialAdState = rememberInterstitialAd("ca-app-pub-2523891738770793/6480157179")
 
@@ -130,26 +133,8 @@ fun EmojiGameApp() {
                 }
                 composable(Routes.START) {
                     LaunchedEffect(Unit) {
-                        dailyStreak = dailyStreakManager.updateAndGetCurrentStreak()
-                        modeHighScores = highScoreManager.getAllHighScores()
-                        stickerCount = stickerBookManager.getStickerCount()
-                        unlockedStickers = stickerBookManager.getUnlockedStickers()
-                        dailyStickerEmoji = stickerBookManager.awardDailyStickerIfNeeded()?.sticker
+                        homeViewModel.refreshHomeData()
                         
-                        if (dailyStickerEmoji != null) {
-                            stickerCount = stickerBookManager.getStickerCount()
-                            unlockedStickers = stickerBookManager.getUnlockedStickers()
-                            
-                            celebrationSoundManager.playCorrectSound()
-                            celebrationSoundManager.playCorrectHaptic()
-                        }
-
-                        val avatarProgress = avatarProgressManager.getAvatarProgress(stickerCount)
-                        avatarLevelEmoji = avatarProgress.emoji
-                        avatarLevelTitle = avatarProgress.title
-                        avatarLevelSubtitle = avatarProgress.subtitle
-                        unlockedBadges = achievementBadgeManager.getUnlockedBadges(dailyStreak, modeHighScores, stickerCount)
-
                         if (AdManager.shouldShowAdOnHomeReturn() && activity != null) {
                             showInterstitialAd(
                                 interstitialAd = interstitialAdState.interstitialAd,
@@ -163,9 +148,7 @@ fun EmojiGameApp() {
                     }
 
                     ModeSelectionScreen(
-                        dailyStreak = dailyStreak,
-                        bestScores = modeHighScores,
-                        newStickerEmoji = dailyStickerEmoji,
+                        uiState = uiState,
                         onModeSelected = { mode ->
                             val route = when (mode) {
                                 GameMode.NORMAL -> Routes.NORMAL_MODE
@@ -201,11 +184,7 @@ fun EmojiGameApp() {
                 }
                 composable(Routes.COLLECTION) {
                     CollectionScreen(
-                        unlockedStickers = unlockedStickers,
-                        avatarEmoji = avatarLevelEmoji,
-                        avatarTitle = avatarLevelTitle,
-                        avatarSubtitle = avatarLevelSubtitle,
-                        unlockedBadges = unlockedBadges,
+                        uiState = uiState,
                         onBack = { navController.popBackStack() }
                     )
                 }
