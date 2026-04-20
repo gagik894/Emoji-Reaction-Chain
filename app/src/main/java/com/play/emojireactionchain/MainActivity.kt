@@ -24,6 +24,7 @@ class MainActivity : ComponentActivity() {
         val testDeviceIds = Arrays.asList("D88961EAEF99FFD783871BE31FD76D95")
         val configuration = RequestConfiguration.Builder()
             .setTestDeviceIds(testDeviceIds)
+            .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_PG)
             .build()
         MobileAds.setRequestConfiguration(configuration)
         enableEdgeToEdge()
