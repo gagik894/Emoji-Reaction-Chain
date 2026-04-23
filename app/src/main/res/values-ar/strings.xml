@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">سلسلة الإيموجي</string>
+
+    <string name="home_title">سلسلة الإيموجي</string>
+    <string name="home_subtitle">اختر تحديك</string>
+    <string name="daily_streak_label">التتابع اليومي</string>
+    <string name="daily_streak_value">%1$d أيام</string>
+    <string name="best_scores_label">أفضل النتائج</string>
+    <string name="best_score_item">%1$s %2$d</string>
+    <string name="bottom_nav_play">العب</string>
+    <string name="bottom_nav_treasures">الكنوز</string>
+    <string name="bottom_nav_shop">المتجر</string>
+    <string name="bottom_nav_rank">الترتيب</string>
+    <string name="banner_ad_preview_placeholder">إعلان</string>
+
+    <string name="mode_normal_name">الوضع العادي</string>
+    <string name="mode_normal_subtitle">تحدٍ متوازن بدون ضغط</string>
+    <string name="mode_timed_name">وضع الوقت</string>
+    <string name="mode_timed_subtitle">سباق ضد الساعة!</string>
+    <string name="mode_survival_name">وضع البقاء</string>
+    <string name="mode_survival_subtitle">خطأ واحد يكلف الكثير، ركز!</string>
+    <string name="mode_blitz_name">وضع بليتز</string>
+    <string name="mode_blitz_subtitle">جولات سريعة جداً</string>
+
+    <string name="mode_short_normal">عادي</string>
+    <string name="mode_short_timed">وقت</string>
+    <string name="mode_short_survival">بقاء</string>
+    <string name="mode_short_blitz">بليتز</string>
+
+    <string name="tutorial_title">بداية سريعة</string>
+    <string name="tutorial_step_1_title">ابحث عن القاعدة</string>
+    <string name="tutorial_step_1_body">انظر إلى ما يربط الإيموجي واختر الإيموجي التالي الأفضل.</string>
+    <string name="tutorial_step_2_title">أجب بسرعة</string>
+    <string name="tutorial_step_2_body">الإجابات السريعة تعطي نقاطاً أكثر وتحافظ على تتابعك.</string>
+    <string name="tutorial_step_3_title">اختر وضعك</string>
+    <string name="tutorial_step_3_body">ابدأ بالوضع العادي، ثم جرب الأوضاع الأخرى لتحطيم أرقامك.</string>
+    <string name="tutorial_action_next">التالي</string>
+    <string name="tutorial_action_back">رجوع</string>
+    <string name="tutorial_action_skip">تخطي</string>
+    <string name="tutorial_action_start">ابدأ اللعب!</string>
+
+    <string name="game_header_title">سلسلة الإيموجي</string>
+    <string name="game_header_back_description">رجوع</string>
+    <string name="time_bonus_text">+%1$d مكافأة وقت!</string>
+    <string name="score_label">النقاط</string>
+    <string name="best_label">الرقم القياسي</string>
+    <string name="lives_label">الأرواح</string>
+    <string name="streak_label_short">تتابع</string>
+    <string name="best_score_label">الرقم القياسي: %1$d</string>
+    <string name="streak_label">🔥 %1$d</string>
+    <string name="question_progress">%1$d / %2$d</string>
+
+    <string name="pregame_normal_description">أجب على الأسئلة لزيادة نقاطك!</string>
+    <string name="pregame_timed_description">أجب على أكبر عدد ممكن! الوقت يزداد مع الإجابات الصحيحة.</string>
+    <string name="pregame_survival_description">خطأ واحد وتفقد روحاً. كم ستصمد؟</string>
+    <string name="pregame_blitz_description">جولات سريعة جداً! خطأ واحد وتخسر. هل أنت سريع؟</string>
+    <string name="pregame_best_score">أفضل نتيجة: %1$d</string>
+    <string name="pregame_start_playing">ابدأ اللعب</string>
+    <string name="survival_level">مستوى %1$d</string>
+
+    <string name="dialog_cancel">إلغاء</string>
+    <string name="game_end_title_victory">انتصار!</string>
+    <string name="game_end_title_nice_try">محاولة جيدة!</string>
+    <string name="game_end_message_master">أنت بارع!</string>
+    <string name="game_end_message_out_of_lives">نفدت الأرواح!</string>
+    <string name="game_end_message_time_up">انتهى الوقت!</string>
+    <string name="game_end_message_generation_failed">لا توجد أسئلة أخرى.</string>
+    <string name="game_end_message_game_over">انتهت اللعبة!</string>
+    <string name="game_end_watch_ad">شاهد إعلاناً للاستمرار</string>
+    <string name="game_end_continue">استمرار</string>
+    <string name="game_end_play_again">العب مجدداً</string>
+    <string name="engagement_bonus_round">جولة مكافأة</string>
+    <string name="engagement_streak_mission">مهمة %1$d/%2$d</string>
+
+    <string name="mode_selection_brand_title">سلسلة الإيموجي</string>
+    <string name="mode_selection_brand_subtitle">أتقن الربط</string>
+    <string name="mode_selection_ready_title">جاهز للعب؟</string>
+    <string name="mode_selection_high_score">🏆 %1$d</string>
+
+    <string name="ad_loading_rewarded">جاري تحميل الإعلان…</string>
+    <string name="ad_loading_interstitial">جاري تحميل الإعلان…</string>
+    <string name="ad_not_loaded_retry">فشل التحميل. اضغط للمحاولة مجدداً.</string>
+    <string name="ad_watch_reward">شاهد إعلاناً للحصول على جائزة</string>
+    <string name="ad_reward_earned">مبروك! حصلت على جائزة!</string>
+    <string name="ad_show_interstitial">إظهار الإعلان</string>
+    <string name="ad_interstitial_shown">تم عرض الإعلان بنجاح!</string>
+    <string name="sticker_book_title">ألبوم الملصقات</string>
+    <string name="sticker_book_count">جمعت %1$d ملصقاً</string>
+    <string name="sticker_book_count_with_latest">%1$d ملصقاً • الأحدث: %2$s</string>
+    <string name="sticker_daily_reward">ملصق جديد: %1$s</string>
+    <string name="pet_companion_title">حيواني الأليف</string>
+    <string name="pet_companion_growing">صديقك يكبر معك</string>
+    <string name="pet_companion_advanced">صديقك سعيد جداً اليوم!</string>
+
+    <string name="hint_sequential_category">ابحث عن التالي من نفس المجموعة.</string>
+    <string name="hint_category_mixup">مجموعة تخفي موضوعاً — ثق بالنمط!</string>
+    <string name="hint_opposite_meaning">فكر في العكس.</string>
+    <string name="hint_synonym_chain">اختر الإيموجي الأكثر تشابهاً.</string>
+    <string name="hint_default">انظر جيداً ما الذي يناسب أكثر.</string>
+    <string name="hint_bonus_round">جولة مكافأة: استمتع وكن سريعاً!</string>
+    <string name="score_value">%1$d</string>
+    <string name="collection_my_treasures">كنوزي</string>
+    <string name="collection_sticker_book">ألبوم الملصقات (%1$d/%2$d)</string>
+    <string name="shop_coming_soon">قريباً!</string>
+    <string name="rank_coming_soon">الترتيب قريباً!</string>
+</resources>

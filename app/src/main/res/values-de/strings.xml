@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">Emoji-Kette</string>
+
+    <string name="home_title">Emoji-Kette</string>
+    <string name="home_subtitle">Wähle deine Challenge</string>
+    <string name="daily_streak_label">Tägliche Serie</string>
+    <string name="daily_streak_value">%1$d Tage</string>
+    <string name="best_scores_label">Bestwerte</string>
+    <string name="best_score_item">%1$s %2$d</string>
+    <string name="bottom_nav_play">Spielen</string>
+    <string name="bottom_nav_treasures">Schätze</string>
+    <string name="bottom_nav_shop">Shop</string>
+    <string name="bottom_nav_rank">Rangliste</string>
+    <string name="banner_ad_preview_placeholder">Werbung</string>
+
+    <string name="mode_normal_name">Normaler Modus</string>
+    <string name="mode_normal_subtitle">Ausgeglichene Challenge, kein Stress</string>
+    <string name="mode_timed_name">Zeit-Modus</string>
+    <string name="mode_timed_subtitle">Rennen gegen die Uhr!</string>
+    <string name="mode_survival_name">Survival-Modus</string>
+    <string name="mode_survival_subtitle">Ein Fehler tut weh, sei wachsam!</string>
+    <string name="mode_blitz_name">Blitz-Modus</string>
+    <string name="mode_blitz_subtitle">Superschnelle Runden</string>
+
+    <string name="mode_short_normal">Normal</string>
+    <string name="mode_short_timed">Zeit</string>
+    <string name="mode_short_survival">Survival</string>
+    <string name="mode_short_blitz">Blitz</string>
+
+    <string name="tutorial_title">Schnellstart</string>
+    <string name="tutorial_step_1_title">Finde die Regel</string>
+    <string name="tutorial_step_1_body">Schau, was die Emojis verbindet, und wähle das passende nächste Emoji.</string>
+    <string name="tutorial_step_2_title">Antworte schnell</string>
+    <string name="tutorial_step_2_body">Schnelle Antworten geben mehr Punkte und halten deine Serie.</string>
+    <string name="tutorial_step_3_title">Wähle deinen Modus</string>
+    <string name="tutorial_step_3_body">Starte mit Normal, dann versuche die anderen für neue Rekorde.</string>
+    <string name="tutorial_action_next">Weiter</string>
+    <string name="tutorial_action_back">Zurück</string>
+    <string name="tutorial_action_skip">Überspringen</string>
+    <string name="tutorial_action_start">Los geht\'s!</string>
+
+    <string name="game_header_title">Emoji-Kette</string>
+    <string name="game_header_back_description">Zurück</string>
+    <string name="time_bonus_text">+%1$d Zeit-Bonus!</string>
+    <string name="score_label">PUNKTE</string>
+    <string name="best_label">REKORD</string>
+    <string name="lives_label">LEBEN</string>
+    <string name="streak_label_short">SERIE</string>
+    <string name="best_score_label">REKORD: %1$d</string>
+    <string name="streak_label">🔥 %1$d</string>
+    <string name="question_progress">%1$d / %2$d</string>
+
+    <string name="pregame_normal_description">Beantworte Fragen, um deine Punkte zu steigern!</string>
+    <string name="pregame_timed_description">Beantworte so viele wie möglich! Richtige Antworten geben Zeit.</string>
+    <string name="pregame_survival_description">Ein Fehler und du verlierst ein Leben. Wie lange hältst du durch?</string>
+    <string name="pregame_blitz_description">Superschnelle Runden! Ein Fehler und du bist raus. Bist du bereit?</string>
+    <string name="pregame_best_score">BESTWERT: %1$d</string>
+    <string name="pregame_start_playing">SPIEL STARTEN</string>
+    <string name="survival_level">LEVEL %1$d</string>
+
+    <string name="dialog_cancel">Abbrechen</string>
+    <string name="game_end_title_victory">Sieg!</string>
+    <string name="game_end_title_nice_try">Guter Versuch!</string>
+    <string name="game_end_message_master">Du bist ein Meister!</string>
+    <string name="game_end_message_out_of_lives">Keine Leben mehr!</string>
+    <string name="game_end_message_time_up">Zeit abgelaufen!</string>
+    <string name="game_end_message_generation_failed">Keine weiteren Fragen verfügbar.</string>
+    <string name="game_end_message_game_over">Spiel vorbei!</string>
+    <string name="game_end_watch_ad">VIDEO SEHEN ZUM WEITERSPIELEN</string>
+    <string name="game_end_continue">WEITER</string>
+    <string name="game_end_play_again">Nochmal spielen</string>
+    <string name="engagement_bonus_round">BONUS-RUNDE</string>
+    <string name="engagement_streak_mission">MISSION %1$d/%2$d</string>
+
+    <string name="mode_selection_brand_title">EMOJI-KETTE</string>
+    <string name="mode_selection_brand_subtitle">MEISTERE DEN LINK</string>
+    <string name="mode_selection_ready_title">BEREIT ZUM SPIELEN?</string>
+    <string name="mode_selection_high_score">🏆 %1$d</string>
+
+    <string name="ad_loading_rewarded">Werbung wird geladen…</string>
+    <string name="ad_loading_interstitial">Werbung wird geladen…</string>
+    <string name="ad_not_loaded_retry">Werbung nicht geladen. Tippen zum Wiederholen.</string>
+    <string name="ad_watch_reward">Video sehen für eine Belohnung</string>
+    <string name="ad_reward_earned">Glückwunsch! Belohnung erhalten!</string>
+    <string name="ad_show_interstitial">Werbung anzeigen</string>
+    <string name="ad_interstitial_shown">Werbung erfolgreich angezeigt!</string>
+    <string name="sticker_book_title">Sticker-Album</string>
+    <string name="sticker_book_count">%1$d Sticker gesammelt</string>
+    <string name="sticker_book_count_with_latest">%1$d Sticker • neuester: %2$s</string>
+    <string name="sticker_daily_reward">Neuer Sticker: %1$s</string>
+    <string name="pet_companion_title">Haustier-Freund</string>
+    <string name="pet_companion_growing">Dein Freund wächst mit dir</string>
+    <string name="pet_companion_advanced">Dein Freund ist heute super glücklich!</string>
+
+    <string name="hint_sequential_category">Suche das nächste aus der gleichen Gruppe.</string>
+    <string name="hint_category_mixup">Eine Gruppe versteckt ein Thema — vertraue dem Muster!</string>
+    <string name="hint_opposite_meaning">Denke an das Gegenteil.</string>
+    <string name="hint_synonym_chain">Wähle das Emoji, das am ähnlichsten ist.</string>
+    <string name="hint_default">Schau genau hin, welches am besten passt.</string>
+    <string name="hint_bonus_round">Bonus-Runde: Hab Spaß und sei schnell!</string>
+    <string name="score_value">%1$d</string>
+    <string name="collection_my_treasures">MEINE SCHÄTZE</string>
+    <string name="collection_sticker_book">STICKER-ALBUM (%1$d/%2$d)</string>
+    <string name="shop_coming_soon">Bald verfügbar!</string>
+    <string name="rank_coming_soon">Rangliste kommt bald!</string>
+</resources>

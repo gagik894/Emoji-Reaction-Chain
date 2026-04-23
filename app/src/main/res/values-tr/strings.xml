@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">Emoji Zinciri</string>
+
+    <string name="home_title">Emoji Zinciri</string>
+    <string name="home_subtitle">Mücadeleni seç</string>
+    <string name="daily_streak_label">Günlük seri</string>
+    <string name="daily_streak_value">%1$d gün</string>
+    <string name="best_scores_label">En iyi skorlar</string>
+    <string name="best_score_item">%1$s %2$d</string>
+    <string name="bottom_nav_play">Oyna</string>
+    <string name="bottom_nav_treasures">Hazineler</string>
+    <string name="bottom_nav_shop">Mağaza</string>
+    <string name="bottom_nav_rank">Sıralama</string>
+    <string name="banner_ad_preview_placeholder">Reklam</string>
+
+    <string name="mode_normal_name">Normal Mod</string>
+    <string name="mode_normal_subtitle">Dengeli mücadele, stres yok</string>
+    <string name="mode_timed_name">Zamana Karşı</string>
+    <string name="mode_timed_subtitle">Zamanla yarış!</string>
+    <string name="mode_survival_name">Hayatta Kalma</string>
+    <string name="mode_survival_subtitle">Bir hata can yakar, odaklan!</string>
+    <string name="mode_blitz_name">Blitz Modu</string>
+    <string name="mode_blitz_subtitle">Süper hızlı turlar</string>
+
+    <string name="mode_short_normal">Normal</string>
+    <string name="mode_short_timed">Zaman</string>
+    <string name="mode_short_survival">Hayatta Kalma</string>
+    <string name="mode_short_blitz">Blitz</string>
+
+    <string name="tutorial_title">Hızlı Başlangıç</string>
+    <string name="tutorial_step_1_title">Kuralı bul</string>
+    <string name="tutorial_step_1_body">Emojileri birbirine bağlayan şeyi bul ve en uygun olanı seç.</string>
+    <string name="tutorial_step_2_title">Hızlı cevap ver</string>
+    <string name="tutorial_step_2_body">Hızlı cevaplar daha çok puan verir ve serini korur.</string>
+    <string name="tutorial_step_3_title">Modunu seç</string>
+    <string name="tutorial_step_3_body">Normal modla başla, sonra rekorlarını kırmak için diğerlerini dene.</string>
+    <string name="tutorial_action_next">İleri</string>
+    <string name="tutorial_action_back">Geri</string>
+    <string name="tutorial_action_skip">Atla</string>
+    <string name="tutorial_action_start">Haydi Başlayalım!</string>
+
+    <string name="game_header_title">Emoji Zinciri</string>
+    <string name="game_header_back_description">Geri</string>
+    <string name="time_bonus_text">+%1$d Zaman Bonusu!</string>
+    <string name="score_label">PUAN</string>
+    <string name="best_label">REKOR</string>
+    <string name="lives_label">CAN</string>
+    <string name="streak_label_short">SERİ</string>
+    <string name="best_score_label">REKOR: %1$d</string>
+    <string name="streak_label">🔥 %1$d</string>
+    <string name="question_progress">%1$d / %2$d</string>
+
+    <string name="pregame_normal_description">Rekorunu kırmak için soruları yanıtla!</string>
+    <string name="pregame_timed_description">Maksimum sayıda cevap ver! Doğru cevaplar zaman kazandırır.</string>
+    <string name="pregame_survival_description">Bir hata bir can götürür. Ne kadar dayanabilirsin?</string>
+    <string name="pregame_blitz_description">Süper hızlı turlar! Hata yaparsan elenirsin. Hızlı mısın?</string>
+    <string name="pregame_best_score">EN İYİ SKOR: %1$d</string>
+    <string name="pregame_start_playing">OYUNA BAŞLA</string>
+    <string name="survival_level">SEVİYE %1$d</string>
+
+    <string name="dialog_cancel">İptal</string>
+    <string name="game_end_title_victory">Zafer!</string>
+    <string name="game_end_title_nice_try">Güzel deneme!</string>
+    <string name="game_end_message_master">Sen bir ustasın!</string>
+    <string name="game_end_message_out_of_lives">Canın bitti!</string>
+    <string name="game_end_message_time_up">Süre doldu!</string>
+    <string name="game_end_message_generation_failed">Başka soru kalmadı.</string>
+    <string name="game_end_message_game_over">Oyun bitti!</string>
+    <string name="game_end_watch_ad">DEVAM ETMEK İÇİN REKLAM İZLE</string>
+    <string name="game_end_continue">DEVAM ET</string>
+    <string name="game_end_play_again">Tekrar oyna</string>
+    <string name="engagement_bonus_round">BONUS TUR</string>
+    <string name="engagement_streak_mission">GÖREV %1$d/%2$d</string>
+
+    <string name="mode_selection_brand_title">EMOJI ZİNCİRİ</string>
+    <string name="mode_selection_brand_subtitle">BAĞLANTIYI ÇÖZ</string>
+    <string name="mode_selection_ready_title">OYUNA HAZIR MISIN?</string>
+    <string name="mode_selection_high_score">🏆 %1$d</string>
+
+    <string name="ad_loading_rewarded">Reklam yükleniyor…</string>
+    <string name="ad_loading_interstitial">Reklam yükleniyor…</string>
+    <string name="ad_not_loaded_retry">Yükleme hatası. Tekrar denemek için dokun.</string>
+    <string name="ad_watch_reward">Ödül kazanmak için reklam izle</string>
+    <string name="ad_reward_earned">Tebrikler! Ödül kazandın!</string>
+    <string name="ad_show_interstitial">Reklamı göster</string>
+    <string name="ad_interstitial_shown">Reklam başarıyla izlendi!</string>
+    <string name="sticker_book_title">Sticker Albümü</string>
+    <string name="sticker_book_count">%1$d sticker toplandı</string>
+    <string name="sticker_book_count_with_latest">%1$d sticker • sonuncu: %2$s</string>
+    <string name="sticker_daily_reward">Yeni sticker: %1$s</string>
+    <string name="pet_companion_title">Evcil Hayvan Arkadaşı</string>
+    <string name="pet_companion_growing">Arkadaşın seninle büyüyor</string>
+    <string name="pet_companion_advanced">Arkadaşın bugün çok mutlu!</string>
+
+    <string name="hint_sequential_category">Aynı gruptan bir sonrakini ara.</string>
+    <string name="hint_category_mixup">Bir grup bir tema gizliyor — desene güven!</string>
+    <string name="hint_opposite_meaning">Zıt anlamlısını düşün.</string>
+    <string name="hint_synonym_chain">En benzer emojiyi seç.</string>
+    <string name="hint_default">Hangisinin en uygun olduğuna dikkatlice bak.</string>
+    <string name="hint_bonus_round">Bonus tur: Eğlen ve hızlı ol!</string>
+    <string name="score_value">%1$d</string>
+    <string name="collection_my_treasures">HAZİNELERİM</string>
+    <string name="collection_sticker_book">STICKER ALBÜMÜ (%1$d/%2$d)</string>
+    <string name="shop_coming_soon">Yakında!</string>
+    <string name="rank_coming_soon">Sıralama yakında!</string>
+</resources>

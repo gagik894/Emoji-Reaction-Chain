@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">Chaîne d\'Emojis</string>
+
+    <string name="home_title">Chaîne d\'Emojis</string>
+    <string name="home_subtitle">Choisis ton défi</string>
+    <string name="daily_streak_label">Série quotidienne</string>
+    <string name="daily_streak_value">%1$d jours</string>
+    <string name="best_scores_label">Meilleurs scores</string>
+    <string name="best_score_item">%1$s %2$d</string>
+    <string name="bottom_nav_play">Jouer</string>
+    <string name="bottom_nav_treasures">Trésors</string>
+    <string name="bottom_nav_shop">Boutique</string>
+    <string name="bottom_nav_rank">Classement</string>
+    <string name="banner_ad_preview_placeholder">Publicité</string>
+
+    <string name="mode_normal_name">Mode Normal</string>
+    <string name="mode_normal_subtitle">Défi équilibré, sans stress</string>
+    <string name="mode_timed_name">Mode Chrono</string>
+    <string name="mode_timed_subtitle">Course contre la montre !</string>
+    <string name="mode_survival_name">Mode Survie</string>
+    <string name="mode_survival_subtitle">Une erreur fait mal, sois prêt !</string>
+    <string name="mode_blitz_name">Mode Blitz</string>
+    <string name="mode_blitz_subtitle">Des rounds ultra rapides</string>
+
+    <string name="mode_short_normal">Normal</string>
+    <string name="mode_short_timed">Chrono</string>
+    <string name="mode_short_survival">Survie</string>
+    <string name="mode_short_blitz">Blitz</string>
+
+    <string name="tutorial_title">Démarrage Rapide</string>
+    <string name="tutorial_step_1_title">Trouve la règle</string>
+    <string name="tutorial_step_1_body">Regarde ce qui lie les emojis et choisis le meilleur suivant.</string>
+    <string name="tutorial_step_2_title">Réponds vite</string>
+    <string name="tutorial_step_2_body">Les réponses rapides donnent plus de points et gardent ta série.</string>
+    <string name="tutorial_step_3_title">Choisis ton mode</string>
+    <string name="tutorial_step_3_body">Commence par le mode Normal, puis essaie les autres pour battre tes records.</string>
+    <string name="tutorial_action_next">Suivant</string>
+    <string name="tutorial_action_back">Retour</string>
+    <string name="tutorial_action_skip">Passer</string>
+    <string name="tutorial_action_start">C\'est parti !</string>
+
+    <string name="game_header_title">Chaîne Emoji</string>
+    <string name="game_header_back_description">Retour</string>
+    <string name="time_bonus_text">Bonus de temps +%1$d !</string>
+    <string name="score_label">SCORE</string>
+    <string name="best_label">RECORD</string>
+    <string name="lives_label">VIES</string>
+    <string name="streak_label_short">SÉRIE</string>
+    <string name="best_score_label">RECORD : %1$d</string>
+    <string name="streak_label">🔥 %1$d</string>
+    <string name="question_progress">%1$d / %2$d</string>
+
+    <string name="pregame_normal_description">Réponds aux questions pour augmenter ton score !</string>
+    <string name="pregame_timed_description">Réponds au maximum ! Le temps augmente avec les bonnes réponses.</string>
+    <string name="pregame_survival_description">Une erreur et tu perds une vie. Combien de temps tiendras-tu ?</string>
+    <string name="pregame_blitz_description">Des rounds super rapides ! Une erreur et c\'est fini. Es-tu prêt ?</string>
+    <string name="pregame_best_score">MEILLEUR SCORE : %1$d</string>
+    <string name="pregame_start_playing">COMMENCER À JOUER</string>
+    <string name="survival_level">NIVEAU %1$d</string>
+
+    <string name="dialog_cancel">Annuler</string>
+    <string name="game_end_title_victory">Victoire !</string>
+    <string name="game_end_title_nice_try">Bien essayé !</string>
+    <string name="game_end_message_master">Tu es un champion !</string>
+    <string name="game_end_message_out_of_lives">Plus de vies !</string>
+    <string name="game_end_message_time_up">Temps écoulé !</string>
+    <string name="game_end_message_generation_failed">Plus de questions disponibles.</string>
+    <string name="game_end_message_game_over">Fin du jeu !</string>
+    <string name="game_end_watch_ad">REGARDER UNE PUB POUR CONTINUER</string>
+    <string name="game_end_continue">CONTINUER</string>
+    <string name="game_end_play_again">Rejouer</string>
+    <string name="engagement_bonus_round">ROUND BONUS</string>
+    <string name="engagement_streak_mission">MISSION %1$d/%2$d</string>
+
+    <string name="mode_selection_brand_title">CHAÎNE EMOJI</string>
+    <string name="mode_selection_brand_subtitle">MAÎTRISE LE LIEN</string>
+    <string name="mode_selection_ready_title">PRÊT À JOUER ?</string>
+    <string name="mode_selection_high_score">🏆 %1$d</string>
+
+    <string name="ad_loading_rewarded">Chargement de la pub…</string>
+    <string name="ad_loading_interstitial">Chargement de la pub…</string>
+    <string name="ad_not_loaded_retry">Pub non chargée. Appuie pour réessayer.</string>
+    <string name="ad_watch_reward">Regarde une pub pour gagner un prix</string>
+    <string name="ad_reward_earned">Félicitations ! Tu as gagné un prix !</string>
+    <string name="ad_show_interstitial">Afficher la pub</string>
+    <string name="ad_interstitial_shown">Pub affichée avec succès !</string>
+    <string name="sticker_book_title">Album de Stickers</string>
+    <string name="sticker_book_count">%1$d stickers collectionnés</string>
+    <string name="sticker_book_count_with_latest">%1$d stickers • dernier : %2$s</string>
+    <string name="sticker_daily_reward">Nouveau sticker : %1$s</string>
+    <string name="pet_companion_title">Petit Compagnon</string>
+    <string name="pet_companion_growing">Ton ami grandit avec toi</string>
+    <string name="pet_companion_advanced">Ton ami est super heureux aujourd\'hui !</string>
+
+    <string name="hint_sequential_category">Cherche le suivant dans le même groupe.</string>
+    <string name="hint_category_mixup">Un groupe cache un thème — fais confiance au motif !</string>
+    <string name="hint_opposite_meaning">Pense à l\'opposé.</string>
+    <string name="hint_synonym_chain">Choisis l\'emoji le plus proche.</string>
+    <string name="hint_default">Regarde bien lequel va le mieux.</string>
+    <string name="hint_bonus_round">Round bonus : amuse-toi et sois rapide !</string>
+    <string name="score_value">%1$d</string>
+    <string name="collection_my_treasures">MES TRÉSORS</string>
+    <string name="collection_sticker_book">ALBUM DE STICKERS (%1$d/%2$d)</string>
+    <string name="shop_coming_soon">Bientôt disponible !</string>
+    <string name="rank_coming_soon">Classement bientôt disponible !</string>
+</resources>

@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">えもじチェーン</string>
+
+    <string name="home_title">えもじチェーン</string>
+    <string name="home_subtitle">チャレンジをえらぼう</string>
+    <string name="daily_streak_label">れんぞくプレイ</string>
+    <string name="daily_streak_value">%1$dにち</string>
+    <string name="best_scores_label">ベストスコア</string>
+    <string name="best_score_item">%1$s %2$d</string>
+    <string name="bottom_nav_play">あそぶ</string>
+    <string name="bottom_nav_treasures">たからもの</string>
+    <string name="bottom_nav_shop">ショップ</string>
+    <string name="bottom_nav_rank">ランキング</string>
+    <string name="banner_ad_preview_placeholder">こうこく</string>
+
+    <string name="mode_normal_name">ノーマルモード</string>
+    <string name="mode_normal_subtitle">ゆったりたのしくチャレンジ</string>
+    <string name="mode_timed_name">タイムアタック</string>
+    <string name="mode_timed_subtitle">じかんとのたたかい！</string>
+    <string name="mode_survival_name">サバイバル</string>
+    <string name="mode_survival_subtitle">ミスはきんもつ！しゅうちゅうしよう</string>
+    <string name="mode_blitz_name">ブリッツ</string>
+    <string name="mode_blitz_subtitle">しゅんかんスピードしょうぶ</string>
+
+    <string name="mode_short_normal">ノーマル</string>
+    <string name="mode_short_timed">タイム</string>
+    <string name="mode_short_survival">サバイバル</string>
+    <string name="mode_short_blitz">ブリッツ</string>
+
+    <string name="tutorial_title">あそびかた</string>
+    <string name="tutorial_step_1_title">つながりをさがそう</string>
+    <string name="tutorial_step_1_body">えもじのルールをみつけて、つぎのえもじをえらぼう。</string>
+    <string name="tutorial_step_2_title">はやくこたえよう</string>
+    <string name="tutorial_step_2_body">はやくこたえるとスコアがアップ！れんぞくせいかいをねらおう。</string>
+    <string name="tutorial_step_3_title">モードをえらぼう</string>
+    <string name="tutorial_step_3_body">まずはノーマルから！なれたらほかのモードにもちょうせん！</string>
+    <string name="tutorial_action_next">つぎへ</string>
+    <string name="tutorial_action_back">もどる</string>
+    <string name="tutorial_action_skip">スキップ</string>
+    <string name="tutorial_action_start">スタート！</string>
+
+    <string name="game_header_title">えもじチェーン</string>
+    <string name="game_header_back_description">もどる</string>
+    <string name="time_bonus_text">タイムボーナス +%1$d！</string>
+    <string name="score_label">スコア</string>
+    <string name="best_label">ベスト</string>
+    <string name="lives_label">ライフ</string>
+    <string name="streak_label_short">コンボ</string>
+    <string name="best_score_label">ベストスコア: %1$d</string>
+    <string name="streak_label">🔥 %1$d</string>
+    <string name="question_progress">%1$d / %2$d</string>
+
+    <string name="pregame_normal_description">クイズにこたえてスコアをのばそう！</string>
+    <string name="pregame_timed_description">じかんないにたくさんこたえよう！せいかいでタイムがふえるよ。</string>
+    <string name="pregame_survival_description">ミスするとライフがへるよ。どこまでいけるかな？</string>
+    <string name="pregame_blitz_description">超スピードしょうぶ！ミスしたらおわり。いけるかな？</string>
+    <string name="pregame_best_score">ベストスコア: %1$d</string>
+    <string name="pregame_start_playing">あそびはじめる</string>
+    <string name="survival_level">レベル %1$d</string>
+
+    <string name="dialog_cancel">キャンセル</string>
+    <string name="game_end_title_victory">クリア！</string>
+    <string name="game_end_title_nice_try">おしい！</string>
+    <string name="game_end_message_master">きみはえもじマスターだ！</string>
+    <string name="game_end_message_out_of_lives">ライフがなくなったよ！</string>
+    <string name="game_end_message_time_up">じかんぎれ！</string>
+    <string name="game_end_message_generation_failed">もんだいがなくなったよ。</string>
+    <string name="game_end_message_game_over">ゲームオーバー</string>
+    <string name="game_end_watch_ad">こうこくをみて つづける</string>
+    <string name="game_end_continue">つづける</string>
+    <string name="game_end_play_again">もういちどあそぶ</string>
+    <string name="engagement_bonus_round">ボーナスラウンド</string>
+    <string name="engagement_streak_mission">ミッション %1$d/%2$d</string>
+
+    <string name="mode_selection_brand_title">えもじチェーン</string>
+    <string name="mode_selection_brand_subtitle">ルールをみつけよう</string>
+    <string name="mode_selection_ready_title">じゅんびはいい？</string>
+    <string name="mode_selection_high_score">🏆 %1$d</string>
+
+    <string name="ad_loading_rewarded">こうこくをよみこみちゅう…</string>
+    <string name="ad_loading_interstitial">こうこくをよみこみちゅう…</string>
+    <string name="ad_not_loaded_retry">よみこみしっぱい。タップでリトライ</string>
+    <string name="ad_watch_reward">こうこくをみて プレゼントをもらおう</string>
+    <string name="ad_reward_earned">おめでとう！プレゼントをゲット！</string>
+    <string name="ad_show_interstitial">こうこくをみる</string>
+    <string name="ad_interstitial_shown">こうこくをみました！</string>
+    <string name="sticker_book_title">シールちょう</string>
+    <string name="sticker_book_count">あつめたシール: %1$d</string>
+    <string name="sticker_book_count_with_latest">シール %1$dこ • さいしん: %2$s</string>
+    <string name="sticker_daily_reward">あたらしいシール: %1$s</string>
+    <string name="pet_companion_title">ペットのともだち</string>
+    <string name="pet_companion_growing">きみといっしょに せいちょうするよ</string>
+    <string name="pet_companion_advanced">ペットは とってもごきげんだよ！</string>
+
+    <string name="hint_sequential_category">おなじグループの えもじをさがそう。</string>
+    <string name="hint_category_mixup">かくされたテーマをみつけよう！</string>
+    <string name="hint_opposite_meaning">はんたいの いみをかんがえてみて。</string>
+    <string name="hint_synonym_chain">にているえもじを えらぼう。</string>
+    <string name="hint_default">どれがぴったりあてはまるかな？</string>
+    <string name="hint_bonus_round">ボーナスラウンド：たのしくはやくこたえよう！</string>
+    <string name="score_value">%1$d</string>
+    <string name="collection_my_treasures">たからもの</string>
+    <string name="collection_sticker_book">シールちょう (%1$d/%2$d)</string>
+    <string name="shop_coming_soon">まもなくオープン！</string>
+    <string name="rank_coming_soon">ランキングじゅんびちゅう！</string>
+</resources>

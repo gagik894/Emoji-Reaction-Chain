@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">表情连连看</string>
+
+    <string name="home_title">表情连连看</string>
+    <string name="home_subtitle">选择你的挑战</string>
+    <string name="daily_streak_label">连续玩乐</string>
+    <string name="daily_streak_value">%1$d 天</string>
+    <string name="best_scores_label">最高分</string>
+    <string name="best_score_item">%1$s %2$d</string>
+    <string name="bottom_nav_play">开始</string>
+    <string name="bottom_nav_treasures">宝藏</string>
+    <string name="bottom_nav_shop">商店</string>
+    <string name="bottom_nav_rank">排行榜</string>
+    <string name="banner_ad_preview_placeholder">广告</string>
+
+    <string name="mode_normal_name">普通模式</string>
+    <string name="mode_normal_subtitle">轻松挑战，没有压力</string>
+    <string name="mode_timed_name">限时模式</string>
+    <string name="mode_timed_subtitle">与时间赛跑！</string>
+    <string name="mode_survival_name">生存模式</string>
+    <string name="mode_survival_subtitle">一次错误都不能有，专注！</string>
+    <string name="mode_blitz_name">闪电模式</string>
+    <string name="mode_blitz_subtitle">极速挑战</string>
+
+    <string name="mode_short_normal">普通</string>
+    <string name="mode_short_timed">限时</string>
+    <string name="mode_short_survival">生存</string>
+    <string name="mode_short_blitz">闪电</string>
+
+    <string name="tutorial_title">快速入门</string>
+    <string name="tutorial_step_1_title">寻找规律</string>
+    <string name="tutorial_step_1_body">观察表情之间的联系，选择最合适的一个。</string>
+    <string name="tutorial_step_2_title">快速作答</string>
+    <string name="tutorial_step_2_body">回答越快得分越高，还能保持连击。</string>
+    <string name="tutorial_step_3_title">选择模式</string>
+    <string name="tutorial_step_3_body">从普通模式开始，然后尝试打破其他模式的记录。</string>
+    <string name="tutorial_action_next">下一步</string>
+    <string name="tutorial_action_back">返回</string>
+    <string name="tutorial_action_skip">跳过</string>
+    <string name="tutorial_action_start">开始游戏！</string>
+
+    <string name="game_header_title">表情链</string>
+    <string name="game_header_back_description">返回</string>
+    <string name="time_bonus_text">时间加成 +%1$d！</string>
+    <string name="score_label">得分</string>
+    <string name="best_label">记录</string>
+    <string name="lives_label">生命</string>
+    <string name="streak_label_short">连击</string>
+    <string name="best_score_label">最高记录: %1$d</string>
+    <string name="streak_label">🔥 %1$d</string>
+    <string name="question_progress">%1$d / %2$d</string>
+
+    <string name="pregame_normal_description">回答问题，冲击最高分！</string>
+    <string name="pregame_timed_description">在时间内尽可能多答题！答对可以增加时间。</string>
+    <string name="pregame_survival_description">答错一次就会扣除生命。你能坚持多久？</string>
+    <string name="pregame_blitz_description">极速挑战！答错就结束。你够快吗？</string>
+    <string name="pregame_best_score">最高得分: %1$d</string>
+    <string name="pregame_start_playing">开始游戏</string>
+    <string name="survival_level">等级 %1$d</string>
+
+    <string name="dialog_cancel">取消</string>
+    <string name="game_end_title_victory">胜利！</string>
+    <string name="game_end_title_nice_try">真可惜！</string>
+    <string name="game_end_message_master">你是表情大师！</string>
+    <string name="game_end_message_out_of_lives">生命耗尽！</string>
+    <string name="game_end_message_time_up">时间到！</string>
+    <string name="game_end_message_generation_failed">没有更多题目了。</string>
+    <string name="game_end_message_game_over">游戏结束</string>
+    <string name="game_end_watch_ad">观看广告继续游戏</string>
+    <string name="game_end_continue">继续</string>
+    <string name="game_end_play_again">再玩一次</string>
+    <string name="engagement_bonus_round">奖金关卡</string>
+    <string name="engagement_streak_mission">任务 %1$d/%2$d</string>
+
+    <string name="mode_selection_brand_title">表情链</string>
+    <string name="mode_selection_brand_subtitle">掌控规律</string>
+    <string name="mode_selection_ready_title">准备好了吗？</string>
+    <string name="mode_selection_high_score">🏆 %1$d</string>
+
+    <string name="ad_loading_rewarded">广告加载中…</string>
+    <string name="ad_loading_interstitial">广告加载中…</string>
+    <string name="ad_not_loaded_retry">加载失败。点击重试。</string>
+    <string name="ad_watch_reward">看广告拿奖励</string>
+    <string name="ad_reward_earned">恭喜！你获得了奖励！</string>
+    <string name="ad_show_interstitial">查看广告</string>
+    <string name="ad_interstitial_shown">广告已观看！</string>
+    <string name="sticker_book_title">贴纸收藏夹</string>
+    <string name="sticker_book_count">已收集 %1$d 张贴纸</string>
+    <string name="sticker_book_count_with_latest">%1$d 张贴纸 • 最新: %2$s</string>
+    <string name="sticker_daily_reward">新贴纸: %1$s</string>
+    <string name="pet_companion_title">宠物伙伴</string>
+    <string name="pet_companion_growing">伙伴陪你一起成长</string>
+    <string name="pet_companion_advanced">你的伙伴今天很开心！</string>
+
+    <string name="hint_sequential_category">寻找同组的下一个表情。</string>
+    <string name="hint_category_mixup">寻找隐藏的主题 — 相信你的直觉！</string>
+    <string name="hint_opposite_meaning">想想反义词。</string>
+    <string name="hint_synonym_chain">选择最相似的表情。</string>
+    <string name="hint_default">仔细观察哪一个最合适。</string>
+    <string name="hint_bonus_round">奖金关卡：尽情玩耍，动作要快！</string>
+    <string name="score_value">%1$d</string>
+    <string name="collection_my_treasures">我的宝藏</string>
+    <string name="collection_sticker_book">贴纸收藏夹 (%1$d/%2$d)</string>
+    <string name="shop_coming_soon">即将开业！</string>
+    <string name="rank_coming_soon">排行榜即将上线！</string>
+</resources>
