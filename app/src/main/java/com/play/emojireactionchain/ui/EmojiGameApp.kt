@@ -19,11 +19,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.play.emojireactionchain.R
 import com.play.emojireactionchain.data.GameRepositoryImpl
 import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.ui.components.PlayfulBottomBar
@@ -190,12 +192,12 @@ fun EmojiGameApp() {
                 }
                 composable(Routes.SHOP) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Shop coming soon!", style = MaterialTheme.typography.headlineMedium)
+                        Text(stringResource(R.string.bottom_nav_shop) + " " + stringResource(R.string.shop_coming_soon), style = MaterialTheme.typography.headlineMedium)
                     }
                 }
                 composable(Routes.RANK) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Leaderboard coming soon!", style = MaterialTheme.typography.headlineMedium)
+                        Text(stringResource(R.string.rank_coming_soon), style = MaterialTheme.typography.headlineMedium)
                     }
                 }
             }

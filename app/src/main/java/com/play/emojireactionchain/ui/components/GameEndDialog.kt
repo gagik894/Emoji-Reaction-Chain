@@ -156,7 +156,7 @@ fun GameEndDialog(
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
-                        Text("${gameState.score}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = PrimarySoft)
+                        Text(stringResource(R.string.score_value, gameState.score), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = PrimarySoft)
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 12.dp),
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)

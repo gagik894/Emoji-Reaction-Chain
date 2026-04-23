@@ -44,10 +44,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.play.emojireactionchain.R
 import com.play.emojireactionchain.ui.GameBackground
 import com.play.emojireactionchain.ui.HomeUiState
 import com.play.emojireactionchain.ui.theme.PrimarySoft
@@ -91,7 +93,7 @@ fun CollectionScreen(
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "MY TREASURES",
+                    text = stringResource(R.string.collection_my_treasures),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Black,
                         brush = Brush.horizontalGradient(listOf(PrimarySoft, SecondarySoft)),
@@ -143,7 +145,7 @@ fun CollectionScreen(
 
             // Collection Grid
             Text(
-                text = "STICKER BOOK (${uiState.unlockedStickers.size}/${StickerCatalog.stickers.size})",
+                text = stringResource(R.string.collection_sticker_book, uiState.unlockedStickers.size, StickerCatalog.stickers.size),
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Black,
                     letterSpacing = 2.sp
