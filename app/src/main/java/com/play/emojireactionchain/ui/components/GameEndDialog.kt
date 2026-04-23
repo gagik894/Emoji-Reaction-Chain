@@ -40,11 +40,8 @@ import com.play.emojireactionchain.model.GameState
 import com.play.emojireactionchain.model.LossReason
 import com.play.emojireactionchain.ui.GameBackground
 import com.play.emojireactionchain.ui.theme.EmojiGameTheme
-import com.play.emojireactionchain.ui.theme.ErrorRed
 import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
-import com.play.emojireactionchain.ui.theme.SuccessGreen
-import com.play.emojireactionchain.ui.theme.WarningOrange
 
 @Composable
 fun StyledAlertDialog(
@@ -56,29 +53,29 @@ fun StyledAlertDialog(
     onDismiss: (() -> Unit)? = null,
     isError: Boolean = true
 ) {
-    val accent = if (isError) ErrorRed else SuccessGreen
+    val accent = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
     val dismissText = dismissButtonText ?: stringResource(R.string.dialog_cancel)
 
     AlertDialog(
         onDismissRequest = { onDismiss?.invoke() },
         title = {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Surface(shape = CircleShape, color = accent.copy(alpha = 0.16f)) {
+                Surface(shape = CircleShape, color = accent.copy(alpha = 0.12f)) {
                     Icon(
                         imageVector = if (isError) Icons.Rounded.SentimentSatisfied else Icons.Rounded.EmojiEvents,
                         contentDescription = null,
                         tint = accent,
                         modifier = Modifier
-                            .size(62.dp)
-                            .padding(12.dp)
+                            .size(64.dp)
+                            .padding(14.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     title,
                     style = MaterialTheme.typography.headlineSmall,
                     color = accent,
-                    fontWeight = FontWeight.Black
+                    fontWeight = FontWeight.ExtraBold
                 )
             }
         },
@@ -86,12 +83,12 @@ fun StyledAlertDialog(
         confirmButton = {
             Button(
                 onClick = onConfirm,
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = PrimarySoft)
             ) {
                 Icon(Icons.Rounded.Refresh, contentDescription = null)
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(confirmButtonText, fontWeight = FontWeight.Black)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(confirmButtonText, fontWeight = FontWeight.ExtraBold)
             }
         },
         dismissButton = {
@@ -140,40 +137,41 @@ fun GameEndDialog(
 
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0f),
-                    shadowElevation = 8.dp
+                    color = MaterialTheme.colorScheme.surface,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                    shadowElevation = 6.dp
                 ) {
                     Column(
                         modifier = Modifier
                             .background(
                                 Brush.verticalGradient(
-                                    listOf(PrimarySoft.copy(alpha = 0.12f), WarningOrange.copy(alpha = 0.12f))
+                                    listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.primary.copy(alpha = 0.04f))
                                 )
                             )
-                            .padding(18.dp),
+                            .padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             stringResource(R.string.score_label),
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.68f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
-                        Text("${gameState.score}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black, color = PrimarySoft)
+                        Text("${gameState.score}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = PrimarySoft)
                         HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
                         )
-                        Text(stringResource(R.string.best_score_label, gameState.highScore), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black)
+                        Text(stringResource(R.string.best_score_label, gameState.highScore), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
 
                 if (onWatchAd != null && !isWon) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
                     Button(
                         enabled = !isLoading,
                         onClick = onWatchAd,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(18.dp),
+                        shape = RoundedCornerShape(20.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = SecondarySoft)
                     ) {
                         if (isLoading) {
@@ -207,7 +205,28 @@ fun GameEndDialog(
 
 @Preview(showBackground = true)
 @Composable
-fun GameEndDialogPreview() {
+fun StyledAlertDialogPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            StyledAlertDialog(
+                title = stringResource(R.string.game_end_title_victory),
+                message = {
+                    Text(
+                        text = stringResource(R.string.game_end_message_master),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                confirmButtonText = stringResource(R.string.game_end_play_again),
+                onConfirm = {},
+                isError = false
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GameEndDialogLostPreview() {
     EmojiGameTheme {
         GameBackground {
             GameEndDialog(
@@ -216,6 +235,37 @@ fun GameEndDialogPreview() {
                 gameState = GameState(score = 1500, highScore = 3000),
                 onPlayAgain = {},
                 onWatchAd = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GameEndDialogVictoryPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            GameEndDialog(
+                isWon = true,
+                gameState = GameState(score = 2400, highScore = 2400),
+                onPlayAgain = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GameEndDialogRewardLoadingPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            GameEndDialog(
+                isWon = false,
+                reason = LossReason.TimeOut,
+                gameState = GameState(score = 620, highScore = 1200),
+                onPlayAgain = {},
+                onWatchAd = {},
+                isLoading = true
             )
         }
     }

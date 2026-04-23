@@ -11,9 +11,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,6 +53,7 @@ fun GameHeader(showBack: Boolean = true, onBack: () -> Unit = {}) {
 fun BottomBannerAd(modifier: Modifier = Modifier) {
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val isPreview = LocalInspectionMode.current
 
     if (!isLandscape) {
         Box(
@@ -58,7 +62,20 @@ fun BottomBannerAd(modifier: Modifier = Modifier) {
                 .padding(top = 8.dp),
             contentAlignment = Alignment.Center
         ) {
-            com.play.emojireactionchain.ui.BannerAd(adUnitId = "ca-app-pub-2523891738770793/9481725035")
+            if (isPreview) {
+                Surface(
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.banner_ad_preview_placeholder),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(horizontal = 96.dp, vertical = 14.dp)
+                    )
+                }
+            } else {
+                com.play.emojireactionchain.ui.BannerAd(adUnitId = "ca-app-pub-2523891738770793/9481725035")
+            }
         }
     }
 }
@@ -70,8 +87,17 @@ fun GameHeaderPreview() {
         GameBackground {
             androidx.compose.foundation.layout.Column {
                 GameHeader()
-                BottomBannerAd()
             }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BottomBannerAdPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            BottomBannerAd()
         }
     }
 }

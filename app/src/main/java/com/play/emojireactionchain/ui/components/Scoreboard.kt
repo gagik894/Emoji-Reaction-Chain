@@ -9,16 +9,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material.icons.rounded.Stars
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -47,8 +44,7 @@ fun Scoreboard(
     score: Int,
     highScore: Int,
     lives: Int?,
-    currentStreakCount: Int,
-    onBack: (() -> Unit)? = null
+    currentStreakCount: Int
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -59,12 +55,13 @@ fun Scoreboard(
             .fillMaxWidth()
             .padding(vertical = if (isLandscape) 2.dp else 4.dp),
         shape = RoundedCornerShape(30.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
         shadowElevation = 8.dp
     ) {
         Row(
             modifier = Modifier.padding(
-                start = if (onBack != null) 6.dp else 12.dp,
+                start = 12.dp,
                 end = 12.dp,
                 top = if (isLandscape) 8.dp else 9.dp,
                 bottom = if (isLandscape) 8.dp else 9.dp
@@ -72,21 +69,6 @@ fun Scoreboard(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            onBack?.let {
-                IconButton(
-                    onClick = it,
-                    modifier = Modifier
-                        .size(if (isLandscape) 40.dp else 44.dp)
-                        .background(PrimarySoft.copy(alpha = 0.14f), CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.game_header_back_description),
-                        tint = PrimarySoft
-                    )
-                }
-            }
-
             StatBlock(
                 label = stringResource(R.string.score_label),
                 value = score.toString(),
@@ -202,10 +184,30 @@ private fun MiniDivider() {
 
 @Preview(showBackground = true)
 @Composable
-fun ScoreboardPreview() {
+fun ScoreboardLivesPreview() {
     EmojiGameTheme {
         GameBackground {
             Scoreboard(score = 150, highScore = 300, lives = 2, currentStreakCount = 3)
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ScoreboardNoLivesPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            Scoreboard(score = 48, highScore = 276, lives = null, currentStreakCount = 0)
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ScoreboardStreakPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            Scoreboard(score = 98, highScore = 276, lives = null, currentStreakCount = 4)
         }
     }
 }

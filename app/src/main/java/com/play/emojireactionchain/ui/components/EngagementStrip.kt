@@ -94,7 +94,17 @@ private fun StatusChip(
 
 @Preview(showBackground = true)
 @Composable
-fun EngagementStripPreview() {
+fun EngagementStripMissionPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            EngagementStrip(isBonusRound = false, missionProgress = 1, missionTarget = 3)
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EngagementStripBonusPreview() {
     EmojiGameTheme {
         GameBackground {
             EngagementStrip(isBonusRound = true, missionProgress = 1, missionTarget = 3)

@@ -38,12 +38,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.play.emojireactionchain.R
+import com.play.emojireactionchain.ui.GameBackground
 import com.play.emojireactionchain.ui.Routes
+import com.play.emojireactionchain.ui.theme.EmojiGameTheme
 import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
 import com.play.emojireactionchain.ui.theme.TertiarySoft
@@ -51,69 +56,81 @@ import com.play.emojireactionchain.ui.theme.WarningOrange
 
 sealed class BottomNavItem(
     val route: String,
-    val label: String,
+    val labelRes: Int,
     val icon: ImageVector,
     val activeColor: Color
 ) {
-    object Home : BottomNavItem(Routes.START, "Play", Icons.Rounded.Gamepad, PrimarySoft)
-    object Treasures : BottomNavItem(Routes.COLLECTION, "Treasures", Icons.Rounded.AutoAwesome, SecondarySoft)
-    object Shop : BottomNavItem(Routes.SHOP, "Shop", Icons.Rounded.Storefront, TertiarySoft)
-    object Rank : BottomNavItem(Routes.RANK, "Rank", Icons.Rounded.EmojiEvents, WarningOrange)
+    object Home : BottomNavItem(Routes.START, R.string.bottom_nav_play, Icons.Rounded.Gamepad, PrimarySoft)
+    object Treasures : BottomNavItem(Routes.COLLECTION, R.string.bottom_nav_treasures, Icons.Rounded.AutoAwesome, SecondarySoft)
+    object Shop : BottomNavItem(Routes.SHOP, R.string.bottom_nav_shop, Icons.Rounded.Storefront, TertiarySoft)
+    object Rank : BottomNavItem(Routes.RANK, R.string.bottom_nav_rank, Icons.Rounded.EmojiEvents, WarningOrange)
 }
 
 @Composable
 fun PlayfulBottomBar(navController: NavController) {
-    val items = listOf(
-        BottomNavItem.Home,
-        BottomNavItem.Treasures,
-        BottomNavItem.Shop,
-        BottomNavItem.Rank
-    )
-
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     // Only show bottom bar on these top-level routes
-    val showBottomBar = items.any { it.route == currentRoute }
+    val showBottomBar = bottomNavItems.any { it.route == currentRoute }
 
     if (showBottomBar) {
-        val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        
-        Surface(
+        PlayfulBottomBarContent(
+            currentRoute = currentRoute,
+            onItemClick = { item ->
+                if (currentRoute != item.route) {
+                    navController.navigate(item.route) {
+                        popUpTo(Routes.START) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }
+        )
+    }
+}
+
+private val bottomNavItems = listOf(
+    BottomNavItem.Home,
+    BottomNavItem.Treasures,
+    BottomNavItem.Shop,
+    BottomNavItem.Rank
+)
+
+@Composable
+private fun PlayfulBottomBarContent(
+    currentRoute: String?,
+    onItemClick: (BottomNavItem) -> Unit
+) {
+    val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = (navBarPadding + 12.dp).coerceAtLeast(16.dp)),
+        shape = RoundedCornerShape(32.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)),
+        shadowElevation = 10.dp
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(bottom = (navBarPadding + 12.dp).coerceAtLeast(16.dp)),
-            shape = RoundedCornerShape(32.dp),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-            shadowElevation = 12.dp
+                .height(72.dp)
+                .padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(72.dp)
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                items.forEach { item ->
-                    val isSelected = currentRoute == item.route
-                    PlayfulBottomNavItem(
-                        item = item,
-                        isSelected = isSelected,
-                        onClick = {
-                            if (currentRoute != item.route) {
-                                navController.navigate(item.route) {
-                                    popUpTo(Routes.START) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        }
-                    )
-                }
+            bottomNavItems.forEach { item ->
+                val isSelected = currentRoute == item.route
+                PlayfulBottomNavItem(
+                    item = item,
+                    isSelected = isSelected,
+                    onClick = { onItemClick(item) }
+                )
             }
         }
     }
@@ -125,6 +142,9 @@ private fun PlayfulBottomNavItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val label = stringResource(item.labelRes)
+    val activeColor = item.activeColor
+
     val scale by animateFloatAsState(
         targetValue = if (isSelected) 1.2f else 1f,
         animationSpec = spring(
@@ -135,7 +155,7 @@ private fun PlayfulBottomNavItem(
     )
 
     val iconColor by animateColorAsState(
-        targetValue = if (isSelected) item.activeColor else Color.Gray.copy(alpha = 0.6f),
+        targetValue = if (isSelected) activeColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
         label = "icon_color"
     )
 
@@ -159,17 +179,17 @@ private fun PlayfulBottomNavItem(
         ) {
             Icon(
                 imageVector = item.icon,
-                contentDescription = item.label,
+                contentDescription = label,
                 tint = iconColor,
                 modifier = Modifier.size(28.dp)
             )
             
             if (isSelected) {
                 Text(
-                    text = item.label,
+                    text = label,
                     fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = item.activeColor,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = activeColor,
                     modifier = Modifier.padding(top = 2.dp)
                 )
                 
@@ -178,7 +198,22 @@ private fun PlayfulBottomNavItem(
                     modifier = Modifier
                         .padding(top = 2.dp)
                         .size(4.dp)
-                        .background(item.activeColor, CircleShape)
+                        .background(activeColor, CircleShape)
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PlayfulBottomBarPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            Box(contentAlignment = Alignment.BottomCenter) {
+                PlayfulBottomBarContent(
+                    currentRoute = Routes.START,
+                    onItemClick = {}
                 )
             }
         }

@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,14 +38,17 @@ fun TimeBonusAnimation(bonusPoints: Int) {
     val scale = remember { Animatable(0f) }
     val alpha = remember { Animatable(0f) }
     val density = LocalDensity.current
+    val isPreview = LocalInspectionMode.current
 
-    LaunchedEffect(bonusPoints) {
-        translateYPx.animateTo(-140f, animationSpec = tween(250))
-        scale.animateTo(1.18f, animationSpec = tween(180))
-        alpha.animateTo(1f, animationSpec = tween(160))
-        translateYPx.animateTo(0f, animationSpec = tween(420))
-        scale.animateTo(1f, animationSpec = tween(260))
-        alpha.animateTo(0f, animationSpec = tween(320))
+    if (!isPreview) {
+        LaunchedEffect(bonusPoints) {
+            translateYPx.animateTo(-140f, animationSpec = tween(250))
+            scale.animateTo(1.18f, animationSpec = tween(180))
+            alpha.animateTo(1f, animationSpec = tween(160))
+            translateYPx.animateTo(0f, animationSpec = tween(420))
+            scale.animateTo(1f, animationSpec = tween(260))
+            alpha.animateTo(0f, animationSpec = tween(320))
+        }
     }
 
     Box(
@@ -56,8 +60,12 @@ fun TimeBonusAnimation(bonusPoints: Int) {
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0f),
             shadowElevation = 18.dp,
             modifier = Modifier
-                .offset(y = with(density) { translateYPx.value.toDp() })
-                .graphicsLayer(scaleX = scale.value, scaleY = scale.value, alpha = alpha.value)
+                .offset(y = if (isPreview) 0.dp else with(density) { translateYPx.value.toDp() })
+                .graphicsLayer(
+                    scaleX = if (isPreview) 1f else scale.value,
+                    scaleY = if (isPreview) 1f else scale.value,
+                    alpha = if (isPreview) 1f else alpha.value
+                )
         ) {
             Text(
                 text = stringResource(R.string.time_bonus_text, bonusPoints),

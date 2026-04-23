@@ -1,5 +1,6 @@
 package com.play.emojireactionchain.ui.screens
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -40,7 +41,6 @@ import com.play.emojireactionchain.ui.components.EmojiChainDisplay
 import com.play.emojireactionchain.ui.components.EngagementStrip
 import com.play.emojireactionchain.ui.components.GameEndDialog
 import com.play.emojireactionchain.ui.components.GameHeader
-import com.play.emojireactionchain.ui.components.HintCard
 import com.play.emojireactionchain.ui.components.PreGameContent
 import com.play.emojireactionchain.ui.components.Scoreboard
 import com.play.emojireactionchain.ui.components.TimeBonusAnimation
@@ -189,6 +189,7 @@ fun GameResultHandler(
     }
 }
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun BaseGameScreen(
     gameModeNameRes: Int,
@@ -256,8 +257,7 @@ fun BaseGameScreen(
                                     gameState.score,
                                     gameState.highScore,
                                     if (showLivesInScoreboard) gameState.lives else null,
-                                    gameState.currentStreakCount,
-                                    onBack = onNavigateToStart
+                                    gameState.currentStreakCount
                                 )
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -271,7 +271,6 @@ fun BaseGameScreen(
                                     )
                                     centerContent()
                                 }
-                                HintCard(gameState.rule?.hintRes, gameState.categoryEmoji)
                             }
                             Column(
                                 modifier = Modifier.weight(1.15f),
@@ -296,8 +295,7 @@ fun BaseGameScreen(
                                 gameState.score,
                                 gameState.highScore,
                                 if (showLivesInScoreboard) gameState.lives else null,
-                                gameState.currentStreakCount,
-                                onBack = onNavigateToStart
+                                gameState.currentStreakCount
                             )
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -310,7 +308,6 @@ fun BaseGameScreen(
                                     gameState.streakMissionTarget
                                 )
                                 centerContent()
-                                HintCard(gameState.rule?.hintRes, gameState.categoryEmoji)
                             }
                             Box(
                                 modifier = Modifier.weight(1f),

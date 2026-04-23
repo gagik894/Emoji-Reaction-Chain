@@ -1,5 +1,6 @@
 package com.play.emojireactionchain.ui.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,11 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.play.emojireactionchain.ui.GameBackground
 import com.play.emojireactionchain.ui.theme.EmojiGameTheme
-import com.play.emojireactionchain.ui.theme.PrimarySoft
-import com.play.emojireactionchain.ui.theme.SecondarySoft
-import com.play.emojireactionchain.ui.theme.TertiarySoft
-import com.play.emojireactionchain.ui.theme.WarningOrange
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun EmojiChainDisplay(emojiChain: List<String>) {
     Surface(
@@ -41,16 +39,17 @@ fun EmojiChainDisplay(emojiChain: List<String>) {
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         shape = RoundedCornerShape(34.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0f),
-        shadowElevation = 12.dp
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+        shadowElevation = 8.dp
     ) {
         BoxWithConstraints(
             modifier = Modifier
                 .background(
                     Brush.verticalGradient(
                         listOf(
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
-                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.14f)
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
                         )
                     )
                 )
@@ -78,7 +77,8 @@ fun EmojiChainDisplay(emojiChain: List<String>) {
 
 @Composable
 private fun EmojiPathTile(emoji: String, size: Dp, index: Int) {
-    val colors = listOf(PrimarySoft, SecondarySoft, TertiarySoft, WarningOrange)
+    val theme = MaterialTheme.colorScheme
+    val colors = listOf(theme.primary, theme.secondary, theme.tertiary)
     val tint = colors[index % colors.size]
 
     Surface(
@@ -110,7 +110,7 @@ private fun MysteryTile(size: Dp) {
     Surface(
         modifier = Modifier.size(size),
         shape = RoundedCornerShape(22.dp),
-        color = PrimarySoft,
+        color = MaterialTheme.colorScheme.primary,
         shadowElevation = 10.dp
     ) {
         Box(contentAlignment = Alignment.Center) {
@@ -147,7 +147,17 @@ private fun ChainConnector(width: Dp) {
 
 @Preview(showBackground = true)
 @Composable
-fun EmojiChainDisplayPreview() {
+fun EmojiChainDisplayShortPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            EmojiChainDisplay(emojiChain = listOf("A", "B"))
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EmojiChainDisplayLongPreview() {
     EmojiGameTheme {
         GameBackground {
             EmojiChainDisplay(emojiChain = listOf("A", "B", "C", "D", "E"))

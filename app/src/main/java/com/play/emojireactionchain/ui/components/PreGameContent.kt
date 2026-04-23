@@ -1,7 +1,7 @@
 package com.play.emojireactionchain.ui.components
 
+import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -45,15 +45,18 @@ fun StyledActionButton(text: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
-            .fillMaxWidth(0.86f)
-            .height(62.dp),
-        shape = RoundedCornerShape(22.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = PrimarySoft),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 9.dp, pressedElevation = 2.dp)
+            .fillMaxWidth(0.9f)
+            .height(64.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = PrimarySoft,
+            contentColor = Color.White
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 2.dp)
     ) {
         Icon(Icons.Rounded.PlayArrow, contentDescription = null, modifier = Modifier.size(28.dp))
-        Spacer(modifier = Modifier.size(8.dp))
-        Text(text = text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
+        Spacer(modifier = Modifier.size(10.dp))
+        Text(text = text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold)
     }
 }
 
@@ -67,38 +70,33 @@ fun PreGameContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 18.dp),
+            .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(36.dp),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = 0f),
-            border = BorderStroke(2.dp, MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)),
-            shadowElevation = 14.dp
+            shape = RoundedCornerShape(32.dp),
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+            shadowElevation = 12.dp
         ) {
             Column(
                 modifier = Modifier
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                            )
-                        )
-                    )
-                    .padding(horizontal = 22.dp, vertical = 28.dp),
+                    .padding(horizontal = 24.dp, vertical = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Surface(shape = CircleShape, color = WarningOrange.copy(alpha = 0.16f)) {
+                    Surface(
+                        shape = CircleShape,
+                        color = WarningOrange.copy(alpha = 0.12f)
+                    ) {
                         Box(modifier = Modifier.size(92.dp), contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Rounded.EmojiEmotions,
                                 contentDescription = null,
                                 tint = WarningOrange,
-                                modifier = Modifier.size(58.dp)
+                                modifier = Modifier.size(60.dp)
                             )
                         }
                     }
@@ -119,21 +117,26 @@ fun PreGameContent(
                 )
 
                 if (highScore > 0) {
-                    Spacer(modifier = Modifier.height(18.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = TertiarySoft.copy(alpha = 0.18f)
+                        color = TertiarySoft.copy(alpha = 0.12f)
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Rounded.EmojiEvents, contentDescription = null, tint = TertiarySoft)
-                            Spacer(modifier = Modifier.size(8.dp))
+                            Icon(
+                                Icons.Rounded.EmojiEvents,
+                                contentDescription = null,
+                                tint = TertiarySoft,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.size(10.dp))
                             Text(
                                 text = stringResource(R.string.pregame_best_score, highScore),
-                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Black),
-                                color = PrimarySoft
+                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.ExtraBold),
+                                color = TertiarySoft
                             )
                         }
                     }
@@ -148,13 +151,48 @@ fun PreGameContent(
 
 @Preview(showBackground = true)
 @Composable
-fun PreGameContentPreview() {
+fun StyledActionButtonPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            Box(
+                modifier = Modifier.padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                StyledActionButton(
+                    text = stringResource(R.string.pregame_start_playing),
+                    onClick = {}
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreGameContentWithHighScorePreview() {
     EmojiGameTheme {
         GameBackground {
             PreGameContent(
                 gameModeNameRes = R.string.mode_normal_name,
                 gameDescriptionRes = R.string.pregame_normal_description,
                 highScore = 500,
+                onStartGame = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = false,
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
+)
+@Composable
+fun PreGameContentNoHighScorePreview() {
+    EmojiGameTheme {
+        GameBackground {
+            PreGameContent(
+                gameModeNameRes = R.string.mode_blitz_name,
+                gameDescriptionRes = R.string.pregame_blitz_description,
+                highScore = 0,
                 onStartGame = {}
             )
         }

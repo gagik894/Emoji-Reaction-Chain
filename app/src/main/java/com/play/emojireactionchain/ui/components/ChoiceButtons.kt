@@ -172,13 +172,59 @@ fun ChoiceButtons(
 
 @Preview(showBackground = true)
 @Composable
-fun ChoiceButtonsPreview() {
+fun AnimatedChoiceButtonPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            AnimatedChoiceButton(
+                choiceEmoji = "A",
+                isCorrectAnswer = true,
+                correctAnswerEmoji = "A",
+                onChoiceSelected = {},
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ChoiceButtonsFourChoicesPreview() {
     EmojiGameTheme {
         GameBackground {
             ChoiceButtons(
                 choices = listOf("A", "B", "C", "D"),
                 correctAnswerEmoji = "A",
                 isCorrectAnswer = null,
+                onChoiceSelected = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ChoiceButtonsThreeChoicesPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            ChoiceButtons(
+                choices = listOf("A", "B", "C"),
+                correctAnswerEmoji = "B",
+                isCorrectAnswer = null,
+                onChoiceSelected = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ChoiceButtonsResultPreview() {
+    EmojiGameTheme {
+        GameBackground {
+            ChoiceButtons(
+                choices = listOf("A", "B", "C", "D"),
+                correctAnswerEmoji = "C",
+                isCorrectAnswer = true,
                 onChoiceSelected = {}
             )
         }
