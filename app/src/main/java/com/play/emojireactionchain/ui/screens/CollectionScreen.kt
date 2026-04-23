@@ -51,7 +51,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.play.emojireactionchain.R
-import com.play.emojireactionchain.ui.GameBackground
 import com.play.emojireactionchain.ui.HomeUiState
 import com.play.emojireactionchain.ui.theme.EmojiGameTheme
 import com.play.emojireactionchain.ui.theme.PrimarySoft
@@ -65,111 +64,113 @@ fun CollectionScreen(
 ) {
     val isDark = isSystemInDarkTheme()
 
-    GameBackground {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(24.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(24.dp))
 
-            // Custom Top Bar for Kids
+        // Custom Top Bar for Kids
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = onBack,
+                modifier = Modifier
+                    .background(
+                        if (isDark) Color.White.copy(alpha = 0.1f) else Color.White,
+                        CircleShape
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.game_header_back_description),
+                    tint = if (isDark) Color.White else PrimarySoft
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = stringResource(R.string.collection_my_treasures),
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Black,
+                    brush = Brush.horizontalGradient(listOf(PrimarySoft, SecondarySoft)),
+                    letterSpacing = 1.sp
+                )
+            )
+            Spacer(modifier = Modifier.weight(1.2f))
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Avatar Section - Engaging for kids
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(32.dp),
+            color = if (isDark) Color.White.copy(alpha = 0.05f) else Color.White.copy(alpha = 0.8f),
+            shadowElevation = 8.dp
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier
-                        .background(
-                            if (isDark) Color.White.copy(alpha = 0.1f) else Color.White,
-                            CircleShape
-                        )
+                Surface(
+                    modifier = Modifier.size(64.dp),
+                    shape = CircleShape,
+                    color = PrimarySoft.copy(alpha = 0.2f)
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.game_header_back_description),
-                        tint = if (isDark) Color.White else PrimarySoft
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = stringResource(R.string.collection_my_treasures),
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Black,
-                        brush = Brush.horizontalGradient(listOf(PrimarySoft, SecondarySoft)),
-                        letterSpacing = 1.sp
-                    )
-                )
-                Spacer(modifier = Modifier.weight(1.2f))
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Avatar Section - Engaging for kids
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(32.dp),
-                color = if (isDark) Color.White.copy(alpha = 0.05f) else Color.White.copy(alpha = 0.8f),
-                shadowElevation = 8.dp
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        modifier = Modifier.size(64.dp),
-                        shape = CircleShape,
-                        color = PrimarySoft.copy(alpha = 0.2f)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(text = uiState.avatarLevelEmoji, fontSize = 40.sp)
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = uiState.avatarLevelTitle,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
-                            color = if (isDark) Color.White else PrimarySoft
-                        )
-                        Text(
-                            text = uiState.avatarLevelSubtitle,
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                            color = (if (isDark) Color.White else Color.Black).copy(alpha = 0.6f)
-                        )
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(text = uiState.avatarLevelEmoji, fontSize = 40.sp)
                     }
                 }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Collection Grid
-            Text(
-                text = stringResource(R.string.collection_sticker_book, uiState.unlockedStickers.size, StickerCatalog.stickers.size),
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp
-                ),
-                color = (if (isDark) Color.White else Color.Black).copy(alpha = 0.5f),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Start
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 80.dp),
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(StickerCatalog.stickers) { emoji ->
-                    val isUnlocked = uiState.unlockedStickers.contains(emoji)
-                    StickerItem(emoji = emoji, isUnlocked = isUnlocked)
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(
+                        text = uiState.avatarLevelTitle,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
+                        color = if (isDark) Color.White else PrimarySoft
+                    )
+                    Text(
+                        text = uiState.avatarLevelSubtitle,
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                        color = (if (isDark) Color.White else Color.Black).copy(alpha = 0.6f)
+                    )
                 }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Collection Grid
+        Text(
+            text = stringResource(
+                R.string.collection_sticker_book,
+                uiState.unlockedStickers.size,
+                StickerCatalog.stickers.size
+            ),
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontWeight = FontWeight.Black,
+                letterSpacing = 2.sp
+            ),
+            color = (if (isDark) Color.White else Color.Black).copy(alpha = 0.5f),
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Start
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 80.dp),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(StickerCatalog.stickers) { emoji ->
+                val isUnlocked = uiState.unlockedStickers.contains(emoji)
+                StickerItem(emoji = emoji, isUnlocked = isUnlocked)
             }
         }
     }
@@ -217,7 +218,9 @@ private fun StickerItem(emoji: String, isUnlocked: Boolean) {
                 Text(
                     text = "🔒",
                     fontSize = 16.sp,
-                    modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp)
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp)
                 )
             } else {
                 // Unlocked state: Full color and popping
