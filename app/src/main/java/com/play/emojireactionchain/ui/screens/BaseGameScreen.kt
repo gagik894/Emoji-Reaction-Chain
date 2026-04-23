@@ -3,6 +3,7 @@ package com.play.emojireactionchain.ui.screens
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.res.Configuration
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,11 +15,14 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,7 +32,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,7 +57,40 @@ import com.play.emojireactionchain.ui.rememberRewardedAd
 import com.play.emojireactionchain.ui.showInterstitialAd
 import com.play.emojireactionchain.ui.showRewardedAd
 import com.play.emojireactionchain.ui.theme.EmojiGameTheme
+import com.play.emojireactionchain.ui.theme.ErrorRed
+import com.play.emojireactionchain.ui.theme.SuccessGreen
 import kotlinx.coroutines.delay
+
+@Composable
+fun VisualTimerBar(
+    progress: Float, // 1.0 (full) to 0.0 (empty)
+    modifier: Modifier = Modifier
+) {
+    val barColor by animateColorAsState(
+        targetValue = if (progress > 0.3f) SuccessGreen else ErrorRed,
+        label = "timer_color"
+    )
+
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(14.dp),
+        shape = RoundedCornerShape(7.dp),
+        color = Color.Black.copy(alpha = 0.1f)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(progress.coerceIn(0f, 1f))
+                .fillMaxSize()
+                .clip(RoundedCornerShape(7.dp))
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(barColor.copy(alpha = 0.8f), barColor)
+                    )
+                )
+        )
+    }
+}
 
 @Composable
 fun GameScreenLayout(content: @Composable ColumnScope.() -> Unit) {

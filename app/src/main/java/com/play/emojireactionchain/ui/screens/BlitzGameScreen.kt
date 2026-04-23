@@ -1,8 +1,12 @@
 package com.play.emojireactionchain.ui.screens
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bolt
@@ -60,40 +64,54 @@ fun BlitzModeScreen(
         onHandleAdReward = { viewModel.handleAdReward() },
         bonusAnimationDelay = 800L,
         centerContent = {
-            BlitzTimerDisplay(remainingQuestionTimeMs / 1000.0)
+            // Blitz max time is 3 seconds
+            val progress = (remainingQuestionTimeMs / 3000f).coerceIn(0f, 1f)
+            BlitzTimerWithVisualBar(remainingQuestionTimeMs / 1000.0, progress)
         }
     )
 }
 
 @SuppressLint("DefaultLocale")
 @Composable
-private fun BlitzTimerDisplay(seconds: Double) {
+private fun BlitzTimerWithVisualBar(seconds: Double, progress: Float) {
     val isUrgent = seconds < 1.0
-    Box(
-        modifier = Modifier,
-        contentAlignment = Alignment.Center
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         val color = if (isUrgent) ErrorRed else WarningOrange
-        Surface(
-            shape = RoundedCornerShape(22.dp),
-            color = color.copy(alpha = 0.16f)
+        
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            androidx.compose.foundation.layout.Row(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Surface(
+                shape = RoundedCornerShape(22.dp),
+                color = color.copy(alpha = 0.16f)
             ) {
-                Icon(Icons.Rounded.Bolt, contentDescription = null, tint = color)
-                Text(
-                    text = String.format("%.2f", seconds),
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Black,
-                        fontSize = 24.sp,
-                        letterSpacing = 0.sp
-                    ),
-                    color = color,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Rounded.Bolt, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
+                    Text(
+                        text = String.format("%.2f", seconds),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Black,
+                            fontSize = 20.sp,
+                            letterSpacing = 0.sp
+                        ),
+                        color = color,
+                        modifier = Modifier.padding(start = 6.dp)
+                    )
+                }
             }
         }
+        
+        VisualTimerBar(progress = progress)
     }
 }

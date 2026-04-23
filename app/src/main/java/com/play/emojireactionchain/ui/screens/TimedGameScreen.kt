@@ -1,8 +1,12 @@
 package com.play.emojireactionchain.ui.screens
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Timer
@@ -61,41 +65,54 @@ fun TimedModeScreen(
         bonusAnimationDelay = 1000L,
         showLivesInScoreboard = false,
         centerContent = {
-            TimerDisplay(remainingTime)
+            // Reference time for progress bar is 60 seconds
+            val progress = (remainingTime / 60000f).coerceIn(0f, 1f)
+            TimerWithVisualBar(remainingTime, progress)
         }
     )
 }
 
 @SuppressLint("DefaultLocale")
 @Composable
-private fun TimerDisplay(remainingTime: Long) {
+private fun TimerWithVisualBar(remainingTime: Long, progress: Float) {
     val seconds = remainingTime / 1000.0
-    val isUrgent = remainingTime < 5000
+    val isUrgent = remainingTime < 10000
 
-    Box(
-        modifier = Modifier,
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         val color = if (isUrgent) ErrorRed else InfoBlue
-        Surface(
-            shape = RoundedCornerShape(22.dp),
-            color = color.copy(alpha = 0.15f)
+        
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            androidx.compose.foundation.layout.Row(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Surface(
+                shape = RoundedCornerShape(22.dp),
+                color = color.copy(alpha = 0.15f)
             ) {
-                Icon(Icons.Rounded.Timer, contentDescription = null, tint = color)
-                Text(
-                    text = String.format("%.1f", seconds),
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Black,
-                        fontSize = 24.sp
-                    ),
-                    color = color,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Rounded.Timer, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
+                    Text(
+                        text = String.format("%.1f", seconds),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Black,
+                            fontSize = 20.sp
+                        ),
+                        color = color,
+                        modifier = Modifier.padding(start = 6.dp)
+                    )
+                }
             }
         }
+        
+        VisualTimerBar(progress = progress)
     }
 }

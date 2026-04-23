@@ -6,14 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Help
-import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -67,7 +67,7 @@ fun EmojiChainDisplay(emojiChain: List<String>) {
             ) {
                 emojiChain.forEachIndexed { index, emoji ->
                     EmojiPathTile(emoji = emoji, size = tileSize, index = index)
-                    ChainConnector(width = connectorWidth)
+                    Spacer(modifier = Modifier.width(connectorWidth))
                 }
                 MysteryTile(size = tileSize)
             }
@@ -124,26 +124,6 @@ private fun MysteryTile(size: Dp) {
     }
 }
 
-@Composable
-private fun ChainConnector(width: Dp) {
-    Box(
-        modifier = Modifier
-            .padding(horizontal = 2.dp)
-            .size(width = width, height = 26.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)) {
-            Icon(
-                imageVector = Icons.Rounded.Link,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
-                modifier = Modifier
-                    .size(18.dp)
-                    .padding(2.dp)
-            )
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
