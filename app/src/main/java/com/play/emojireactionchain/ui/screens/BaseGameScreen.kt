@@ -21,8 +21,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,7 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -71,25 +71,16 @@ fun VisualTimerBar(
         label = "timer_color"
     )
 
-    Surface(
+    LinearProgressIndicator(
+        progress = { progress.coerceIn(0f, 1f) },
         modifier = modifier
             .fillMaxWidth()
-            .height(14.dp),
-        shape = RoundedCornerShape(7.dp),
-        color = Color.Black.copy(alpha = 0.1f)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(progress.coerceIn(0f, 1f))
-                .fillMaxSize()
-                .clip(RoundedCornerShape(7.dp))
-                .background(
-                    Brush.horizontalGradient(
-                        listOf(barColor.copy(alpha = 0.8f), barColor)
-                    )
-                )
-        )
-    }
+            .height(10.dp)
+            .clip(RoundedCornerShape(5.dp)),
+        color = barColor,
+        trackColor = barColor.copy(alpha = 0.2f),
+        strokeCap = StrokeCap.Round
+    )
 }
 
 @Composable
@@ -243,6 +234,7 @@ fun BaseGameScreen(
     onHandleAdReward: () -> Unit,
     bonusAnimationDelay: Long = 1000L,
     showLivesInScoreboard: Boolean = true,
+    timerProgress: Float? = null,
     centerContent: @Composable () -> Unit = {}
 ) {
     var showTimeBonusAnimation by remember { mutableStateOf(false) }
@@ -260,7 +252,7 @@ fun BaseGameScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    Box {
+    Box(modifier = Modifier.fillMaxSize()) {
         GameScreenLayout {
             GameHeader(showBack = gameState.questionNumber == 0, onBack = onNavigateToStart)
 
@@ -301,6 +293,11 @@ fun BaseGameScreen(
                                     if (showLivesInScoreboard) gameState.lives else null,
                                     gameState.currentStreakCount
                                 )
+                                if (timerProgress != null) {
+                                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
+                                    VisualTimerBar(progress = timerProgress)
+                                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
+                                }
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
@@ -339,6 +336,9 @@ fun BaseGameScreen(
                                 if (showLivesInScoreboard) gameState.lives else null,
                                 gameState.currentStreakCount
                             )
+                            if (timerProgress != null) {
+                                VisualTimerBar(progress = timerProgress)
+                            }
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
@@ -445,7 +445,32 @@ fun BaseGameScreenBonusRoundPreview() {
             onNavigateToStart = {},
             onChoiceSelected = {},
             onHandleAdReward = {},
-            showLivesInScoreboard = false
+            showLivesInScoreboard = false,
+            timerProgress = 0.65f
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BaseGameScreenUrgentTimerPreview() {
+    EmojiGameTheme {
+        BaseGameScreen(
+            gameModeNameRes = R.string.mode_blitz_name,
+            gameDescriptionRes = R.string.pregame_blitz_description,
+            gameState = GameState(
+                questionNumber = 1,
+                score = 50,
+                highScore = 1000,
+                emojiChain = listOf("🍎", "🍌"),
+                choices = listOf("🍒", "🍇", "🍉", "🍍"),
+                correctAnswerEmoji = "🍒"
+            ),
+            onStartGame = {},
+            onNavigateToStart = {},
+            onChoiceSelected = {},
+            onHandleAdReward = {},
+            timerProgress = 0.15f
         )
     }
 }
