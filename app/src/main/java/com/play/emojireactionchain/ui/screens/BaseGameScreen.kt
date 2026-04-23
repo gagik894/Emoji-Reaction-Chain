@@ -31,7 +31,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.play.emojireactionchain.R
 import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.model.GameState
 import com.play.emojireactionchain.ui.AdManager
@@ -48,6 +50,7 @@ import com.play.emojireactionchain.ui.rememberInterstitialAd
 import com.play.emojireactionchain.ui.rememberRewardedAd
 import com.play.emojireactionchain.ui.showInterstitialAd
 import com.play.emojireactionchain.ui.showRewardedAd
+import com.play.emojireactionchain.ui.theme.EmojiGameTheme
 import kotlinx.coroutines.delay
 
 @Composable
@@ -338,5 +341,138 @@ fun BaseGameScreen(
         if (showTimeBonusAnimation) {
             TimeBonusAnimation(bonusPoints = currentBonusPointsForAnimation)
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BaseGameScreenPreGamePreview() {
+    EmojiGameTheme {
+        BaseGameScreen(
+            gameModeNameRes = R.string.mode_normal_name,
+            gameDescriptionRes = R.string.pregame_normal_description,
+            gameState = GameState(),
+            onStartGame = {},
+            onNavigateToStart = {},
+            onChoiceSelected = {},
+            onHandleAdReward = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BaseGameScreenInProgressPreview() {
+    EmojiGameTheme {
+        BaseGameScreen(
+            gameModeNameRes = R.string.mode_normal_name,
+            gameDescriptionRes = R.string.pregame_normal_description,
+            gameState = GameState(
+                questionNumber = 1,
+                score = 100,
+                highScore = 500,
+                emojiChain = listOf("🍎", "🍌"),
+                choices = listOf("🍒", "🍇", "🍉", "🍍"),
+                correctAnswerEmoji = "🍒",
+                streakMissionTarget = 5,
+                streakMissionProgress = 2
+            ),
+            onStartGame = {},
+            onNavigateToStart = {},
+            onChoiceSelected = {},
+            onHandleAdReward = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BaseGameScreenBonusRoundPreview() {
+    EmojiGameTheme {
+        BaseGameScreen(
+            gameModeNameRes = R.string.mode_timed_name,
+            gameDescriptionRes = R.string.pregame_timed_description,
+            gameState = GameState(
+                questionNumber = 10,
+                score = 1250,
+                highScore = 2000,
+                emojiChain = listOf("🚀", "🛸", "🪐"),
+                choices = listOf("🌌", "🌠", "🌑", "☀️"),
+                correctAnswerEmoji = "🌌",
+                isBonusRound = true,
+                currentStreakCount = 8
+            ),
+            onStartGame = {},
+            onNavigateToStart = {},
+            onChoiceSelected = {},
+            onHandleAdReward = {},
+            showLivesInScoreboard = false
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BaseGameScreenVictoryPreview() {
+    EmojiGameTheme {
+        BaseGameScreen(
+            gameModeNameRes = R.string.mode_normal_name,
+            gameDescriptionRes = R.string.pregame_normal_description,
+            gameState = GameState(
+                questionNumber = 5,
+                score = 500,
+                highScore = 500,
+                gameResult = GameResult.Won
+            ),
+            onStartGame = {},
+            onNavigateToStart = {},
+            onChoiceSelected = {},
+            onHandleAdReward = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BaseGameScreenLostPreview() {
+    EmojiGameTheme {
+        BaseGameScreen(
+            gameModeNameRes = R.string.mode_survival_name,
+            gameDescriptionRes = R.string.pregame_survival_description,
+            gameState = GameState(
+                questionNumber = 12,
+                score = 1200,
+                highScore = 2500,
+                lives = 0,
+                gameResult = GameResult.Lost(com.play.emojireactionchain.model.LossReason.OutOfLives)
+            ),
+            onStartGame = {},
+            onNavigateToStart = {},
+            onChoiceSelected = {},
+            onHandleAdReward = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 800, heightDp = 400)
+@Composable
+fun BaseGameScreenLandscapePreview() {
+    EmojiGameTheme {
+        BaseGameScreen(
+            gameModeNameRes = R.string.mode_normal_name,
+            gameDescriptionRes = R.string.pregame_normal_description,
+            gameState = GameState(
+                questionNumber = 1,
+                score = 100,
+                highScore = 500,
+                emojiChain = listOf("🍎", "🍌"),
+                choices = listOf("🍒", "🍇", "🍉", "🍍"),
+                correctAnswerEmoji = "🍒"
+            ),
+            onStartGame = {},
+            onNavigateToStart = {},
+            onChoiceSelected = {},
+            onHandleAdReward = {}
+        )
     }
 }

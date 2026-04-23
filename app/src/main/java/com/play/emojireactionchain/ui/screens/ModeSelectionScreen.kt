@@ -67,11 +67,13 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.play.emojireactionchain.R
 import com.play.emojireactionchain.model.GameMode
 import com.play.emojireactionchain.ui.HomeUiState
+import com.play.emojireactionchain.ui.theme.EmojiGameTheme
 import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
 import com.play.emojireactionchain.ui.theme.TextSecondary
@@ -432,5 +434,21 @@ private fun IconContainer(icon: ImageVector) {
                 modifier = Modifier.size(32.dp)
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ModeSelectionScreenPreview() {
+    EmojiGameTheme {
+        ModeSelectionScreen(
+            uiState = HomeUiState(
+                dailyStreak = 5,
+                modeHighScores = mapOf(GameMode.NORMAL to 100),
+                dailyStickerEmoji = "🐱"
+            ),
+            onModeSelected = {},
+            onCollectionSelected = {}
+        )
     }
 }

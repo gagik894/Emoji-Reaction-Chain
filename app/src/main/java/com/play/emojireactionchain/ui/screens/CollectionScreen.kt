@@ -47,11 +47,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.play.emojireactionchain.R
 import com.play.emojireactionchain.ui.GameBackground
 import com.play.emojireactionchain.ui.HomeUiState
+import com.play.emojireactionchain.ui.theme.EmojiGameTheme
 import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
 import com.play.emojireactionchain.utils.StickerCatalog
@@ -87,7 +89,7 @@ fun CollectionScreen(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.game_header_back_description),
                         tint = if (isDark) Color.White else PrimarySoft
                     )
                 }
@@ -225,5 +227,21 @@ private fun StickerItem(emoji: String, isUnlocked: Boolean) {
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CollectionScreenPreview() {
+    EmojiGameTheme {
+        CollectionScreen(
+            uiState = HomeUiState(
+                avatarLevelEmoji = "🐶",
+                avatarLevelTitle = "Beginner Linker",
+                avatarLevelSubtitle = "Keep playing to evolve!",
+                unlockedStickers = setOf("🐱", "🐹")
+            ),
+            onBack = {}
+        )
     }
 }
