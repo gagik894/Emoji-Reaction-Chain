@@ -2,9 +2,13 @@ package com.play.emojireactionchain.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Flag
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -20,42 +24,69 @@ import com.play.emojireactionchain.ui.GameBackground
 import com.play.emojireactionchain.ui.theme.EmojiGameTheme
 import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
+import com.play.emojireactionchain.ui.theme.WarningOrange
 
 @Composable
 fun EngagementStrip(
     isBonusRound: Boolean,
     missionProgress: Int,
-    missionTarget: Int
+    missionTarget: Int,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         if (isBonusRound) {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = SecondarySoft.copy(alpha = 0.18f)
-            ) {
-                Text(
-                    text = stringResource(R.string.engagement_bonus_round),
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                    color = SecondarySoft,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                )
-            }
+            StatusChip(
+                text = stringResource(R.string.engagement_bonus_round),
+                color = WarningOrange,
+                icon = Icons.Rounded.AutoAwesome,
+                modifier = Modifier
+            )
         }
 
-        Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = PrimarySoft.copy(alpha = 0.12f)
+        StatusChip(
+            text = stringResource(R.string.engagement_streak_mission, missionProgress, missionTarget),
+            color = if (isBonusRound) SecondarySoft else PrimarySoft,
+            icon = Icons.Rounded.Flag,
+            modifier = Modifier
+        )
+    }
+}
+
+@Composable
+private fun StatusChip(
+    text: String,
+    color: androidx.compose.ui.graphics.Color,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        color = color.copy(alpha = 0.16f),
+        shadowElevation = 2.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier
+                    .padding(end = 5.dp)
+                    .size(20.dp)
+            )
             Text(
-                text = stringResource(R.string.engagement_streak_mission, missionProgress, missionTarget),
-                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                color = PrimarySoft,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                text = text,
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
+                color = color,
+                maxLines = 1
             )
         }
     }

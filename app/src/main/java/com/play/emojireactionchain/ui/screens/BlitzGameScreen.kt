@@ -2,9 +2,13 @@ package com.play.emojireactionchain.ui.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -21,7 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.play.emojireactionchain.R
 import com.play.emojireactionchain.ui.gameViewModelFactory
 import com.play.emojireactionchain.ui.theme.ErrorRed
-import com.play.emojireactionchain.ui.theme.TextMain
+import com.play.emojireactionchain.ui.theme.WarningOrange
 import com.play.emojireactionchain.utils.HighScoreManager
 import com.play.emojireactionchain.utils.SoundManager
 import com.play.emojireactionchain.viewModel.BlitzGameViewModel
@@ -66,17 +70,30 @@ fun BlitzModeScreen(
 private fun BlitzTimerDisplay(seconds: Double) {
     val isUrgent = seconds < 1.0
     Box(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        modifier = Modifier,
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = String.format("%.2f", seconds),
-            style = MaterialTheme.typography.headlineLarge.copy(
-                fontWeight = FontWeight.Black,
-                fontSize = 44.sp,
-                letterSpacing = (-1).sp
-            ),
-            color = if (isUrgent) ErrorRed else TextMain
-        )
+        val color = if (isUrgent) ErrorRed else WarningOrange
+        Surface(
+            shape = RoundedCornerShape(22.dp),
+            color = color.copy(alpha = 0.16f)
+        ) {
+            androidx.compose.foundation.layout.Row(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Rounded.Bolt, contentDescription = null, tint = color)
+                Text(
+                    text = String.format("%.2f", seconds),
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Black,
+                        fontSize = 24.sp,
+                        letterSpacing = 0.sp
+                    ),
+                    color = color,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        }
     }
 }

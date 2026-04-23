@@ -1,15 +1,22 @@
 package com.play.emojireactionchain.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.SentimentSatisfied
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -23,7 +30,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,7 +43,8 @@ import com.play.emojireactionchain.ui.theme.EmojiGameTheme
 import com.play.emojireactionchain.ui.theme.ErrorRed
 import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.SecondarySoft
-import com.play.emojireactionchain.ui.theme.TextSecondary
+import com.play.emojireactionchain.ui.theme.SuccessGreen
+import com.play.emojireactionchain.ui.theme.WarningOrange
 
 @Composable
 fun StyledAlertDialog(
@@ -48,32 +56,57 @@ fun StyledAlertDialog(
     onDismiss: (() -> Unit)? = null,
     isError: Boolean = true
 ) {
+    val accent = if (isError) ErrorRed else SuccessGreen
     val dismissText = dismissButtonText ?: stringResource(R.string.dialog_cancel)
 
     AlertDialog(
         onDismissRequest = { onDismiss?.invoke() },
         title = {
-            Text(
-                title,
-                style = MaterialTheme.typography.titleLarge,
-                color = if (isError) ErrorRed else PrimarySoft,
-                fontWeight = FontWeight.Black
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Surface(shape = CircleShape, color = accent.copy(alpha = 0.16f)) {
+                    Icon(
+                        imageVector = if (isError) Icons.Rounded.SentimentSatisfied else Icons.Rounded.EmojiEvents,
+                        contentDescription = null,
+                        tint = accent,
+                        modifier = Modifier
+                            .size(62.dp)
+                            .padding(12.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = accent,
+                    fontWeight = FontWeight.Black
+                )
+            }
         },
         text = message,
         confirmButton = {
-            Button(onClick = onConfirm, colors = ButtonDefaults.buttonColors(containerColor = PrimarySoft)) {
-                Text(confirmButtonText)
+            Button(
+                onClick = onConfirm,
+                shape = RoundedCornerShape(18.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PrimarySoft)
+            ) {
+                Icon(Icons.Rounded.Refresh, contentDescription = null)
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(confirmButtonText, fontWeight = FontWeight.Black)
             }
         },
         dismissButton = {
             if (onDismiss != null) {
                 TextButton(onClick = onDismiss) {
-                    Text(dismissText, color = TextSecondary)
+                    Text(
+                        dismissText,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.68f),
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         },
-        shape = RoundedCornerShape(28.dp)
+        shape = RoundedCornerShape(34.dp),
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
 
@@ -102,18 +135,35 @@ fun GameEndDialog(
         title = title,
         message = {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Text(mainMessage, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                Text(mainMessage, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    shape = RoundedCornerShape(24.dp),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0f),
+                    shadowElevation = 8.dp
                 ) {
-                    Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(stringResource(R.string.score_label), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Column(
+                        modifier = Modifier
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(PrimarySoft.copy(alpha = 0.12f), WarningOrange.copy(alpha = 0.12f))
+                                )
+                            )
+                            .padding(18.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            stringResource(R.string.score_label),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.68f)
+                        )
                         Text("${gameState.score}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black, color = PrimarySoft)
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                        Text(stringResource(R.string.best_score_label, gameState.highScore), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 10.dp),
+                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                        )
+                        Text(stringResource(R.string.best_score_label, gameState.highScore), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black)
                     }
                 }
 
@@ -123,14 +173,26 @@ fun GameEndDialog(
                         enabled = !isLoading,
                         onClick = onWatchAd,
                         modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(18.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = SecondarySoft)
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onSecondary
+                            )
                         } else {
-                            Icon(Icons.Filled.PlayArrow, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(if (adWatched) R.string.game_end_continue else R.string.game_end_watch_ad))
+                            Row(
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Filled.PlayArrow, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    stringResource(if (adWatched) R.string.game_end_continue else R.string.game_end_watch_ad),
+                                    fontWeight = FontWeight.Black
+                                )
+                            }
                         }
                     }
                 }

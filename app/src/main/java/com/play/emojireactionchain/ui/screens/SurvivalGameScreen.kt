@@ -1,6 +1,10 @@
 package com.play.emojireactionchain.ui.screens
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Shield
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -56,17 +60,22 @@ fun SurvivalModeScreen(onNavigateToStart: () -> Unit = {}) {
 @Composable
 private fun LevelIndicator(level: Int) {
     Surface(
-        modifier = Modifier.padding(vertical = 8.dp),
-        shape = MaterialTheme.shapes.small,
-        color = PrimarySoft.copy(alpha = 0.1f)
+        shape = RoundedCornerShape(22.dp),
+        color = PrimarySoft.copy(alpha = 0.14f)
     ) {
-        Text(
-            text = stringResource(R.string.survival_level, level),
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontWeight = FontWeight.Black,
-                color = PrimarySoft
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            Icon(Icons.Rounded.Shield, contentDescription = null, tint = PrimarySoft)
+            Text(
+                text = stringResource(R.string.survival_level, level),
+                modifier = Modifier.padding(start = 8.dp),
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.Black,
+                    color = PrimarySoft
+                )
             )
-        )
+        }
     }
 }

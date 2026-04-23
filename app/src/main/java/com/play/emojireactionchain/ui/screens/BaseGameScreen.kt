@@ -2,16 +2,22 @@ package com.play.emojireactionchain.ui.screens
 
 import android.app.Activity
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,12 +27,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.play.emojireactionchain.model.GameResult
 import com.play.emojireactionchain.model.GameState
 import com.play.emojireactionchain.ui.AdManager
+import com.play.emojireactionchain.ui.components.BottomBannerAd
 import com.play.emojireactionchain.ui.components.ChoiceButtons
 import com.play.emojireactionchain.ui.components.EmojiChainDisplay
 import com.play.emojireactionchain.ui.components.EngagementStrip
@@ -43,18 +51,34 @@ import com.play.emojireactionchain.ui.showRewardedAd
 import kotlinx.coroutines.delay
 
 @Composable
-fun GameScreenLayout(content: @Composable () -> Unit) {
+fun GameScreenLayout(content: @Composable ColumnScope.() -> Unit) {
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    
-    Column(
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.16f)
+                    )
+                )
+            )
             .statusBarsPadding()
             .padding(bottom = navBarPadding)
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.TopCenter
     ) {
-        content()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 920.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            content()
+        }
     }
 }
 
@@ -195,37 +219,115 @@ fun BaseGameScreen(
 
     Box {
         GameScreenLayout {
-            GameHeader(onBack = onNavigateToStart)
+            GameHeader(showBack = gameState.questionNumber == 0, onBack = onNavigateToStart)
 
             if (gameState.questionNumber == 0) {
-                PreGameContent(
-                    gameModeNameRes,
-                    gameDescriptionRes,
-                    highScore = gameState.highScore,
-                    onStartGame = onStartGame
-                )
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    PreGameContent(
+                        gameModeNameRes,
+                        gameDescriptionRes,
+                        highScore = gameState.highScore,
+                        onStartGame = onStartGame
+                    )
+                }
+                BottomBannerAd()
             } else {
-                if (isLandscape) {
-                    Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Scoreboard(gameState.score, gameState.highScore, if (showLivesInScoreboard) gameState.lives else null, gameState.currentStreakCount)
-                            EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
-                            HintCard(gameState.rule?.hintRes, gameState.categoryEmoji)
-                            centerContent()
-                            EmojiChainDisplay(gameState.emojiChain)
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    val compactHeight = maxHeight < 620.dp
+
+                    if (isLandscape) {
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.spacedBy(18.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(0.9f),
+                                verticalArrangement = Arrangement.spacedBy(if (compactHeight) 8.dp else 12.dp)
+                            ) {
+                                Scoreboard(
+                                    gameState.score,
+                                    gameState.highScore,
+                                    if (showLivesInScoreboard) gameState.lives else null,
+                                    gameState.currentStreakCount,
+                                    onBack = onNavigateToStart
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    EngagementStrip(
+                                        gameState.isBonusRound,
+                                        gameState.streakMissionProgress,
+                                        gameState.streakMissionTarget
+                                    )
+                                    centerContent()
+                                }
+                                HintCard(gameState.rule?.hintRes, gameState.categoryEmoji)
+                            }
+                            Column(
+                                modifier = Modifier.weight(1.15f),
+                                verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically)
+                            ) {
+                                EmojiChainDisplay(gameState.emojiChain)
+                                ChoiceButtons(
+                                    gameState.choices,
+                                    gameState.correctAnswerEmoji,
+                                    gameState.isCorrectAnswer,
+                                    onChoiceSelected
+                                )
+                            }
                         }
-                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-                            ChoiceButtons(gameState.choices, gameState.correctAnswerEmoji, gameState.isCorrectAnswer, onChoiceSelected)
+                    } else {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(if (compactHeight) 8.dp else 12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Scoreboard(
+                                gameState.score,
+                                gameState.highScore,
+                                if (showLivesInScoreboard) gameState.lives else null,
+                                gameState.currentStreakCount,
+                                onBack = onNavigateToStart
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                EngagementStrip(
+                                    gameState.isBonusRound,
+                                    gameState.streakMissionProgress,
+                                    gameState.streakMissionTarget
+                                )
+                                centerContent()
+                                HintCard(gameState.rule?.hintRes, gameState.categoryEmoji)
+                            }
+                            Box(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                EmojiChainDisplay(gameState.emojiChain)
+                            }
+                            ChoiceButtons(
+                                gameState.choices,
+                                gameState.correctAnswerEmoji,
+                                gameState.isCorrectAnswer,
+                                onChoiceSelected
+                            )
                         }
                     }
-                } else {
-                    Scoreboard(gameState.score, gameState.highScore, if (showLivesInScoreboard) gameState.lives else null, gameState.currentStreakCount)
-                    EngagementStrip(gameState.isBonusRound, gameState.streakMissionProgress, gameState.streakMissionTarget)
-                    HintCard(gameState.rule?.hintRes, gameState.categoryEmoji)
-                    centerContent()
-                    EmojiChainDisplay(gameState.emojiChain)
-                    ChoiceButtons(gameState.choices, gameState.correctAnswerEmoji, gameState.isCorrectAnswer, onChoiceSelected)
                 }
+                BottomBannerAd()
 
                 GameResultHandler(
                     gameState = gameState,

@@ -1,6 +1,6 @@
 package com.play.emojireactionchain.utils
 
-import com.play.emojireactionchain.viewModel.BaseGameViewModel
+import com.play.emojireactionchain.model.EmojiData
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -18,7 +18,7 @@ class SynonymQuestionGeneratorTest {
             assertTrue("chain should not be empty", chain.isNotEmpty())
             assertFalse("answer should be present in options once", choices.groupBy { it }[answer]!!.size > 1)
 
-            val activeGroup = BaseGameViewModel.synonymPairs.firstOrNull { it.contains(answer) }
+            val activeGroup = EmojiData.synonymPairs.firstOrNull { it.contains(answer) }
             assertTrue("answer should belong to a known synonym group", activeGroup != null)
 
             val invalidDistractor = choices

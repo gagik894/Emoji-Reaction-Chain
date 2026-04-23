@@ -38,9 +38,14 @@
     <string name="game_header_back_description">Back</string>
     <string name="time_bonus_text">+%1$d Time Bonus!</string>
     <string name="score_label">SCORE</string>
+    <string name="best_label">BEST</string>
+    <string name="lives_label">LIVES</string>
+    <string name="streak_label_short">STREAK</string>
     <string name="best_score_label">BEST: %1$d</string>
     <string name="streak_label">🔥 %1$d</string>
     <string name="question_progress">%1$d / %2$d</string>
+    <string name="hint_content_description">Hint</string>
+    <string name="hint_collapsed_placeholder">?</string>
 
     <string name="pregame_normal_description">Answer questions to increase your score!</string>
     <string name="pregame_timed_description">Answer as many as you can! Correct answers add time.</string>

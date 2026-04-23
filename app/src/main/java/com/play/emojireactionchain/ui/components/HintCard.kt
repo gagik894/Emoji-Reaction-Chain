@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,9 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.play.emojireactionchain.R
 import com.play.emojireactionchain.ui.GameBackground
 import com.play.emojireactionchain.ui.theme.EmojiGameTheme
-import com.play.emojireactionchain.ui.theme.SecondarySoft
-import com.play.emojireactionchain.ui.theme.TextMain
-import com.play.emojireactionchain.ui.theme.TextSecondary
+import com.play.emojireactionchain.ui.theme.PrimarySoft
 import com.play.emojireactionchain.ui.theme.WarningOrange
 
 @Composable
@@ -49,46 +49,45 @@ fun HintCard(hintRes: Int?, categoryEmoji: String?) {
     var expanded by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Surface(
             modifier = Modifier
                 .clickable { expanded = !expanded },
-            shape = RoundedCornerShape(24.dp),
-            color = if (expanded) SecondarySoft.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.32f),
-            border = BorderStroke(1.dp, if (expanded) SecondarySoft else SecondarySoft.copy(alpha = 0.35f))
+            shape = RoundedCornerShape(22.dp),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0f),
+            border = BorderStroke(1.dp, WarningOrange.copy(alpha = if (expanded) 0.7f else 0.25f)),
+            shadowElevation = if (expanded) 8.dp else 3.dp
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), WarningOrange.copy(alpha = 0.12f))
+                        )
+                    )
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     imageVector = Icons.Default.Lightbulb,
-                    contentDescription = "Hint",
-                    tint = if (expanded) WarningOrange else TextSecondary,
+                    contentDescription = stringResource(R.string.hint_content_description),
+                    tint = WarningOrange,
                     modifier = Modifier.size(20.dp)
                 )
-                if (categoryEmoji != null) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = categoryEmoji, fontSize = 20.sp)
-                }
-                AnimatedVisibility(
-                    visible = !expanded,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Row {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "?",
-                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                            color = TextSecondary
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = categoryEmoji ?: stringResource(R.string.hint_collapsed_placeholder),
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(
+                    text = if (expanded) stringResource(hintRes) else stringResource(R.string.hint_collapsed_placeholder),
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Black),
+                    color = if (expanded) MaterialTheme.colorScheme.onSurface else PrimarySoft,
+                    maxLines = if (expanded) 2 else 1,
+                )
             }
         }
 
@@ -97,23 +96,13 @@ fun HintCard(hintRes: Int?, categoryEmoji: String?) {
             enter = expandVertically() + fadeIn(),
             exit = shrinkVertically() + fadeOut()
         ) {
-            Surface(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .fillMaxWidth(0.9f),
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                border = BorderStroke(1.dp, SecondarySoft.copy(alpha = 0.2f)),
-                shadowElevation = 4.dp
-            ) {
-                Text(
-                    text = stringResource(hintRes),
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                    color = TextMain,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
+            Text(
+                text = stringResource(hintRes),
+                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.68f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+            )
         }
     }
 }
@@ -123,7 +112,7 @@ fun HintCard(hintRes: Int?, categoryEmoji: String?) {
 fun HintCardPreview() {
     EmojiGameTheme {
         GameBackground {
-            HintCard(hintRes = R.string.pregame_normal_description, categoryEmoji = "🍕")
+            HintCard(hintRes = R.string.pregame_normal_description, categoryEmoji = null)
         }
     }
 }
